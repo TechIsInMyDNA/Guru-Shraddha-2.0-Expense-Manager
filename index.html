@@ -22,18 +22,18 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
-    /* Top Bar & Project Header */
+    /* Top Bar */
     .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .project-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
     .project-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
     .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
-    /* Container & Layout */
+    /* Container & Cards */
     .container { max-width: 960px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
     .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     
-    /* Sub-tabs inside sections */
+    /* Sub-tabs */
     .sub-nav { display: flex; gap: 6px; background: #0c1222; padding: 4px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); overflow-x: auto; }
     .sub-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
     .sub-btn.active { background: var(--card-inner); color: var(--accent); font-weight: 700; }
@@ -100,6 +100,7 @@
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
         <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
+      <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage / Rename Members">👥</button>
       <button class="small secondary" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
@@ -114,32 +115,44 @@
       <span id="lastSyncedTime">Last Sync: Never</span>
     </div>
 
-    <!-- TAB 1: REPAIRING & EXPENSES -->
+    <!-- TAB 1: REPAIRING, EXPENSES & INCOME -->
     <div id="tab-repairing" class="tab-content">
+      <!-- 3 Dynamic Summary Cards for Incomes & Expenses -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Total Repairing Cost</div>
-          <div id="repTotalCost" class="stat-val" style="color:var(--accent);">₹0</div>
+          <div class="stat-label">Total Income (Aaye)</div>
+          <div id="repTotalIncome" class="stat-val" style="color:var(--success);">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Entries</div>
-          <div id="repCount" class="stat-val">0</div>
+          <div class="stat-label">Total Expense (Gaye)</div>
+          <div id="repTotalCost" class="stat-val" style="color:var(--danger);">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Net Balance (Surplus)</div>
+          <div id="repNetBalance" class="stat-val" style="color:var(--accent);">₹0</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">
-          <span>Repairing & Project Expenses</span>
+          <span>Project Income & Expenses</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('repairing')">📥 Export Excel</button>
-            <button class="small" onclick="toggleForm('repFormContainer')">+ New Expense</button>
+            <button class="small" onclick="toggleForm('repFormContainer')">+ New Entry</button>
           </div>
         </div>
 
         <div id="repFormContainer" class="hidden">
           <form onsubmit="saveRepairRecord(event)">
             <input type="hidden" id="repEditId">
-            <div class="grid-2">
+            <div class="grid-3">
+              <div>
+                <label>Entry Type</label>
+                <select id="repType" required style="font-weight:bold;">
+                  <option value="EXPENSE" style="color:var(--danger);">🔴 EXPENSE (Money Out / Kharcha)</option>
+                  <option value="INCOME" style="color:var(--success);">🟢 INCOME (Money In / Fund Aaya)</option>
+                </select>
+              </div>
               <div>
                 <label>Date</label>
                 <input type="date" id="repDate" required>
@@ -152,11 +165,11 @@
             <div class="grid-2">
               <div>
                 <label>Payment Ref / Mode</label>
-                <input type="text" id="repRef" placeholder="e.g. CASH, PYTM, IMPS" required>
+                <input type="text" id="repRef" placeholder="e.g. CASH, PYTM, IMPS, BANK" required>
               </div>
               <div>
                 <label>Reason / Details</label>
-                <input type="text" id="repReason" placeholder="Parda holder, Tanki fit, etc." required>
+                <input type="text" id="repReason" placeholder="Parda holder, Tanki fit, Rent received, etc." required>
               </div>
             </div>
             <div style="display:flex; gap:8px;">
@@ -171,6 +184,7 @@
             <thead>
               <tr>
                 <th>Date</th>
+                <th>Type</th>
                 <th>Amount</th>
                 <th>Payment Mode</th>
                 <th>Reason / Item Details</th>
@@ -451,7 +465,7 @@
       <!-- Master Passphrase Lock Gate -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token, Members & System Backup access karne ke liye Master Passphrase daalein:</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings access karne ke liye Master Passphrase daalein:</p>
         <div class="grid-1">
           <input type="password" id="masterPassInput" placeholder="Master Passphrase">
         </div>
@@ -507,7 +521,7 @@
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchTab('repairing', this)">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span>Repairing</span>
+      <span>Repair/Income</span>
     </button>
     <button class="nav-item" onclick="switchTab('labour', this)">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -527,7 +541,7 @@
     </button>
   </div>
 
-  <!-- Member PIN Verification Modal -->
+  <!-- Member Login Modal -->
   <div id="memberLoginModal" class="modal-overlay hidden">
     <div class="modal-box">
       <div class="card-title">Family Member Login</div>
@@ -547,6 +561,21 @@
     </div>
   </div>
 
+  <!-- Member Direct Manager Modal (Rename / Add / Edit PIN) -->
+  <div id="directMemberManagerModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="card-title">
+        <span>Family Members Manager</span>
+        <button class="small" onclick="promptNewMember()">+ Add Member</button>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Yaha se aap kisi bhi member ka naam rename, PIN edit ya naya member add kar sakte hain:</p>
+      <div id="directMembersListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="margin-top:14px;">
+        <button onclick="closeModal('directMemberManagerModal')" class="secondary" style="width:100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Worker Management Modal -->
   <div id="workerManagerModal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -554,7 +583,7 @@
         <span>Worker / Contractor Manager</span>
         <button class="small" onclick="promptAddWorker()">+ New Worker</button>
       </div>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Aap yaha naye workers add, unka naam edit ya delete kar sakte hain:</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Workers add, edit ya delete karein:</p>
       <div id="workerListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
       <div style="margin-top:14px;">
         <button onclick="closeModal('workerManagerModal')" class="secondary" style="width:100%;">Close</button>
@@ -569,7 +598,7 @@
         <span>Party / Vendor Manager</span>
         <button class="small" onclick="promptAddParty()">+ New Party</button>
       </div>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Manage vendors, shops, and parties for Samaan Ledger:</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Samaan suppliers, shops aur parties manage karein:</p>
       <div id="partyListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
       <div style="margin-top:14px;">
         <button onclick="closeModal('partyManagerModal')" class="secondary" style="width:100%;">Close</button>
@@ -584,7 +613,7 @@
         <span>Projects Manager</span>
         <button class="small" onclick="promptAddProject()">+ New Project</button>
       </div>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Create, rename, or switch projects. Each project has independent expenses, labour & samaan records:</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Projects switch, create ya rename karein:</p>
       <div id="projectListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
       <div style="margin-top:14px;">
         <button onclick="closeModal('projectManagerModal')" class="secondary" style="width:100%;">Close</button>
@@ -608,7 +637,6 @@
           createdAt: "2026-10-02"
         }
       ],
-      // Project-specific datasets mapped by projectId
       projectData: {
         "proj_default": {
           repairing: [],
@@ -647,22 +675,22 @@
     // --- EMBEDDED EXCEL SEED DATA FOR GURU SHRADDHA 2.0 ---
     const initialSeedData = {
       repairing: [
-        {"id":"rep_3","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_4","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_5","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_6","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_7","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_8","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_9","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_10","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_11","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_12","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_13","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_14","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_15","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_16","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_17","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_18","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"rep_3","type":"EXPENSE","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_4","type":"EXPENSE","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_5","type":"EXPENSE","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_6","type":"EXPENSE","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_7","type":"EXPENSE","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_8","type":"EXPENSE","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_9","type":"EXPENSE","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_10","type":"EXPENSE","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_11","type":"EXPENSE","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_12","type":"EXPENSE","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_13","type":"EXPENSE","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_14","type":"EXPENSE","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_15","type":"EXPENSE","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_16","type":"EXPENSE","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_17","type":"EXPENSE","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_18","type":"EXPENSE","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       samaan: [
         {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"paidAmount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
@@ -699,30 +727,28 @@
       if (local) {
         try {
           systemData = JSON.parse(local);
-          // Migration check for older data format
+          // Migration check
           if (!systemData.projects || !Array.isArray(systemData.projects)) {
-            const oldRepairing = systemData.repairing || initialSeedData.repairing;
-            const oldLabour = systemData.labour || initialSeedData.labour;
-            const oldSamaan = systemData.samaan || initialSeedData.samaan;
-
             systemData.activeProjectId = "proj_default";
             systemData.projects = [{ id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
             systemData.projectData = {
               "proj_default": {
-                repairing: oldRepairing,
-                labour: oldLabour,
-                samaan: oldSamaan
+                repairing: initialSeedData.repairing,
+                labour: initialSeedData.labour,
+                samaan: initialSeedData.samaan
               }
             };
           }
-          if (!systemData.parties) {
-            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "BAGDE"];
+          if (!systemData.workers || systemData.workers.length === 0) {
+            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
+          }
+          if (!systemData.parties || systemData.parties.length === 0) {
+            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"];
           }
         } catch(e) {
           console.error("Local parse error", e);
         }
       } else {
-        // Initialize fresh state with embedded data
         systemData.projectData["proj_default"] = initialSeedData;
         systemData.activityLogs = [
           { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import of Guru Shraddha 2.0 project." }
@@ -735,7 +761,6 @@
       localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
     }
 
-    // Helper to get active project's dataset
     function getActiveDataset() {
       const pid = systemData.activeProjectId || "proj_default";
       if (!systemData.projectData[pid]) {
@@ -790,7 +815,7 @@
     function renderProjectManagerList() {
       const container = document.getElementById('projectListContainer');
       container.innerHTML = '';
-      systemData.projects.forEach((p, idx) => {
+      systemData.projects.forEach((p) => {
         const div = document.createElement('div');
         div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
         div.innerHTML = `
@@ -808,7 +833,7 @@
     }
 
     function promptAddProject() {
-      const name = prompt("Naye Project ka naam daalein (e.g. SHOP RENOVATION, PLOT 4):");
+      const name = prompt("Naye Project ka naam daalein (e.g. SHOP RENOVATION, GODOWN 2):");
       if (!name || !name.trim()) return;
       const cleanName = name.trim().toUpperCase();
       const newId = "proj_" + Date.now();
@@ -857,6 +882,32 @@
       syncCloud();
     }
 
+    // --- DIRECT MEMBER MANAGEMENT (RENAME / ADD / EDIT PIN) ---
+    function openMemberManagerDirect() {
+      renderDirectMemberList();
+      document.getElementById('directMemberManagerModal').classList.remove('hidden');
+    }
+
+    function renderDirectMemberList() {
+      const container = document.getElementById('directMembersListContainer');
+      container.innerHTML = '';
+      systemData.members.forEach((m) => {
+        const row = document.createElement('div');
+        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:10px 12px; border-radius:8px; border:1px solid var(--border);";
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:14px;">${m.name}</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">PIN: <span style="color:var(--accent); font-weight:bold;">${m.pin}</span> (${m.role})</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
     // --- LABOUR AUTO-CALCULATE LOGIC ---
     function autoCalculateLabourTotal() {
       const lCount = parseFloat(document.getElementById('labCount').value) || 0;
@@ -870,11 +921,11 @@
       }
     }
 
-    // --- WORKER DYNAMIC MANAGEMENT ---
+    // --- WORKER DYNAMIC MANAGEMENT & DROPDOWNS ---
     function renderWorkerDropdowns() {
       const filterSelect = document.getElementById('workerGroupFilter');
       const formSelect = document.getElementById('labGroup');
-      const currentFilter = filterSelect.value || "ALL";
+      const current = filterSelect.value || "ALL";
 
       filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
       formSelect.innerHTML = '';
@@ -890,7 +941,7 @@
         opt2.textContent = w;
         formSelect.appendChild(opt2);
       });
-      filterSelect.value = currentFilter;
+      filterSelect.value = current;
     }
 
     function openWorkerManagerModal() {
@@ -938,7 +989,6 @@
       const clean = newName.trim().toUpperCase();
       systemData.workers[index] = clean;
       
-      // Update in all projects
       Object.keys(systemData.projectData).forEach(pid => {
         (systemData.projectData[pid].labour || []).forEach(l => {
           if (l.workerGroup === oldName) l.workerGroup = clean;
@@ -970,7 +1020,7 @@
       syncCloud();
     }
 
-    // --- SAMAAN PARTY MANAGEMENT ---
+    // --- SAMAAN PARTY MANAGEMENT & DROPDOWNS ---
     function renderPartyDropdowns() {
       const filterSelect = document.getElementById('partyFilterSelect');
       const formSelect = document.getElementById('samPartySelect');
@@ -1038,7 +1088,6 @@
       const clean = newName.trim().toUpperCase();
       systemData.parties[index] = clean;
       
-      // Update in all projects
       Object.keys(systemData.projectData).forEach(pid => {
         (systemData.projectData[pid].samaan || []).forEach(s => {
           if (s.refFrom === oldName) s.refFrom = clean;
@@ -1068,18 +1117,37 @@
       syncCloud();
     }
 
-    // --- REPAIRING & EXPENSES LOGIC ---
+    // --- REPAIRING & EXPENSES & INCOME LOGIC ---
     function renderRepairingTable() {
       const data = getActiveDataset();
       const tbody = document.getElementById('repairingTableBody');
       tbody.innerHTML = '';
-      let total = 0;
+      
+      let totalIncome = 0;
+      let totalExpense = 0;
+
       data.repairing.forEach(r => {
-        total += Number(r.amount) || 0;
+        const amt = Number(r.amount) || 0;
+        const type = r.type || "EXPENSE"; // default past records are expense
+
+        if (type === "INCOME") {
+          totalIncome += amt;
+        } else {
+          totalExpense += amt;
+        }
+
+        const typeBadge = type === "INCOME" 
+          ? `<span class="badge badge-paid">INCOME</span>` 
+          : `<span class="badge badge-pending">EXPENSE</span>`;
+
+        const amtColor = type === "INCOME" ? "var(--success)" : "var(--danger)";
+        const amtSign = type === "INCOME" ? "+₹" : "-₹";
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${r.date || '-'}</td>
-          <td style="font-weight:700; color:var(--accent);">₹${Number(r.amount).toLocaleString('en-IN')}</td>
+          <td>${typeBadge}</td>
+          <td style="font-weight:700; color:${amtColor};">${amtSign}${amt.toLocaleString('en-IN')}</td>
           <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--accent);">${r.ref || 'CASH'}</span></td>
           <td style="max-width:240px; white-space:normal;">${r.reason}</td>
           <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
@@ -1090,8 +1158,14 @@
         `;
         tbody.appendChild(tr);
       });
-      document.getElementById('repTotalCost').textContent = '₹' + total.toLocaleString('en-IN');
-      document.getElementById('repCount').textContent = data.repairing.length;
+
+      const netSurplus = totalIncome - totalExpense;
+      document.getElementById('repTotalIncome').textContent = '₹' + totalIncome.toLocaleString('en-IN');
+      document.getElementById('repTotalCost').textContent = '₹' + totalExpense.toLocaleString('en-IN');
+      
+      const netElem = document.getElementById('repNetBalance');
+      netElem.textContent = (netSurplus >= 0 ? '+₹' : '-₹') + Math.abs(netSurplus).toLocaleString('en-IN');
+      netElem.style.color = netSurplus >= 0 ? "var(--success)" : "var(--danger)";
     }
 
     function saveRepairRecord(e) {
@@ -1099,10 +1173,14 @@
       if (!requireActiveMember()) return;
       const data = getActiveDataset();
       const editId = document.getElementById('repEditId').value;
+      const type = document.getElementById('repType').value;
+      const amt = parseFloat(document.getElementById('repAmount').value);
+
       const record = {
         id: editId || 'rep_' + Date.now(),
+        type: type,
         date: document.getElementById('repDate').value,
-        amount: parseFloat(document.getElementById('repAmount').value),
+        amount: amt,
         ref: document.getElementById('repRef').value.trim(),
         reason: document.getElementById('repReason').value.trim(),
         updatedBy: currentMember.name,
@@ -1112,10 +1190,10 @@
       if (editId) {
         const idx = data.repairing.findIndex(x => x.id === editId);
         if (idx !== -1) data.repairing[idx] = record;
-        logAction("Edit Repair", `Edited: ₹${record.amount} (${record.reason})`);
+        logAction("Edit Entry", `Edited ${type}: ₹${record.amount} (${record.reason})`);
       } else {
         data.repairing.unshift(record);
-        logAction("Add Repair", `Added: ₹${record.amount} (${record.reason})`);
+        logAction("Add Entry", `Added ${type}: ₹${record.amount} (${record.reason})`);
       }
 
       saveLocal();
@@ -1132,6 +1210,7 @@
       const r = data.repairing.find(x => x.id === id);
       if (!r) return;
       document.getElementById('repEditId').value = r.id;
+      document.getElementById('repType').value = r.type || "EXPENSE";
       document.getElementById('repDate').value = r.date;
       document.getElementById('repAmount').value = r.amount;
       document.getElementById('repRef').value = r.ref;
@@ -1145,7 +1224,7 @@
       const data = getActiveDataset();
       const item = data.repairing.find(x => x.id === id);
       data.repairing = data.repairing.filter(x => x.id !== id);
-      logAction("Delete Repair", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
+      logAction("Delete Entry", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
       saveLocal();
       renderRepairingTable();
       renderLogs();
@@ -1358,13 +1437,12 @@
           <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
-            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
+            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️️</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
 
-      // Update Samaan Summary Cards
       document.getElementById('samTotalValue').textContent = '₹' + totalValue.toLocaleString('en-IN');
       document.getElementById('samTotalPaid').textContent = '₹' + totalPaid.toLocaleString('en-IN');
       document.getElementById('samTotalBalance').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
@@ -1449,9 +1527,9 @@
       let filename = `${pName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
 
       if (type === 'repairing') {
-        csvContent = "Date,Amount,Payment Ref,Reason,Logged By\n";
+        csvContent = "Date,Type,Amount,Payment Ref,Reason,Logged By\n";
         data.repairing.forEach(r => {
-          csvContent += `"${r.date}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
+          csvContent += `"${r.date}","${r.type||'EXPENSE'}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
         });
       } else if (type === 'labour_ledger') {
         csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
@@ -1640,13 +1718,14 @@
       systemData.members.push(newMember);
       saveLocal();
       renderMembersManagement();
+      renderDirectMemberList();
       syncCloud();
     }
 
     function editMemberDetails(id) {
       const m = systemData.members.find(x => x.id === id);
       if (!m) return;
-      const newName = prompt("Member ka naam:", m.name);
+      const newName = prompt("Member ka naya naam:", m.name);
       if (!newName || !newName.trim()) return;
       const newPin = prompt("Naya 4-Digit PIN:", m.pin);
       if (!newPin || newPin.trim().length !== 4 || !/^\d+$/.test(newPin)) {
@@ -1657,6 +1736,7 @@
       m.pin = newPin.trim();
       saveLocal();
       renderMembersManagement();
+      renderDirectMemberList();
       updateMemberUI();
       syncCloud();
     }
@@ -1666,6 +1746,7 @@
       systemData.members = systemData.members.filter(x => x.id !== id);
       saveLocal();
       renderMembersManagement();
+      renderDirectMemberList();
       syncCloud();
     }
 
@@ -1813,7 +1894,6 @@
     function mergeState(cloud) {
       if (!cloud) return;
 
-      // Merge Projects
       if (cloud.projects && Array.isArray(cloud.projects)) {
         const projMap = new Map();
         cloud.projects.forEach(p => projMap.set(p.id, p));
@@ -1821,26 +1901,22 @@
         systemData.projects = Array.from(projMap.values());
       }
 
-      // Merge Project Datasets
       if (cloud.projectData) {
         Object.keys(cloud.projectData).forEach(pid => {
           if (!systemData.projectData[pid]) systemData.projectData[pid] = { repairing: [], labour: [], samaan: [] };
           const cData = cloud.projectData[pid];
           const lData = systemData.projectData[pid];
 
-          // Repairing
           const repMap = new Map();
           (cData.repairing || []).forEach(x => repMap.set(x.id, x));
           (lData.repairing || []).forEach(x => repMap.set(x.id, x));
           lData.repairing = Array.from(repMap.values());
 
-          // Labour
           const labMap = new Map();
           (cData.labour || []).forEach(x => labMap.set(x.id, x));
           (lData.labour || []).forEach(x => labMap.set(x.id, x));
           lData.labour = Array.from(labMap.values());
 
-          // Samaan
           const samMap = new Map();
           (cData.samaan || []).forEach(x => samMap.set(x.id, x));
           (lData.samaan || []).forEach(x => samMap.set(x.id, x));
@@ -1848,11 +1924,9 @@
         });
       }
 
-      // Merge Workers & Parties
       if (cloud.workers) systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
       if (cloud.parties) systemData.parties = Array.from(new Set([...systemData.parties, ...cloud.parties]));
 
-      // Merge Members & Logs
       if (cloud.members) {
         const memberMap = new Map();
         cloud.members.forEach(x => memberMap.set(x.id, x));
