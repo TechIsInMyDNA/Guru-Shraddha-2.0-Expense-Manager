@@ -30,10 +30,10 @@
     /* Container & Layout */
     .container { max-width: 900px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
-    .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     
     /* Summary Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
     .stat-card { background: var(--card-inner); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
     .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
     .stat-val { font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px; }
@@ -52,6 +52,7 @@
     button.secondary { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); }
     button.danger { background: var(--danger); color: #fff; }
     button.success { background: var(--success); color: #fff; }
+    button.warning { background: var(--warning); color: #050b14; }
     button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
 
     /* Tables & Lists */
@@ -72,7 +73,10 @@
     .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; padding: 20px; }
     
     .hidden { display: none !important; }
-    .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #243456; color: var(--accent); }
+    .badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+    .badge-paid { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-pending { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-stock { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
     .log-item { background: var(--card-inner); padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 6px; border-left: 3px solid var(--accent); }
   </style>
 </head>
@@ -100,9 +104,9 @@
       <span id="lastSyncedTime">Last Sync: Never</span>
     </div>
 
-    <!-- TAB 1: REPAIRING & EXPENSES (Mapped to GURU_SHRADDHA PROJECT SHEET REPAIRING) -->
+    <!-- TAB 1: REPAIRING & EXPENSES -->
     <div id="tab-repairing" class="tab-content">
-      <div class="stats-grid" style="margin-bottom: 12px;">
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Repairing Cost</div>
           <div id="repTotalCost" class="stat-val" style="color:var(--accent);">₹0</div>
@@ -166,44 +170,45 @@
       </div>
     </div>
 
-    <!-- TAB 2: LABOUR ATTENDANCE (Mapped to GURU_SHRADDHA LABOUR BHIYA ATTENDANCE CHARGE SHEET) -->
+    <!-- TAB 2: LABOUR ATTENDANCE -->
     <div id="tab-labour" class="tab-content hidden">
-      <div class="stats-grid" style="margin-bottom: 12px;">
+      <!-- Live Dynamic Labour Summary Cards -->
+      <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Total Labour Wages</div>
-          <div id="labTotalAmount" class="stat-val" style="color:var(--warning);">₹0</div>
+          <div class="stat-label">Total Wages</div>
+          <div id="labTotalAmount" class="stat-val" style="color:#fff;">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Filtered Group</div>
-          <select id="workerGroupFilter" onchange="renderLabourTable()" style="padding:4px; font-size:11px; margin-top:4px;">
-            <option value="ALL">All Worker Sheets</option>
-            <option value="DESHKAR BHIYA">DESHKAR BHIYA</option>
-            <option value="TEJU BHIYA">TEJU BHIYA</option>
-            <option value="MANGLA BAI REZA SERVICES">MANGLA BAI REZA</option>
-            <option value="NANDU BHIYA">NANDU BHIYA</option>
-            <option value="DESHKARGS BHIYA">DESHKARGS BHIYA</option>
-          </select>
+          <div class="stat-label">Total Paid</div>
+          <div id="labPaidAmount" class="stat-val" style="color:var(--success);">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Pending</div>
+          <div id="labPendingAmount" class="stat-val" style="color:var(--danger);">₹0</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">
-          <span>Labour Haziri / Attendance Form</span>
-          <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span>Labour / Haziri</span>
+            <select id="workerGroupFilter" onchange="renderLabourTable()" style="padding:4px 8px; font-size:11px; width:auto;">
+              <option value="ALL">All Workers</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
+            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
+          </div>
         </div>
+
         <div id="labFormContainer" class="hidden">
           <form onsubmit="saveLabourRecord(event)">
             <input type="hidden" id="labEditId">
             <div class="grid-2">
               <div>
-                <label>Worker Sheet / Group</label>
-                <select id="labGroup" required>
-                  <option value="DESHKAR BHIYA">DESHKAR BHIYA</option>
-                  <option value="TEJU BHIYA">TEJU BHIYA</option>
-                  <option value="MANGLA BAI REZA SERVICES">MANGLA BAI REZA SERVICES</option>
-                  <option value="NANDU BHIYA">NANDU BHIYA</option>
-                  <option value="DESHKARGS BHIYA">DESHKARGS BHIYA</option>
-                </select>
+                <label>Select Worker</label>
+                <select id="labGroup" required></select>
               </div>
               <div>
                 <label>Date</label>
@@ -214,14 +219,14 @@
               <div>
                 <label>Labour (Qty / Chg)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labCount" placeholder="Qty" style="width:50%;">
                   <input type="number" id="labCharge" placeholder="₹" style="width:50%;">
                 </div>
               </div>
               <div>
                 <label>Mistri (Qty / Chg)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labMistriCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labMistriCount" placeholder="Qty" style="width:50%;">
                   <input type="number" id="labMistriCharge" placeholder="₹" style="width:50%;">
                 </div>
               </div>
@@ -232,13 +237,20 @@
             </div>
             <div class="grid-2">
               <div>
+                <label>Amount Status (Paid / Pending)</label>
+                <select id="labPaymentStatus" required>
+                  <option value="PAID">PAID (Clear)</option>
+                  <option value="PENDING">PENDING (Baaki Hai)</option>
+                </select>
+              </div>
+              <div>
                 <label>Hisaab Total / Settlement (₹)</label>
                 <input type="number" id="labHisaabTotal" placeholder="Final Paid Hisaab">
               </div>
-              <div>
-                <label>Remarks</label>
-                <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
-              </div>
+            </div>
+            <div class="grid-1">
+              <label>Remarks</label>
+              <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
             </div>
             <div style="display:flex; gap:8px;">
               <button type="submit" class="flex-1">Save Haziri</button>
@@ -251,11 +263,12 @@
           <table>
             <thead>
               <tr>
-                <th>Sheet Group</th>
+                <th>Worker</th>
                 <th>Date</th>
                 <th>Labour/Reza</th>
                 <th>Mistri</th>
                 <th>Total Chg</th>
+                <th>Status</th>
                 <th>Hisaab Total</th>
                 <th>Remarks</th>
                 <th>Action</th>
@@ -267,8 +280,24 @@
       </div>
     </div>
 
-    <!-- TAB 3: SAMAAN IN/OUT (Mapped to GURU_SHRADDHA SAMAAN IN_OUT) -->
+    <!-- TAB 3: SAMAAN IN/OUT -->
     <div id="tab-samaan" class="tab-content hidden">
+      <!-- Live Dynamic Samaan Summary Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Samaan In Count</div>
+          <div id="samInCount" class="stat-val" style="color:var(--success);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Samaan Out Count</div>
+          <div id="samOutCount" class="stat-val" style="color:var(--danger);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending / Issues</div>
+          <div id="samPendingCount" class="stat-val" style="color:var(--warning);">0</div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">
           <span>Samaan IN / OUT Tracker</span>
@@ -283,8 +312,12 @@
                 <input type="date" id="samDate" required>
               </div>
               <div>
-                <label>Reason / Note</label>
-                <input type="text" id="samReason" placeholder="e.g. OLD TANKI DAMAGE">
+                <label>Samaan Status</label>
+                <select id="samStatus" required>
+                  <option value="IN STOCK / RECEIVED">IN STOCK / RECEIVED</option>
+                  <option value="PENDING RETURN">PENDING RETURN / REPAIR</option>
+                  <option value="RETURNED / CLEARED">RETURNED / CLEARED</option>
+                </select>
               </div>
             </div>
             <div class="grid-2">
@@ -307,9 +340,15 @@
                 <input type="text" id="samRefTo" placeholder="Vendor / Person">
               </div>
             </div>
-            <div class="grid-1">
-              <label>Remarks</label>
-              <input type="text" id="samRemarks" placeholder="BAL, Complete, etc.">
+            <div class="grid-2">
+              <div>
+                <label>Reason / Note</label>
+                <input type="text" id="samReason" placeholder="e.g. OLD TANKI DAMAGE">
+              </div>
+              <div>
+                <label>Remarks</label>
+                <input type="text" id="samRemarks" placeholder="BAL, Complete, etc.">
+              </div>
             </div>
             <div style="display:flex; gap:8px;">
               <button type="submit" class="flex-1">Save Samaan</button>
@@ -323,6 +362,7 @@
             <thead>
               <tr>
                 <th>Date</th>
+                <th>Status</th>
                 <th>Samaan IN</th>
                 <th>From</th>
                 <th>Samaan OUT</th>
@@ -435,6 +475,21 @@
     </div>
   </div>
 
+  <!-- Worker Management Modal -->
+  <div id="workerManagerModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="card-title">
+        <span>Worker / Contractor Manager</span>
+        <button class="small" onclick="promptAddWorker()">+ New Worker</button>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Aap yaha naye workers add, unka naam edit ya delete kar sakte hain:</p>
+      <div id="workerListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="margin-top:14px;">
+        <button onclick="closeModal('workerManagerModal')" class="secondary" style="width:100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // System Constants
     const MASTER_PASSPHRASE = "GuruShraddha@144";
@@ -446,6 +501,13 @@
       repairing: [],
       samaan: [],
       labour: [],
+      workers: [
+        "DESHKAR BHIYA",
+        "TEJU BHIYA",
+        "MANGLA BAI REZA SERVICES",
+        "NANDU BHIYA",
+        "DESHKARGS BHIYA"
+      ],
       members: [
         { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
         { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
@@ -479,21 +541,28 @@
         {"id":"rep_18","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       samaan: [
-        {"id":"sam_3","date":"2025-01-25","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY ","refFrom":"SR TRADERS","samaanOut":"","refTo":"","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"sam_3","date":"2025-01-25","status":"IN STOCK / RECEIVED","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY ","refFrom":"SR TRADERS","samaanOut":"","refTo":"","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       labour: [
-        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"hisaabTotal":0,"remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":4200,"remarks":"PAINTING+CHILLAR WORKS (HISAAB DONE)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"hisaabTotal":0,"remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"hisaabTotal":7850,"remarks":"PALASTR C1G1 AND C1C2 + THEKEDAR 500","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_8","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"hisaabTotal":800,"remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_9","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":0,"remarks":"REZA HAZIRI + MISC 10","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1000,"remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"hisaabTotal":1570,"remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"paymentStatus":"PAID","hisaabTotal":4200,"remarks":"PAINTING+CHILLAR WORKS (HISAAB DONE)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"paymentStatus":"PAID","hisaabTotal":7850,"remarks":"PALASTR C1G1 AND C1C2 + THEKEDAR 500","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_8","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"paymentStatus":"PAID","hisaabTotal":800,"remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_9","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"REZA HAZIRI + MISC 10","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"paymentStatus":"PAID","hisaabTotal":1000,"remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"paymentStatus":"PAID","hisaabTotal":1570,"remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+      ],
+      workers: [
+        "DESHKAR BHIYA",
+        "TEJU BHIYA",
+        "MANGLA BAI REZA SERVICES",
+        "NANDU BHIYA",
+        "DESHKARGS BHIYA"
       ],
       members: [
         { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
@@ -509,6 +578,7 @@
     // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
+      renderWorkerDropdowns();
       renderAllViews();
       autoCheckMemberSession();
       if (getPatToken()) syncCloud();
@@ -519,6 +589,9 @@
       if (local) {
         try {
           systemData = JSON.parse(local);
+          if (!systemData.workers || systemData.workers.length === 0) {
+            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
+          }
         } catch(e) {
           console.error("Local parse error", e);
         }
@@ -544,6 +617,102 @@
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
+    // --- WORKER GROUP DYNAMIC MANAGEMENT ---
+    function renderWorkerDropdowns() {
+      const filterSelect = document.getElementById('workerGroupFilter');
+      const formSelect = document.getElementById('labGroup');
+      const currentFilter = filterSelect.value || "ALL";
+
+      filterSelect.innerHTML = '<option value="ALL">All Workers</option>';
+      formSelect.innerHTML = '';
+
+      systemData.workers.forEach(w => {
+        const opt1 = document.createElement('option');
+        opt1.value = w;
+        opt1.textContent = w;
+        filterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = w;
+        opt2.textContent = w;
+        formSelect.appendChild(opt2);
+      });
+
+      filterSelect.value = currentFilter;
+    }
+
+    function openWorkerManagerModal() {
+      renderWorkerManagerList();
+      document.getElementById('workerManagerModal').classList.remove('hidden');
+    }
+
+    function renderWorkerManagerList() {
+      const container = document.getElementById('workerListContainer');
+      container.innerHTML = '';
+      systemData.workers.forEach((w, index) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <strong style="color:var(--accent); font-size:13px;">${w}</strong>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editWorkerName(${index})">✏️ Edit</button>
+            <button class="small danger" onclick="deleteWorkerName(${index})">🗑️ Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddWorker() {
+      const name = prompt("Naye Worker / Mistri / Reza sheet ka naam daalein:");
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+      if (systemData.workers.includes(clean)) {
+        alert("Yeh worker pehle se maujood hai!");
+        return;
+      }
+      systemData.workers.push(clean);
+      logAction("Add Worker", `Added Worker category: ${clean}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      syncCloud();
+    }
+
+    function editWorkerName(index) {
+      const oldName = systemData.workers[index];
+      const newName = prompt("Worker ka naya naam:", oldName);
+      if (!newName || !newName.trim()) return;
+      const clean = newName.trim().toUpperCase();
+      systemData.workers[index] = clean;
+      // also update corresponding labour entries
+      systemData.labour.forEach(l => {
+        if (l.workerGroup === oldName) l.workerGroup = clean;
+      });
+      logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      renderLabourTable();
+      syncCloud();
+    }
+
+    function deleteWorkerName(index) {
+      const name = systemData.workers[index];
+      if (systemData.workers.length <= 1) {
+        alert("Kam se kam ek worker hona zaroori hai!");
+        return;
+      }
+      if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
+      systemData.workers.splice(index, 1);
+      logAction("Delete Worker", `Deleted worker: ${name}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      renderLabourTable();
+      syncCloud();
+    }
+
     // --- REPAIRING & EXPENSES LOGIC ---
     function renderRepairingTable() {
       const tbody = document.getElementById('repairingTableBody');
@@ -555,7 +724,7 @@
         tr.innerHTML = `
           <td>${r.date || '-'}</td>
           <td style="font-weight:700; color:var(--accent);">₹${Number(r.amount).toLocaleString('en-IN')}</td>
-          <td><span class="badge">${r.ref || 'CASH'}</span></td>
+          <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--accent);">${r.ref || 'CASH'}</span></td>
           <td style="max-width:240px; white-space:normal;">${r.reason}</td>
           <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
           <td>
@@ -624,39 +793,61 @@
       syncCloud();
     }
 
-    // --- LABOUR LOGIC ---
+    // --- LABOUR & WAGES LOGIC ---
     function renderLabourTable() {
       const filter = document.getElementById('workerGroupFilter').value;
       const tbody = document.getElementById('labourTableBody');
       tbody.innerHTML = '';
-      let total = 0;
+      let totalWages = 0;
+      let totalPaid = 0;
+      let totalPending = 0;
 
       systemData.labour.forEach(l => {
-        if (filter !== 'ALL' && l.workerGroup !== filter) return;
-        total += Number(l.totalCharge) || Number(l.hisaabTotal) || 0;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${l.workerGroup}</strong></td>
-          <td>${l.date || '-'}</td>
-          <td>${l.labourCount ? l.labourCount + ' (@' + (l.labourCharge || 0) + ')' : '-'}</td>
-          <td>${l.mistriCount ? l.mistriCount + ' (@' + (l.mistriCharge || 0) + ')' : '-'}</td>
-          <td style="color:var(--warning); font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
-          <td style="color:var(--success); font-weight:700;">${l.hisaabTotal ? '₹' + Number(l.hisaabTotal).toLocaleString('en-IN') : '-'}</td>
-          <td style="max-width:180px; white-space:normal;">${l.remarks || '-'}</td>
-          <td>
-            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
-            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+        const amt = Number(l.totalCharge) || Number(l.hisaabTotal) || 0;
+        const status = l.paymentStatus || 'PAID'; // default past records are paid
+
+        if (filter === 'ALL' || l.workerGroup === filter) {
+          totalWages += amt;
+          if (status === 'PAID') {
+            totalPaid += amt;
+          } else {
+            totalPending += amt;
+          }
+
+          const statusBadge = status === 'PAID' 
+            ? `<span class="badge badge-paid">PAID</span>`
+            : `<span class="badge badge-pending">PENDING</span>`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${l.workerGroup}</strong></td>
+            <td>${l.date || '-'}</td>
+            <td>${l.labourCount ? l.labourCount + ' (@' + (l.labourCharge || 0) + ')' : '-'}</td>
+            <td>${l.mistriCount ? l.mistriCount + ' (@' + (l.mistriCharge || 0) + ')' : '-'}</td>
+            <td style="color:#fff; font-weight:700;">₹${amt.toLocaleString('en-IN')}</td>
+            <td>${statusBadge}</td>
+            <td style="color:var(--accent); font-weight:700;">${l.hisaabTotal ? '₹' + Number(l.hisaabTotal).toLocaleString('en-IN') : '-'}</td>
+            <td style="max-width:180px; white-space:normal;">${l.remarks || '-'}</td>
+            <td>
+              <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+              <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
       });
-      document.getElementById('labTotalAmount').textContent = '₹' + total.toLocaleString('en-IN');
+
+      // Update Summary Cards
+      document.getElementById('labTotalAmount').textContent = '₹' + totalWages.toLocaleString('en-IN');
+      document.getElementById('labPaidAmount').textContent = '₹' + totalPaid.toLocaleString('en-IN');
+      document.getElementById('labPendingAmount').textContent = '₹' + totalPending.toLocaleString('en-IN');
     }
 
     function saveLabourRecord(e) {
       e.preventDefault();
       if (!requireActiveMember()) return;
       const editId = document.getElementById('labEditId').value;
+      const status = document.getElementById('labPaymentStatus').value;
       const record = {
         id: editId || 'lab_' + Date.now(),
         workerGroup: document.getElementById('labGroup').value,
@@ -666,6 +857,7 @@
         mistriCount: parseFloat(document.getElementById('labMistriCount').value) || 0,
         mistriCharge: parseFloat(document.getElementById('labMistriCharge').value) || 0,
         totalCharge: parseFloat(document.getElementById('labTotalCharge').value) || 0,
+        paymentStatus: status,
         hisaabTotal: parseFloat(document.getElementById('labHisaabTotal').value) || 0,
         remarks: document.getElementById('labRemarks').value.trim(),
         updatedBy: currentMember.name,
@@ -675,10 +867,10 @@
       if (editId) {
         const idx = systemData.labour.findIndex(x => x.id === editId);
         if (idx !== -1) systemData.labour[idx] = record;
-        logAction("Edit Labour", `Edited: ${record.workerGroup} haziri/payment`);
+        logAction("Edit Labour", `Edited: ${record.workerGroup} (${record.paymentStatus} ₹${record.totalCharge || record.hisaabTotal})`);
       } else {
         systemData.labour.unshift(record);
-        logAction("Add Labour", `Added: ${record.workerGroup} (₹${record.totalCharge || record.hisaabTotal})`);
+        logAction("Add Labour", `Added: ${record.workerGroup} (${record.paymentStatus} ₹${record.totalCharge || record.hisaabTotal})`);
       }
 
       saveLocal();
@@ -701,6 +893,7 @@
       document.getElementById('labMistriCount').value = l.mistriCount || '';
       document.getElementById('labMistriCharge').value = l.mistriCharge || '';
       document.getElementById('labTotalCharge').value = l.totalCharge || '';
+      document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
       document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
       document.getElementById('labRemarks').value = l.remarks || '';
       document.getElementById('labFormContainer').classList.remove('hidden');
@@ -722,16 +915,30 @@
     function renderSamaanTable() {
       const tbody = document.getElementById('samaanTableBody');
       tbody.innerHTML = '';
+      let inCount = 0;
+      let outCount = 0;
+      let pendingCount = 0;
+
       systemData.samaan.forEach(s => {
+        if (s.samaanIn && s.samaanIn.trim()) inCount++;
+        if (s.samaanOut && s.samaanOut.trim()) outCount++;
+        const status = s.status || "IN STOCK / RECEIVED";
+        if (status.includes("PENDING")) pendingCount++;
+
+        let badgeClass = "badge-stock";
+        if (status.includes("RETURNED")) badgeClass = "badge-paid";
+        if (status.includes("PENDING")) badgeClass = "badge-pending";
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${s.date || '-'}</td>
+          <td><span class="badge ${badgeClass}">${status}</span></td>
           <td style="color:var(--success); font-weight:600;">${s.samaanIn || '-'}</td>
           <td>${s.refFrom || '-'}</td>
           <td style="color:var(--danger); font-weight:600;">${s.samaanOut || '-'}</td>
           <td>${s.refTo || '-'}</td>
           <td>${s.reason || '-'}</td>
-          <td><span class="badge">${s.remarks || 'DONE'}</span></td>
+          <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border);">${s.remarks || 'DONE'}</span></td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
             <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
@@ -739,6 +946,11 @@
         `;
         tbody.appendChild(tr);
       });
+
+      // Update Samaan Cards
+      document.getElementById('samInCount').textContent = inCount;
+      document.getElementById('samOutCount').textContent = outCount;
+      document.getElementById('samPendingCount').textContent = pendingCount;
     }
 
     function saveSamaanRecord(e) {
@@ -748,6 +960,7 @@
       const record = {
         id: editId || 'sam_' + Date.now(),
         date: document.getElementById('samDate').value,
+        status: document.getElementById('samStatus').value,
         samaanIn: document.getElementById('samIn').value.trim(),
         refFrom: document.getElementById('samRefFrom').value.trim(),
         samaanOut: document.getElementById('samOut').value.trim(),
@@ -761,10 +974,10 @@
       if (editId) {
         const idx = systemData.samaan.findIndex(x => x.id === editId);
         if (idx !== -1) systemData.samaan[idx] = record;
-        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn || record.samaanOut}`);
+        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn || record.samaanOut} (${record.status})`);
       } else {
         systemData.samaan.unshift(record);
-        logAction("Add Samaan", `Added Samaan: ${record.samaanIn || record.samaanOut}`);
+        logAction("Add Samaan", `Added Samaan: ${record.samaanIn || record.samaanOut} (${record.status})`);
       }
 
       saveLocal();
@@ -781,6 +994,7 @@
       if (!s) return;
       document.getElementById('samEditId').value = s.id;
       document.getElementById('samDate').value = s.date;
+      document.getElementById('samStatus').value = s.status || "IN STOCK / RECEIVED";
       document.getElementById('samIn').value = s.samaanIn;
       document.getElementById('samRefFrom').value = s.refFrom;
       document.getElementById('samOut').value = s.samaanOut;
@@ -877,12 +1091,12 @@
     function renderMembersManagement() {
       const container = document.getElementById('membersList');
       container.innerHTML = '';
-      systemData.members.forEach((m, idx) => {
+      systemData.members.forEach((m) => {
         const row = document.createElement('div');
         row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);";
         row.innerHTML = `
           <div>
-            <strong>${m.name}</strong> <span class="badge" style="margin-left:6px;">PIN: ${m.pin}</span>
+            <strong>${m.name}</strong> <span class="badge" style="background:#243456; color:var(--accent); margin-left:6px;">PIN: ${m.pin}</span>
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editMemberDetails('${m.id}')">Edit PIN</button>
@@ -995,7 +1209,7 @@
 
     async function decryptPayload(packet, passphrase) {
       if (!packet.cipher || !packet.iv || !packet.salt) {
-        return packet; // fallback if plain JSON
+        return packet;
       }
       const salt = Uint8Array.from(atob(packet.salt), c => c.charCodeAt(0));
       const iv = Uint8Array.from(atob(packet.iv), c => c.charCodeAt(0));
@@ -1014,11 +1228,9 @@
       }
 
       updateSyncBadge("Syncing...", "var(--accent)");
-      document.getElementById('syncIcon').style.display = 'inline-block';
       const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
       try {
-        // 1. Fetch current cloud state with SHA
         const getRes = await fetch(url, {
           headers: {
             'Authorization': `token ${token}`,
@@ -1038,19 +1250,16 @@
             cloudData = JSON.parse(rawContent);
           }
 
-          // 2. Conflict-Free Merge
           mergeState(cloudData);
         } else if (getRes.status === 404) {
-          fileSha = null; // New file creation
+          fileSha = null;
         } else {
           throw new Error(`Fetch error HTTP ${getRes.status}`);
         }
 
-        // 3. Encrypt system state before cloud push
         const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
         const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
 
-        // 4. Commit push to GitHub
         const putRes = await fetch(url, {
           method: 'PUT',
           headers: {
@@ -1069,6 +1278,7 @@
           const putData = await putRes.json();
           fileSha = putData.content.sha;
           saveLocal();
+          renderWorkerDropdowns();
           renderAllViews();
           updateSyncBadge("Synced Live", "var(--success)");
           document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
@@ -1083,6 +1293,12 @@
 
     function mergeState(cloud) {
       if (!cloud) return;
+
+      // Merge Workers
+      if (cloud.workers && Array.isArray(cloud.workers)) {
+        systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
+      }
+
       // Merge Repairing by ID
       const repMap = new Map();
       (cloud.repairing || []).forEach(x => repMap.set(x.id, x));
