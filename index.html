@@ -128,7 +128,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="repCardSection">
         <div class="card-title">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <span>Book Income & Expenses</span>
@@ -138,11 +138,15 @@
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('repairing')">📥 Export Excel</button>
-            <button class="small" onclick="toggleForm('repFormContainer')">+ New Entry</button>
+            <button class="small" onclick="openNewExpenseForm()">+ New Entry</button>
           </div>
         </div>
 
-        <div id="repFormContainer" class="hidden">
+        <div id="repFormContainer" class="hidden" style="background:var(--card-inner); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--accent);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong id="repFormHeaderTitle" style="color:var(--accent); font-size:13px;">Naya Entry / Kharcha</strong>
+            <button type="button" class="small secondary" onclick="closeExpenseForm()">✕ Close</button>
+          </div>
           <form onsubmit="saveRepairRecord(event)">
             <input type="hidden" id="repEditId">
             <div class="grid-4">
@@ -176,9 +180,9 @@
                 <input type="text" id="repReason" placeholder="Parda holder, Tanki fit, Rent received, etc." required>
               </div>
             </div>
-            <div style="display:flex; gap:8px;">
-              <button type="submit" class="flex-1">Save Entry</button>
-              <button type="button" class="secondary" onclick="toggleForm('repFormContainer')">Cancel</button>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="submit" id="repSubmitBtn" class="flex-1">Save Entry</button>
+              <button type="button" class="secondary" onclick="closeExpenseForm()">Cancel</button>
             </div>
           </form>
         </div>
@@ -225,7 +229,7 @@
         </div>
       </div>
 
-      <div id="labFormCard" class="card hidden" style="border:1px solid var(--accent); margin-bottom: 12px;">
+      <div id="labFormCard" class="card hidden" style="border:1px solid var(--accent); margin-bottom: 12px; background:var(--card-inner);">
         <div class="card-title">
           <span id="labFormTitle">Mark Haziri / Work Record</span>
           <button class="small secondary" onclick="closeLabourForm()">✕ Close</button>
@@ -280,7 +284,7 @@
             <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
           </div>
           <div style="display:flex; gap:8px;">
-            <button type="submit" class="flex-1">Save Record</button>
+            <button type="submit" id="labSubmitBtn" class="flex-1">Save Record</button>
             <button type="button" class="secondary" onclick="closeLabourForm()">Cancel</button>
           </div>
         </form>
@@ -297,7 +301,7 @@
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_ledger')">📥 Export Excel</button>
             <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
-            <button class="small" onclick="openLabourForm()">+ Mark Haziri</button>
+            <button class="small" onclick="openLabourForm(false)">+ Mark Haziri</button>
           </div>
         </div>
 
@@ -325,7 +329,7 @@
           <span>Labour & Mistri Attendance Sheet</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_attendance')">📥 Export Excel</button>
-            <button class="small" onclick="openLabourForm()">+ Mark Haziri</button>
+            <button class="small" onclick="openLabourForm(false)">+ Mark Haziri</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -364,7 +368,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="samCardSection">
         <div class="card-title">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <span>Samaan Party Running Ledger</span>
@@ -375,11 +379,15 @@
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="openPartyManagerModal()">🏢 Manage Parties</button>
             <button class="small secondary" onclick="exportTableToCSV('samaan_ledger')">📥 Export Excel</button>
-            <button class="small" onclick="toggleForm('samFormContainer')">+ New Samaan Entry</button>
+            <button class="small" onclick="openNewSamaanForm()">+ New Samaan Entry</button>
           </div>
         </div>
 
-        <div id="samFormContainer" class="hidden">
+        <div id="samFormContainer" class="hidden" style="background:var(--card-inner); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--accent);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong id="samFormHeaderTitle" style="color:var(--accent); font-size:13px;">Naya Samaan Entry</strong>
+            <button type="button" class="small secondary" onclick="closeSamaanForm()">✕ Close</button>
+          </div>
           <form onsubmit="saveSamaanRecord(event)">
             <input type="hidden" id="samEditId">
             <div class="grid-3">
@@ -428,9 +436,9 @@
               <label>Reason / Remarks</label>
               <input type="text" id="samReason" placeholder="OLD DAMAGE, BAL, Bill No, etc.">
             </div>
-            <div style="display:flex; gap:8px;">
-              <button type="submit" class="flex-1">Save Samaan Record</button>
-              <button type="button" class="secondary" onclick="toggleForm('samFormContainer')">Cancel</button>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="submit" id="samSubmitBtn" class="flex-1">Save Samaan Record</button>
+              <button type="button" class="secondary" onclick="closeSamaanForm()">Cancel</button>
             </div>
           </form>
         </div>
@@ -621,14 +629,14 @@
   </div>
 
   <script>
-    // HARDCODED CONSTANTS
+    // HARDCODED SECURE CONSTANTS
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_OWNER = "TechIsInMyDNA";
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
 
-    // 100% COMPLETE EXCEL SEED DATA
+    // 100% COMPLETE EXCEL SEED DATA (All 16 Repairs, 28 Labour Entries, 1 Samaan Entry)
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
@@ -718,502 +726,6 @@
     let isSyncing = false;
     let syncIntervalTimer = null;
 
-    // --- ESSENTIAL CORE HELPERS (DEFINED AT THE TOP) ---
-    function getActiveDataset() {
-      const bid = systemData.activeBookId || "book_gs2";
-      if (!systemData.bookData[bid]) {
-        systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
-      }
-      return systemData.bookData[bid];
-    }
-
-    function getActiveBookObj() {
-      return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
-    }
-
-    function logAction(action, details) {
-      const logEntry = {
-        id: "log_" + Date.now(),
-        action: action,
-        book: getActiveBookObj().name,
-        performedBy: currentMember ? currentMember.name : "Unknown",
-        timestamp: new Date().toLocaleString('en-IN'),
-        details: details
-      };
-      systemData.activityLogs.unshift(logEntry);
-      if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
-    }
-
-    function renderAllViews() {
-      renderRepairingTable();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      renderSamaanTable();
-      renderLogs();
-    }
-
-    // --- REPAIRING & EXPENSES ---
-    function renderRepairingTable() {
-      const data = getActiveDataset();
-      const catFilter = document.getElementById('expenseCategoryFilter').value;
-      const tbody = document.getElementById('repairingTableBody');
-      tbody.innerHTML = '';
-      
-      let totalIncome = 0;
-      let totalExpense = 0;
-
-      (data.repairing || []).forEach(r => {
-        const amt = Number(r.amount) || 0;
-        const type = r.type || "EXPENSE";
-        const cat = r.category || "General Expense";
-
-        if (catFilter === 'ALL' || cat === catFilter) {
-          if (type === "INCOME") {
-            totalIncome += amt;
-          } else {
-            totalExpense += amt;
-          }
-
-          const typeBadge = type === "INCOME" 
-            ? `<span class="badge badge-paid">INCOME</span>` 
-            : `<span class="badge badge-pending">EXPENSE</span>`;
-
-          const amtColor = type === "INCOME" ? "var(--success)" : "var(--danger)";
-          const amtSign = type === "INCOME" ? "+₹" : "-₹";
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${r.date || '-'}</td>
-            <td>${typeBadge}</td>
-            <td><span class="badge" style="background:#1e293b; color:var(--accent);">${cat}</span></td>
-            <td style="font-weight:700; color:${amtColor};">${amtSign}${amt.toLocaleString('en-IN')}</td>
-            <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--text);">${r.ref || 'CASH'}</span></td>
-            <td style="max-width:240px; white-space:normal;">${r.reason}</td>
-            <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
-            <td>
-              <button class="small secondary" onclick="editRepair('${r.id}')">✏️</button>
-              <button class="small danger" onclick="deleteRepair('${r.id}')">🗑️</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        }
-      });
-
-      const netSurplus = totalIncome - totalExpense;
-      document.getElementById('repTotalIncome').textContent = '₹' + totalIncome.toLocaleString('en-IN');
-      document.getElementById('repTotalCost').textContent = '₹' + totalExpense.toLocaleString('en-IN');
-      
-      const netElem = document.getElementById('repNetBalance');
-      netElem.textContent = (netSurplus >= 0 ? '+₹' : '-₹') + Math.abs(netSurplus).toLocaleString('en-IN');
-      netElem.style.color = netSurplus >= 0 ? "var(--success)" : "var(--danger)";
-    }
-
-    function saveRepairRecord(e) {
-      e.preventDefault();
-      if (!requireActiveMember()) return;
-      const data = getActiveDataset();
-      const editId = document.getElementById('repEditId').value;
-      const type = document.getElementById('repType').value;
-      const cat = document.getElementById('repCategory').value;
-      const amt = parseFloat(document.getElementById('repAmount').value);
-
-      const record = {
-        id: editId || 'rep_' + Date.now(),
-        type: type,
-        category: cat,
-        date: document.getElementById('repDate').value,
-        amount: amt,
-        ref: document.getElementById('repRef').value.trim(),
-        reason: document.getElementById('repReason').value.trim(),
-        updatedBy: currentMember.name,
-        updatedAt: new Date().toLocaleString('en-IN')
-      };
-
-      if (editId) {
-        const idx = data.repairing.findIndex(x => x.id === editId);
-        if (idx !== -1) data.repairing[idx] = record;
-        logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
-      } else {
-        data.repairing.unshift(record);
-        logAction("Add Entry", `Added ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
-      }
-
-      saveLocal();
-      renderRepairingTable();
-      renderLogs();
-      toggleForm('repFormContainer');
-      document.getElementById('repEditId').value = '';
-      e.target.reset();
-      syncCloud();
-    }
-
-    function editRepair(id) {
-      const data = getActiveDataset();
-      const r = data.repairing.find(x => x.id === id);
-      if (!r) return;
-      document.getElementById('repEditId').value = r.id;
-      document.getElementById('repType').value = r.type || "EXPENSE";
-      document.getElementById('repCategory').value = r.category || "General Expense";
-      document.getElementById('repDate').value = r.date;
-      document.getElementById('repAmount').value = r.amount;
-      document.getElementById('repRef').value = r.ref;
-      document.getElementById('repReason').value = r.reason;
-      document.getElementById('repFormContainer').classList.remove('hidden');
-    }
-
-    function deleteRepair(id) {
-      if (!requireActiveMember()) return;
-      if (!confirm("Entry delete karni hai?")) return;
-      const data = getActiveDataset();
-      const item = data.repairing.find(x => x.id === id);
-      
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
-
-      data.repairing = data.repairing.filter(x => x.id !== id);
-      logAction("Delete Entry", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
-      saveLocal();
-      renderRepairingTable();
-      renderLogs();
-      syncCloud();
-    }
-
-    // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
-    function renderLabourLedgerTable() {
-      const data = getActiveDataset();
-      const filter = document.getElementById('workerGroupFilter').value;
-      const tbody = document.getElementById('labourLedgerTableBody');
-      tbody.innerHTML = '';
-      
-      let totalEarned = 0;
-      let totalPaid = 0;
-      let runningBalance = 0;
-
-      const records = (data.labour || [])
-        .filter(l => filter === 'ALL' || l.workerGroup === filter)
-        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
-
-      records.forEach(l => {
-        const earned = Number(l.totalCharge) || 0;
-        const paid = Number(l.hisaabTotal) || (l.paymentStatus === 'PAID' ? earned : 0);
-        
-        totalEarned += earned;
-        totalPaid += paid;
-        runningBalance += (earned - paid);
-
-        const statusBadge = runningBalance <= 0 
-          ? `<span class="badge badge-paid">CLEARED (0)</span>`
-          : `<span class="badge badge-pending">₹${runningBalance} PENDING</span>`;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${l.date || '-'}</td>
-          <td><strong>${l.workerGroup}</strong></td>
-          <td style="max-width:200px; white-space:normal;">${l.remarks || (l.labourCount ? l.labourCount + ' Labour' : 'Work')}</td>
-          <td style="color:#fff; font-weight:600;">${earned > 0 ? '+₹' + earned.toLocaleString('en-IN') : '-'}</td>
-          <td style="color:var(--success); font-weight:600;">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
-          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
-          <td>${statusBadge}</td>
-          <td>
-            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
-            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('labTotalAmount').textContent = '₹' + totalEarned.toLocaleString('en-IN');
-      document.getElementById('labPaidAmount').textContent = '₹' + totalPaid.toLocaleString('en-IN');
-      document.getElementById('labPendingAmount').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
-    }
-
-    function renderLabourAttendanceTable() {
-      const data = getActiveDataset();
-      const tbody = document.getElementById('labourAttendanceTableBody');
-      tbody.innerHTML = '';
-      
-      const records = [...(data.labour || [])].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
-      records.forEach(l => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${l.date || '-'}</strong></td>
-          <td style="color:var(--accent); font-weight:600;">${l.workerGroup}</td>
-          <td>${l.labourCount ? `${l.labourCount} (@₹${l.labourCharge || 0})` : '-'}</td>
-          <td>${l.mistriCount ? `${l.mistriCount} (@₹${l.mistriCharge || 0})` : '-'}</td>
-          <td style="font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
-          <td style="max-width:240px; white-space:normal;">${l.remarks || '-'}</td>
-          <td>
-            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
-            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function openLabourForm(isEdit = false) {
-      const formCard = document.getElementById('labFormCard');
-      formCard.classList.remove('hidden');
-      if (!isEdit) {
-        document.getElementById('labEditId').value = '';
-        document.getElementById('labFormTitle').textContent = "Mark Haziri / Work Record";
-        document.getElementById('labDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('labCount').value = '';
-        document.getElementById('labCharge').value = '';
-        document.getElementById('labMistriCount').value = '';
-        document.getElementById('labMistriCharge').value = '';
-        document.getElementById('labTotalCharge').value = '';
-        document.getElementById('labHisaabTotal').value = '';
-        document.getElementById('labRemarks').value = '';
-        document.getElementById('labPaymentStatus').value = 'PAID';
-      }
-      formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function closeLabourForm() {
-      document.getElementById('labFormCard').classList.add('hidden');
-    }
-
-    function autoCalculateLabourTotal() {
-      const lCount = parseFloat(document.getElementById('labCount').value) || 0;
-      const lRate = parseFloat(document.getElementById('labCharge').value) || 0;
-      const mCount = parseFloat(document.getElementById('labMistriCount').value) || 0;
-      const mRate = parseFloat(document.getElementById('labMistriCharge').value) || 0;
-
-      const total = (lCount * lRate) + (mCount * mRate);
-      if (total > 0 || lCount > 0 || mCount > 0) {
-        document.getElementById('labTotalCharge').value = total;
-      }
-    }
-
-    function saveLabourRecord(e) {
-      e.preventDefault();
-      if (!requireActiveMember()) return;
-      const data = getActiveDataset();
-      const editId = document.getElementById('labEditId').value;
-      const earned = parseFloat(document.getElementById('labTotalCharge').value) || 0;
-      const hisaab = parseFloat(document.getElementById('labHisaabTotal').value) || 0;
-      const status = document.getElementById('labPaymentStatus').value;
-
-      const record = {
-        id: editId || 'lab_' + Date.now(),
-        workerGroup: document.getElementById('labGroup').value,
-        date: document.getElementById('labDate').value,
-        labourCount: parseFloat(document.getElementById('labCount').value) || 0,
-        labourCharge: parseFloat(document.getElementById('labCharge').value) || 0,
-        mistriCount: parseFloat(document.getElementById('labMistriCount').value) || 0,
-        mistriCharge: parseFloat(document.getElementById('labMistriCharge').value) || 0,
-        totalCharge: earned,
-        hisaabTotal: hisaab,
-        paymentStatus: status,
-        remarks: document.getElementById('labRemarks').value.trim(),
-        updatedBy: currentMember.name,
-        updatedAt: new Date().toLocaleString('en-IN')
-      };
-
-      if (editId) {
-        const idx = data.labour.findIndex(x => x.id === editId);
-        if (idx !== -1) data.labour[idx] = record;
-        logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
-      } else {
-        data.labour.unshift(record);
-        logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
-      }
-
-      saveLocal();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      renderLogs();
-      closeLabourForm();
-      document.getElementById('labEditId').value = '';
-      e.target.reset();
-      syncCloud();
-    }
-
-    function editLabour(id) {
-      const data = getActiveDataset();
-      const l = data.labour.find(x => x.id === id);
-      if (!l) return;
-      document.getElementById('labEditId').value = l.id;
-      document.getElementById('labFormTitle').textContent = "Edit Haziri Record";
-      document.getElementById('labGroup').value = l.workerGroup;
-      document.getElementById('labDate').value = l.date || '';
-      document.getElementById('labCount').value = l.labourCount || '';
-      document.getElementById('labCharge').value = l.labourCharge || '';
-      document.getElementById('labMistriCount').value = l.mistriCount || '';
-      document.getElementById('labMistriCharge').value = l.mistriCharge || '';
-      document.getElementById('labTotalCharge').value = l.totalCharge || '';
-      document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
-      document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
-      document.getElementById('labRemarks').value = l.remarks || '';
-      openLabourForm(true);
-    }
-
-    function deleteLabour(id) {
-      if (!requireActiveMember()) return;
-      if (!confirm("Entry delete karni hai?")) return;
-      const data = getActiveDataset();
-      const item = data.labour.find(x => x.id === id);
-
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
-
-      data.labour = data.labour.filter(x => x.id !== id);
-      logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
-      saveLocal();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      renderLogs();
-      syncCloud();
-    }
-
-    function switchLabourSubView(view) {
-      const btnLedger = document.getElementById('subBtnLedger');
-      const btnAttendance = document.getElementById('subBtnAttendance');
-      const vLedger = document.getElementById('labourLedgerView');
-      const vAttendance = document.getElementById('labourAttendanceView');
-
-      if (view === 'ledger') {
-        btnLedger.classList.add('active');
-        btnAttendance.classList.remove('active');
-        vLedger.classList.remove('hidden');
-        vAttendance.classList.add('hidden');
-        renderLabourLedgerTable();
-      } else {
-        btnAttendance.classList.add('active');
-        btnLedger.classList.remove('active');
-        vAttendance.classList.remove('hidden');
-        vLedger.classList.add('hidden');
-        renderLabourAttendanceTable();
-      }
-    }
-
-    // --- SAMAAN PARTY RUNNING LEDGER ---
-    function renderSamaanTable() {
-      const data = getActiveDataset();
-      const filterParty = document.getElementById('partyFilterSelect').value;
-      const tbody = document.getElementById('samaanTableBody');
-      tbody.innerHTML = '';
-      
-      let totalValue = 0;
-      let totalPaid = 0;
-      let runningBalance = 0;
-
-      const records = (data.samaan || [])
-        .filter(s => filterParty === 'ALL' || s.refFrom === filterParty)
-        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
-
-      records.forEach(s => {
-        const val = Number(s.amount) || 0;
-        const paid = Number(s.paidAmount) || (s.status.includes('CLEARED') ? val : 0);
-
-        totalValue += val;
-        totalPaid += paid;
-        runningBalance += (val - paid);
-
-        let badgeClass = "badge-neutral";
-        if (runningBalance <= 0 || s.status.includes("RETURNED") || s.status.includes("CLEARED")) badgeClass = "badge-paid";
-        if (runningBalance > 0 && s.status.includes("PENDING")) badgeClass = "badge-pending";
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${s.date || '-'}</strong></td>
-          <td style="color:var(--accent); font-weight:600;">${s.refFrom || '-'}</td>
-          <td>${s.samaanIn || '-'}</td>
-          <td style="font-weight:700; color:#fff;">${val > 0 ? '+₹' + val.toLocaleString('en-IN') : '-'}</td>
-          <td style="font-weight:700; color:var(--success);">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
-          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
-          <td><span class="badge ${badgeClass}">${s.status || 'RECEIVED'}</span></td>
-          <td>${s.refTo || '-'}</td>
-          <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
-          <td>
-            <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
-            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('samTotalValue').textContent = '₹' + totalValue.toLocaleString('en-IN');
-      document.getElementById('samTotalPaid').textContent = '₹' + totalPaid.toLocaleString('en-IN');
-      document.getElementById('samTotalBalance').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
-    }
-
-    function saveSamaanRecord(e) {
-      e.preventDefault();
-      if (!requireActiveMember()) return;
-      const data = getActiveDataset();
-      const editId = document.getElementById('samEditId').value;
-      const val = parseFloat(document.getElementById('samAmount').value) || 0;
-      const paid = parseFloat(document.getElementById('samPaid').value) || 0;
-
-      const record = {
-        id: editId || 'sam_' + Date.now(),
-        date: document.getElementById('samDate').value,
-        refFrom: document.getElementById('samPartySelect').value.trim(),
-        samaanIn: document.getElementById('samIn').value.trim(),
-        amount: val,
-        paidAmount: paid,
-        samaanOut: document.getElementById('samOut').value.trim(),
-        refTo: document.getElementById('samRefTo').value.trim(),
-        status: document.getElementById('samStatus').value,
-        reason: document.getElementById('samReason').value.trim(),
-        updatedBy: currentMember.name,
-        updatedAt: new Date().toLocaleString('en-IN')
-      };
-
-      if (editId) {
-        const idx = data.samaan.findIndex(x => x.id === editId);
-        if (idx !== -1) data.samaan[idx] = record;
-        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
-      } else {
-        data.samaan.unshift(record);
-        logAction("Add Samaan", `Added Samaan: ${record.samaanIn} (${record.refFrom} ₹${val})`);
-      }
-
-      saveLocal();
-      renderSamaanTable();
-      renderLogs();
-      toggleForm('samFormContainer');
-      document.getElementById('samEditId').value = '';
-      e.target.reset();
-      syncCloud();
-    }
-
-    function editSamaan(id) {
-      const data = getActiveDataset();
-      const s = data.samaan.find(x => x.id === id);
-      if (!s) return;
-      document.getElementById('samEditId').value = s.id;
-      document.getElementById('samDate').value = s.date;
-      document.getElementById('samPartySelect').value = s.refFrom || '';
-      document.getElementById('samIn').value = s.samaanIn || '';
-      document.getElementById('samAmount').value = s.amount || '';
-      document.getElementById('samPaid').value = s.paidAmount || '';
-      document.getElementById('samOut').value = s.samaanOut || '';
-      document.getElementById('samRefTo').value = s.refTo || '';
-      document.getElementById('samStatus').value = s.status || 'RECEIVED / IN USE';
-      document.getElementById('samReason').value = s.reason || '';
-      document.getElementById('samFormContainer').classList.remove('hidden');
-    }
-
-    function deleteSamaan(id) {
-      if (!requireActiveMember()) return;
-      if (!confirm("Samaan entry delete karni hai?")) return;
-      const data = getActiveDataset();
-      const item = data.samaan.find(x => x.id === id);
-
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
-
-      data.samaan = data.samaan.filter(x => x.id !== id);
-      logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
-      saveLocal();
-      renderSamaanTable();
-      renderLogs();
-      syncCloud();
-    }
-
     // --- APPLICATION STARTUP SEQUENCE ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
@@ -1267,7 +779,6 @@
 
           if (!systemData.deletedIds) systemData.deletedIds = [];
 
-          // GUARANTEE: If active book or book_gs2 has 0 repairs, reload seed
           const curData = getActiveDataset();
           if (!curData.repairing || curData.repairing.length === 0) {
             systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
@@ -1650,7 +1161,7 @@
       }
     }
 
-    // --- UI UTILS & HELPERS ---
+    // --- UI HELPERS ---
     function renderExpenseCategoryDropdowns() {
       const formSelect = document.getElementById('repCategory');
       const filterSelect = document.getElementById('expenseCategoryFilter');
@@ -1747,7 +1258,7 @@
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
-            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️️</button>` : ''}
           </div>
         `;
         container.appendChild(row);
