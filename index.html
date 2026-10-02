@@ -22,29 +22,24 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
-    /* Top Bar */
     .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .book-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
     .book-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
     .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
-    /* Container & Cards */
     .container { max-width: 960px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
     .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     
-    /* Sub-tabs */
     .sub-nav { display: flex; gap: 6px; background: #0c1222; padding: 4px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); overflow-x: auto; }
     .sub-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
     .sub-btn.active { background: var(--card-inner); color: var(--accent); font-weight: 700; }
 
-    /* Summary Stats Grid */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
     .stat-card { background: var(--card-inner); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
     .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
     .stat-val { font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px; }
 
-    /* Inputs & Forms */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
@@ -53,7 +48,6 @@
     input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
     label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: block; }
     
-    /* Buttons */
     button { background: var(--accent); color: #050b14; font-weight: 600; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
     button:hover { opacity: 0.9; }
     button.secondary { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); }
@@ -62,26 +56,22 @@
     button.warning { background: var(--warning); color: #050b14; }
     button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
 
-    /* Tables */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
     th { background: #0c1222; padding: 10px; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
     td { padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     tr:nth-child(even) { background: rgba(255,255,255,0.015); }
     
-    /* Badges */
     .badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
     .badge-paid { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
     .badge-pending { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
     .badge-neutral { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
 
-    /* Bottom Navigation Bar */
     .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(19, 27, 46, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; height: 100%; border: none; background: none; gap: 4px; }
     .nav-item.active { color: var(--accent); font-weight: 700; }
     .nav-item svg { width: 18px; height: 18px; stroke-width: 2; }
 
-    /* Modals & Overlays */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 20px; }
     .hidden { display: none !important; }
@@ -115,8 +105,6 @@
 
   <!-- Main Container -->
   <div class="container">
-    
-    <!-- Sync Status Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
       <span id="syncStatus">Status: Live 🟢</span>
       <span id="activeBookDisplay" style="color:var(--accent); font-weight:bold;">Book: GURU SHRADDHA 2.0</span>
@@ -237,7 +225,6 @@
         </div>
       </div>
 
-      <!-- COMMON HAZIRI FORM -->
       <div id="labFormCard" class="card hidden" style="border:1px solid var(--accent); margin-bottom: 12px;">
         <div class="card-title">
           <span id="labFormTitle">Mark Haziri / Work Record</span>
@@ -299,7 +286,6 @@
         </form>
       </div>
 
-      <!-- VIEW 1: RUNNING LEDGER -->
       <div id="labourLedgerView" class="card">
         <div class="card-title">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -334,7 +320,6 @@
         </div>
       </div>
 
-      <!-- VIEW 2: SIMPLE ATTENDANCE SHEET -->
       <div id="labourAttendanceView" class="card hidden">
         <div class="card-title">
           <span>Labour & Mistri Attendance Sheet</span>
@@ -482,7 +467,6 @@
 
     <!-- TAB 5: MEMBERS & MASTER CONFIG -->
     <div id="tab-settings" class="tab-content hidden">
-      <!-- Hidden Secure Master Password Gate -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings unlock karne ke liye Master Passphrase daalein:</p>
@@ -492,7 +476,6 @@
         <button onclick="unlockMasterGate()" style="width:100%;">Verify & Unlock</button>
       </div>
 
-      <!-- Unlocked Settings Panel -->
       <div id="masterConfigSection" class="hidden">
         <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
           <div class="card-title">📦 Complete System Backup & Restore</div>
@@ -622,7 +605,7 @@
     </div>
   </div>
 
-  <!-- Book Manager Modal (ADD, EDIT/RENAME, DELETE BOOKS) -->
+  <!-- Book Manager Modal -->
   <div id="bookManagerModal" class="modal-overlay hidden">
     <div class="modal-box">
       <div class="card-title">
@@ -638,14 +621,14 @@
   </div>
 
   <script>
-    // HARDCODED CONSTANTS
+    // HARDCODED SECURE CONSTANTS
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_OWNER = "TechIsInMyDNA";
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
 
-    // 100% COMPLETE EXCEL SEED DATA (All 16 Repairs, 24 Labour Entries, 1 Samaan Entry)
+    // 100% COMPLETE EXCEL SEED DATA
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
@@ -698,6 +681,7 @@
 
     let systemData = {
       activeBookId: "book_gs2",
+      deletedIds: [], // Tombstone Registry: Deleted IDs never resurrect!
       books: [
         { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
         { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
@@ -731,7 +715,7 @@
 
     let currentMember = null;
     let fileSha = null;
-    let isSyncing = false; // Mutex lock to stop 409 collisions
+    let isSyncing = false;
     let syncIntervalTimer = null;
 
     // --- APPLICATION STARTUP ---
@@ -759,7 +743,6 @@
 
     function startRealTimePolling() {
       if (syncIntervalTimer) clearInterval(syncIntervalTimer);
-      // Auto-poll silently every 5 seconds
       syncIntervalTimer = setInterval(() => {
         if (getPatToken() && !isSyncing) {
           syncCloudSilent();
@@ -785,6 +768,8 @@
               "book_regular": { repairing: [], labour: [], samaan: [] }
             };
           }
+
+          if (!systemData.deletedIds) systemData.deletedIds = [];
 
           if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
             systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
@@ -843,7 +828,7 @@
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
-    // --- BULLETPROOF CONFLICT-FREE SYNC (NO 409 ERRORS) ---
+    // --- BULLETPROOF CONFLICT-FREE SYNC (NO 409 & NO GHOST REVIVALS) ---
     async function syncCloud(retryCount = 0) {
       const token = getPatToken();
       if (!token) {
@@ -859,8 +844,9 @@
       const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
       try {
-        // ALWAYS Fetch fresh SHA directly before PUT to prevent 409
-        const getRes = await fetch(url + `?t=${Date.now()}`, {
+        // cache: 'no-store' is CRITICAL to bypass browser caching of GitHub API response
+        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+          cache: 'no-store',
           headers: {
             'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3+json'
@@ -885,11 +871,9 @@
           throw new Error(`GitHub HTTP ${getRes.status}`);
         }
 
-        // Encrypt with AES-256-GCM
         const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
         const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
 
-        // Commit Push
         const putRes = await fetch(url, {
           method: 'PUT',
           headers: {
@@ -905,8 +889,6 @@
         });
 
         if (putRes.status === 409 && retryCount < 3) {
-          // AUTO-RETRY ON 409 CONFLICT (Re-fetch & Merge Automatically)
-          console.warn("409 Conflict auto-retrying...", retryCount + 1);
           isSyncing = false;
           await new Promise(r => setTimeout(r, 600));
           return syncCloud(retryCount + 1);
@@ -941,7 +923,8 @@
       const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
       try {
-        const getRes = await fetch(url + `?t=${Date.now()}`, {
+        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+          cache: 'no-store',
           headers: {
             'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3+json'
@@ -972,7 +955,7 @@
       } catch (e) {}
     }
 
-    // --- BOOKS MANAGEMENT (ADD, EDIT/RENAME, DELETE) ---
+    // --- BOOKS MANAGEMENT ---
     function renderBookSelectors() {
       const select = document.getElementById('activeBookSelector');
       select.innerHTML = '';
@@ -1139,8 +1122,14 @@
       return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
+    // --- TOMBSTONE AWARE MERGE (DELETED ENTRIES NEVER COME BACK) ---
     function mergeState(cloud) {
       if (!cloud) return;
+
+      if (cloud.deletedIds && Array.isArray(cloud.deletedIds)) {
+        systemData.deletedIds = Array.from(new Set([...(systemData.deletedIds || []), ...cloud.deletedIds]));
+      }
+      const deletedSet = new Set(systemData.deletedIds || []);
 
       if (cloud.books && Array.isArray(cloud.books)) {
         const bookMap = new Map();
@@ -1155,19 +1144,22 @@
           const cData = cloud.bookData[bid];
           const lData = systemData.bookData[bid];
 
+          // Repairing Merge
           const repMap = new Map();
-          (cData.repairing || []).forEach(x => repMap.set(x.id, x));
-          (lData.repairing || []).forEach(x => repMap.set(x.id, x));
+          (cData.repairing || []).forEach(x => { if (!deletedSet.has(x.id)) repMap.set(x.id, x); });
+          (lData.repairing || []).forEach(x => { if (!deletedSet.has(x.id)) repMap.set(x.id, x); });
           lData.repairing = Array.from(repMap.values());
 
+          // Labour Merge
           const labMap = new Map();
-          (cData.labour || []).forEach(x => labMap.set(x.id, x));
-          (lData.labour || []).forEach(x => labMap.set(x.id, x));
+          (cData.labour || []).forEach(x => { if (!deletedSet.has(x.id)) labMap.set(x.id, x); });
+          (lData.labour || []).forEach(x => { if (!deletedSet.has(x.id)) labMap.set(x.id, x); });
           lData.labour = Array.from(labMap.values());
 
+          // Samaan Merge
           const samMap = new Map();
-          (cData.samaan || []).forEach(x => samMap.set(x.id, x));
-          (lData.samaan || []).forEach(x => samMap.set(x.id, x));
+          (cData.samaan || []).forEach(x => { if (!deletedSet.has(x.id)) samMap.set(x.id, x); });
+          (lData.samaan || []).forEach(x => { if (!deletedSet.has(x.id)) samMap.set(x.id, x); });
           lData.samaan = Array.from(samMap.values());
         });
       }
@@ -1282,7 +1274,7 @@
       toggleForm('repFormContainer');
       document.getElementById('repEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live auto push
+      syncCloud();
     }
 
     function editRepair(id) {
@@ -1299,11 +1291,17 @@
       document.getElementById('repFormContainer').classList.remove('hidden');
     }
 
+    // PERMANENT DELETE (STRICT TOMBSTONE REGISTRATION)
     function deleteRepair(id) {
       if (!requireActiveMember()) return;
       if (!confirm("Entry delete karni hai?")) return;
       const data = getActiveDataset();
       const item = data.repairing.find(x => x.id === id);
+      
+      // Register into Tombstone so it never resurrects
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
       data.repairing = data.repairing.filter(x => x.id !== id);
       logAction("Delete Entry", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
       saveLocal();
@@ -1370,8 +1368,8 @@
           <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
           <td>${statusBadge}</td>
           <td>
-            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
-            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️️</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1482,7 +1480,7 @@
       closeLabourForm();
       document.getElementById('labEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live push
+      syncCloud();
     }
 
     function editLabour(id) {
@@ -1509,6 +1507,10 @@
       if (!confirm("Entry delete karni hai?")) return;
       const data = getActiveDataset();
       const item = data.labour.find(x => x.id === id);
+
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
       data.labour = data.labour.filter(x => x.id !== id);
       logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
       saveLocal();
@@ -1607,7 +1609,7 @@
       toggleForm('samFormContainer');
       document.getElementById('samEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live push
+      syncCloud();
     }
 
     function editSamaan(id) {
@@ -1632,6 +1634,10 @@
       if (!confirm("Samaan entry delete karni hai?")) return;
       const data = getActiveDataset();
       const item = data.samaan.find(x => x.id === id);
+
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
       data.samaan = data.samaan.filter(x => x.id !== id);
       logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
       saveLocal();
@@ -1640,15 +1646,7 @@
       syncCloud();
     }
 
-    // --- SHARED UI HELPERS ---
-    function renderAllViews() {
-      renderRepairingTable();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      renderSamaanTable();
-      renderLogs();
-    }
-
+    // --- UI UTILS & HELPERS ---
     function renderExpenseCategoryDropdowns() {
       const formSelect = document.getElementById('repCategory');
       const filterSelect = document.getElementById('expenseCategoryFilter');
@@ -1727,7 +1725,6 @@
       filterSelect.value = current;
     }
 
-    // Direct Members Management
     function openMemberManagerDirect() {
       renderDirectMemberList();
       document.getElementById('directMemberManagerModal').classList.remove('hidden');
@@ -1746,7 +1743,7 @@
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
-            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️️</button>` : ''}
           </div>
         `;
         container.appendChild(row);
@@ -1761,12 +1758,7 @@
         alert("PIN sirf 4-digit number hona chahiye!");
         return;
       }
-      const newMember = {
-        id: "m_" + Date.now(),
-        name: name.trim(),
-        pin: pin.trim(),
-        role: "Member"
-      };
+      const newMember = { id: "m_" + Date.now(), name: name.trim(), pin: pin.trim(), role: "Member" };
       systemData.members.push(newMember);
       saveLocal();
       renderMembersManagement();
@@ -1802,7 +1794,6 @@
       syncCloud();
     }
 
-    // Workers Management
     function openWorkerManagerModal() {
       renderWorkerManagerList();
       document.getElementById('workerManagerModal').classList.remove('hidden');
@@ -1879,7 +1870,6 @@
       syncCloud();
     }
 
-    // Party Management
     function openPartyManagerModal() {
       renderPartyManagerList();
       document.getElementById('partyManagerModal').classList.remove('hidden');
@@ -1954,7 +1944,6 @@
       syncCloud();
     }
 
-    // Export CSV
     function exportTableToCSV(type) {
       const data = getActiveDataset();
       const bName = getActiveBookObj().name.replace(/\s+/g, '_');
@@ -1992,17 +1981,11 @@
       document.body.removeChild(link);
     }
 
-    // JSON Backup / Restore
     function downloadSystemBackupJSON() {
       const backupPacket = {
-        meta: {
-          app: "Guru Shraddha 2.0 Multi-Book",
-          exportDate: new Date().toISOString(),
-          activeBook: getActiveBookObj().name
-        },
+        meta: { app: "Guru Shraddha 2.0 Multi-Book", exportDate: new Date().toISOString(), activeBook: getActiveBookObj().name },
         payload: systemData
       };
-
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
