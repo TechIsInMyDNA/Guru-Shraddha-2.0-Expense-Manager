@@ -20,18 +20,23 @@
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
     /* Top Bar */
     .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .brand { font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
     .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     
-    /* Container & Layout */
-    .container { max-width: 900px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+    /* Container & Cards */
+    .container { max-width: 960px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
     .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     
+    /* Sub-tabs inside sections */
+    .sub-nav { display: flex; gap: 6px; background: #0c1222; padding: 4px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); overflow-x: auto; }
+    .sub-btn { background: none; border: none; color: var(--text-muted); font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    .sub-btn.active { background: var(--card-inner); color: var(--accent); font-weight: 700; }
+
     /* Summary Stats Grid */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
     .stat-card { background: var(--card-inner); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
@@ -52,17 +57,22 @@
     button.secondary { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); }
     button.danger { background: var(--danger); color: #fff; }
     button.success { background: var(--success); color: #fff; }
-    button.warning { background: var(--warning); color: #050b14; }
     button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
 
-    /* Tables & Lists */
+    /* Tables */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
     th { background: #0c1222; padding: 10px; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
     td { padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     tr:nth-child(even) { background: rgba(255,255,255,0.015); }
     
-    /* Bottom Navigation Bar for Mobile */
+    /* Badges */
+    .badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+    .badge-paid { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-pending { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-neutral { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+
+    /* Bottom Navigation Bar */
     .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(19, 27, 46, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; height: 100%; border: none; background: none; gap: 4px; }
     .nav-item.active { color: var(--accent); font-weight: 700; }
@@ -70,13 +80,8 @@
 
     /* Modals & Overlays */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; padding: 20px; }
-    
+    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; padding: 20px; }
     .hidden { display: none !important; }
-    .badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
-    .badge-paid { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
-    .badge-pending { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-    .badge-stock { background: rgba(56, 189, 248, 0.2); color: var(--accent); border: 1px solid var(--accent); }
     .log-item { background: var(--card-inner); padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 6px; border-left: 3px solid var(--accent); }
   </style>
 </head>
@@ -98,7 +103,7 @@
   <!-- Main Container -->
   <div class="container">
     
-    <!-- Sync Status Banner -->
+    <!-- Sync Status Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
       <span id="syncStatus">Status: Ready</span>
       <span id="lastSyncedTime">Last Sync: Never</span>
@@ -119,9 +124,13 @@
 
       <div class="card">
         <div class="card-title">
-          <span>Add Repair / Kharcha Entry</span>
-          <button class="small" onclick="toggleForm('repFormContainer')">+ New Record</button>
+          <span>Repairing & Project Expenses</span>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="exportTableToCSV('repairing')">📥 Export Excel</button>
+            <button class="small" onclick="toggleForm('repFormContainer')">+ New Expense</button>
+          </div>
         </div>
+
         <div id="repFormContainer" class="hidden">
           <form onsubmit="saveRepairRecord(event)">
             <input type="hidden" id="repEditId">
@@ -158,8 +167,8 @@
               <tr>
                 <th>Date</th>
                 <th>Amount</th>
-                <th>Payment Ref</th>
-                <th>Reason</th>
+                <th>Payment Mode</th>
+                <th>Reason / Item Details</th>
                 <th>Logged By</th>
                 <th>Action</th>
               </tr>
@@ -170,44 +179,53 @@
       </div>
     </div>
 
-    <!-- TAB 2: LABOUR ATTENDANCE -->
-    <div id="tab-labour" class="tab-content hidden">
+    <!-- TAB 2: LABOUR - RUNNING LEDGER & ATTENDANCE -->
+    <div id="tab-labour" class="tab-content">
+      <!-- Sub Navigation: Running Ledger vs Attendance Sheet -->
+      <div class="sub-nav">
+        <button class="sub-btn active" id="subBtnLedger" onclick="switchLabourSubView('ledger')">📊 Worker Running Ledger</button>
+        <button class="sub-btn" id="subBtnAttendance" onclick="switchLabourSubView('attendance')">📋 Haziri / Attendance Sheet</button>
+      </div>
+
       <!-- Live Dynamic Labour Summary Cards -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Total Wages</div>
+          <div class="stat-label">Total Wages (Earned)</div>
           <div id="labTotalAmount" class="stat-val" style="color:#fff;">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Paid</div>
+          <div class="stat-label">Total Paid (Hisaab)</div>
           <div id="labPaidAmount" class="stat-val" style="color:var(--success);">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Pending</div>
+          <div class="stat-label">Running Balance (Pending)</div>
           <div id="labPendingAmount" class="stat-val" style="color:var(--danger);">₹0</div>
         </div>
       </div>
 
-      <div class="card">
+      <!-- VIEW 1: RUNNING LEDGER -->
+      <div id="labourLedgerView" class="card">
         <div class="card-title">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>Labour / Haziri</span>
-            <select id="workerGroupFilter" onchange="renderLabourTable()" style="padding:4px 8px; font-size:11px; width:auto;">
-              <option value="ALL">All Workers</option>
+            <span>Worker Running Ledger</span>
+            <select id="workerGroupFilter" onchange="renderLabourLedgerTable()" style="padding:4px 8px; font-size:11px; width:auto;">
+              <option value="ALL">All Workers Combined</option>
             </select>
           </div>
           <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="exportTableToCSV('labour_ledger')">📥 Export Excel</button>
             <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
-            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
+            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Entry</button>
           </div>
         </div>
 
+        <!-- Add/Edit Entry Form -->
         <div id="labFormContainer" class="hidden">
           <form onsubmit="saveLabourRecord(event)">
             <input type="hidden" id="labEditId">
             <div class="grid-2">
               <div>
-                <label>Select Worker</label>
+                <label>Select Worker / Mistri</label>
                 <select id="labGroup" required></select>
               </div>
               <div>
@@ -217,43 +235,43 @@
             </div>
             <div class="grid-3">
               <div>
-                <label>Labour (Qty / Chg)</label>
+                <label>Labour (Count & Rate)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labCount" placeholder="Qty" style="width:50%;">
-                  <input type="number" id="labCharge" placeholder="₹" style="width:50%;">
+                  <input type="number" id="labCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labCharge" placeholder="₹ Rate" style="width:50%;">
                 </div>
               </div>
               <div>
-                <label>Mistri (Qty / Chg)</label>
+                <label>Mistri (Count & Rate)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labMistriCount" placeholder="Qty" style="width:50%;">
-                  <input type="number" id="labMistriCharge" placeholder="₹" style="width:50%;">
+                  <input type="number" id="labMistriCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labMistriCharge" placeholder="₹ Rate" style="width:50%;">
                 </div>
               </div>
               <div>
-                <label>Total Charge (₹)</label>
-                <input type="number" id="labTotalCharge" placeholder="Total ₹">
+                <label>Work Charge / Total (₹)</label>
+                <input type="number" id="labTotalCharge" placeholder="Earned ₹">
               </div>
             </div>
             <div class="grid-2">
               <div>
-                <label>Amount Status (Paid / Pending)</label>
-                <select id="labPaymentStatus" required>
-                  <option value="PAID">PAID (Clear)</option>
-                  <option value="PENDING">PENDING (Baaki Hai)</option>
-                </select>
+                <label>Paid / Settlement Amount (₹)</label>
+                <input type="number" id="labHisaabTotal" placeholder="Given to Worker ₹">
               </div>
               <div>
-                <label>Hisaab Total / Settlement (₹)</label>
-                <input type="number" id="labHisaabTotal" placeholder="Final Paid Hisaab">
+                <label>Payment Status</label>
+                <select id="labPaymentStatus" required>
+                  <option value="PAID">PAID / SETTLED (चुका दिया)</option>
+                  <option value="PENDING">PENDING (बाकी है)</option>
+                </select>
               </div>
             </div>
             <div class="grid-1">
-              <label>Remarks</label>
+              <label>Work Description / Remarks</label>
               <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
             </div>
             <div style="display:flex; gap:8px;">
-              <button type="submit" class="flex-1">Save Haziri</button>
+              <button type="submit" class="flex-1">Save Entry</button>
               <button type="button" class="secondary" onclick="toggleForm('labFormContainer')">Cancel</button>
             </div>
           </form>
@@ -263,95 +281,121 @@
           <table>
             <thead>
               <tr>
-                <th>Worker</th>
                 <th>Date</th>
-                <th>Labour/Reza</th>
-                <th>Mistri</th>
-                <th>Total Chg</th>
+                <th>Worker</th>
+                <th>Work Details</th>
+                <th>Earned (+)</th>
+                <th>Paid (-)</th>
+                <th>Running Balance</th>
                 <th>Status</th>
-                <th>Hisaab Total</th>
-                <th>Remarks</th>
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="labourTableBody"></tbody>
+            <tbody id="labourLedgerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW 2: SIMPLE ATTENDANCE SHEET -->
+      <div id="labourAttendanceView" class="card hidden">
+        <div class="card-title">
+          <span>Labour & Mistri Attendance Sheet</span>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="exportTableToCSV('labour_attendance')">📥 Export Excel</button>
+            <button class="small" onclick="toggleForm('labFormContainer')">+ Mark Haziri</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Worker / Group</th>
+                <th>Labour Count</th>
+                <th>Mistri Count</th>
+                <th>Work Charge</th>
+                <th>Attendance Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="labourAttendanceTableBody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: SAMAAN IN/OUT -->
+    <!-- TAB 3: SAMAAN PARTY LEDGER -->
     <div id="tab-samaan" class="tab-content hidden">
-      <!-- Live Dynamic Samaan Summary Cards -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Samaan In Count</div>
+          <div class="stat-label">Total Samaan Value</div>
+          <div id="samTotalValue" class="stat-val" style="color:var(--accent);">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Items In</div>
           <div id="samInCount" class="stat-val" style="color:var(--success);">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Samaan Out Count</div>
-          <div id="samOutCount" class="stat-val" style="color:var(--danger);">0</div>
-        </div>
-        <div class="stat-card">
           <div class="stat-label">Pending / Issues</div>
-          <div id="samPendingCount" class="stat-val" style="color:var(--warning);">0</div>
+          <div id="samPendingCount" class="stat-val" style="color:var(--danger);">0</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">
-          <span>Samaan IN / OUT Tracker</span>
-          <button class="small" onclick="toggleForm('samFormContainer')">+ Samaan Entry</button>
+          <span>Samaan Party / Item Ledger</span>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="exportTableToCSV('samaan_ledger')">📥 Export Excel</button>
+            <button class="small" onclick="toggleForm('samFormContainer')">+ New Samaan Entry</button>
+          </div>
         </div>
+
         <div id="samFormContainer" class="hidden">
           <form onsubmit="saveSamaanRecord(event)">
             <input type="hidden" id="samEditId">
-            <div class="grid-2">
+            <div class="grid-3">
               <div>
-                <label>Date</label>
+                <label>Kab Aaya (Date)</label>
                 <input type="date" id="samDate" required>
               </div>
               <div>
-                <label>Samaan Status</label>
+                <label>Kisse Aaya (From Party/Store)</label>
+                <input type="text" id="samRefFrom" placeholder="e.g. SR TRADERS / Bagde" required>
+              </div>
+              <div>
+                <label>Kitne Ka (Bill/Amount ₹)</label>
+                <input type="number" id="samAmount" step="any" placeholder="e.g. 4200">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Kya Aaya (Samaan IN / Received)</label>
+                <input type="text" id="samIn" placeholder="e.g. SINTEX 500 LTR TANKI" required>
+              </div>
+              <div>
+                <label>Samaan OUT / Returned (If any)</label>
+                <input type="text" id="samOut" placeholder="Damage tanki, excess pipe, etc.">
+              </div>
+            </div>
+            <div class="grid-3">
+              <div>
+                <label>Kisko Diya (To Person/Vendor)</label>
+                <input type="text" id="samRefTo" placeholder="Nandu / Mistri / Store">
+              </div>
+              <div>
+                <label>Status (Ledger Status)</label>
                 <select id="samStatus" required>
-                  <option value="IN STOCK / RECEIVED">IN STOCK / RECEIVED</option>
+                  <option value="RECEIVED / IN USE">RECEIVED / IN USE</option>
                   <option value="PENDING RETURN">PENDING RETURN / REPAIR</option>
                   <option value="RETURNED / CLEARED">RETURNED / CLEARED</option>
                 </select>
               </div>
-            </div>
-            <div class="grid-2">
               <div>
-                <label>Samaan IN (Aaya)</label>
-                <input type="text" id="samIn" placeholder="e.g. SINTEX 500 LTR TANKI">
-              </div>
-              <div>
-                <label>REF NO / FROM</label>
-                <input type="text" id="samRefFrom" placeholder="e.g. SR TRADERS">
-              </div>
-            </div>
-            <div class="grid-2">
-              <div>
-                <label>Samaan OUT / RETURN (Gaya)</label>
-                <input type="text" id="samOut" placeholder="Returned material">
-              </div>
-              <div>
-                <label>REF NO / TO</label>
-                <input type="text" id="samRefTo" placeholder="Vendor / Person">
-              </div>
-            </div>
-            <div class="grid-2">
-              <div>
-                <label>Reason / Note</label>
-                <input type="text" id="samReason" placeholder="e.g. OLD TANKI DAMAGE">
-              </div>
-              <div>
-                <label>Remarks</label>
-                <input type="text" id="samRemarks" placeholder="BAL, Complete, etc.">
+                <label>Reason / Remarks</label>
+                <input type="text" id="samReason" placeholder="OLD DAMAGE, BAL, etc.">
               </div>
             </div>
             <div style="display:flex; gap:8px;">
-              <button type="submit" class="flex-1">Save Samaan</button>
+              <button type="submit" class="flex-1">Save Samaan Record</button>
               <button type="button" class="secondary" onclick="toggleForm('samFormContainer')">Cancel</button>
             </div>
           </form>
@@ -361,14 +405,13 @@
           <table>
             <thead>
               <tr>
-                <th>Date</th>
+                <th>Kab Aaya (Date)</th>
+                <th>Kisse Aaya (From Party)</th>
+                <th>Kya Aaya (Item)</th>
+                <th>Kitne Ka (₹)</th>
+                <th>Kisko Diya (To)</th>
                 <th>Status</th>
-                <th>Samaan IN</th>
-                <th>From</th>
-                <th>Samaan OUT</th>
-                <th>To</th>
-                <th>Reason</th>
-                <th>Remarks</th>
+                <th>Reason / Remarks</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -382,16 +425,16 @@
     <div id="tab-logs" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Live Audit Trail (Who did what)</div>
-        <div id="logsContainer" style="max-height: 400px; overflow-y: auto;"></div>
+        <div id="logsContainer" style="max-height: 420px; overflow-y: auto;"></div>
       </div>
     </div>
 
     <!-- TAB 5: MEMBERS & MASTER CONFIG -->
     <div id="tab-settings" class="tab-content hidden">
-      <!-- Master Passphrase Unlock Screen -->
+      <!-- Master Passphrase Lock -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings ko access karne ke liye Master Passphrase daalein:</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Settings, GitHub Token & System Backup access karne ke liye Master Passphrase daalein:</p>
         <div class="grid-1">
           <input type="password" id="masterPassInput" placeholder="Master Passphrase">
         </div>
@@ -400,6 +443,18 @@
 
       <!-- Master Unlocked View -->
       <div id="masterConfigSection" class="hidden">
+        
+        <!-- System Backup & Restore JSON Box -->
+        <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
+          <div class="card-title">📦 Complete System Backup & Restore</div>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Yaha se aap poore system (Expenses, Labour, Samaan, Workers, Members) ka ek single JSON backup download ya restore kar sakte hain:</p>
+          <div class="grid-2">
+            <button onclick="downloadSystemBackupJSON()" class="secondary" style="width:100%;">💾 Download Backup JSON</button>
+            <button onclick="document.getElementById('restoreFileInput').click()" class="warning" style="width:100%;">📂 Restore from JSON</button>
+          </div>
+          <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="restoreSystemBackupJSON(event)">
+        </div>
+
         <!-- Family Members Management -->
         <div class="card" style="margin-bottom: 14px;">
           <div class="card-title">
@@ -496,7 +551,7 @@
     const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_FILE = "data.json";
 
-    // Application State Loaded from Excel Seed
+    // Application State
     let systemData = {
       repairing: [],
       samaan: [],
@@ -541,21 +596,21 @@
         {"id":"rep_18","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       samaan: [
-        {"id":"sam_3","date":"2025-01-25","status":"IN STOCK / RECEIVED","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY ","refFrom":"SR TRADERS","samaanOut":"","refTo":"","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       labour: [
-        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"paymentStatus":"PAID","hisaabTotal":4200,"remarks":"PAINTING+CHILLAR WORKS (HISAAB DONE)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"paymentStatus":"PAID","hisaabTotal":7850,"remarks":"PALASTR C1G1 AND C1C2 + THEKEDAR 500","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_8","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"paymentStatus":"PAID","hisaabTotal":800,"remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_9","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"REZA HAZIRI + MISC 10","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"paymentStatus":"PAID","hisaabTotal":1000,"remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"paymentStatus":"PAID","hisaabTotal":1570,"remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"paymentStatus":"PAID","hisaabTotal":0,"remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":4200,"paymentStatus":"PAID","remarks":"HISAAB DONE TILL TODAY","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"hisaabTotal":7850,"paymentStatus":"PAID","remarks":"PALASTR C1G1 AND C1C2 + THEKEDAR 500 (HISAAB DONE)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_8","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"hisaabTotal":800,"paymentStatus":"PAID","remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_9","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"REZA HAZIRI + MISC 10","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1000,"paymentStatus":"PAID","remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"hisaabTotal":1570,"paymentStatus":"PAID","remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       workers: [
         "DESHKAR BHIYA",
@@ -617,13 +672,13 @@
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
-    // --- WORKER GROUP DYNAMIC MANAGEMENT ---
+    // --- WORKER DYNAMIC MANAGEMENT ---
     function renderWorkerDropdowns() {
       const filterSelect = document.getElementById('workerGroupFilter');
       const formSelect = document.getElementById('labGroup');
       const currentFilter = filterSelect.value || "ALL";
 
-      filterSelect.innerHTML = '<option value="ALL">All Workers</option>';
+      filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
       formSelect.innerHTML = '';
 
       systemData.workers.forEach(w => {
@@ -664,7 +719,7 @@
     }
 
     function promptAddWorker() {
-      const name = prompt("Naye Worker / Mistri / Reza sheet ka naam daalein:");
+      const name = prompt("Naye Worker / Contractor ka naam daalein:");
       if (!name || !name.trim()) return;
       const clean = name.trim().toUpperCase();
       if (systemData.workers.includes(clean)) {
@@ -672,7 +727,7 @@
         return;
       }
       systemData.workers.push(clean);
-      logAction("Add Worker", `Added Worker category: ${clean}`);
+      logAction("Add Worker", `Added Worker: ${clean}`);
       saveLocal();
       renderWorkerDropdowns();
       renderWorkerManagerList();
@@ -685,7 +740,6 @@
       if (!newName || !newName.trim()) return;
       const clean = newName.trim().toUpperCase();
       systemData.workers[index] = clean;
-      // also update corresponding labour entries
       systemData.labour.forEach(l => {
         if (l.workerGroup === oldName) l.workerGroup = clean;
       });
@@ -693,14 +747,15 @@
       saveLocal();
       renderWorkerDropdowns();
       renderWorkerManagerList();
-      renderLabourTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
       syncCloud();
     }
 
     function deleteWorkerName(index) {
       const name = systemData.workers[index];
       if (systemData.workers.length <= 1) {
-        alert("Kam se kam ek worker hona zaroori hai!");
+        alert("Kam se kam ek worker rehna chahiye!");
         return;
       }
       if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
@@ -709,7 +764,8 @@
       saveLocal();
       renderWorkerDropdowns();
       renderWorkerManagerList();
-      renderLabourTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
       syncCloud();
     }
 
@@ -783,7 +839,7 @@
 
     function deleteRepair(id) {
       if (!requireActiveMember()) return;
-      if (!confirm("Kya aap sach me is entry ko delete karna chahte hain?")) return;
+      if (!confirm("Entry delete karni hai?")) return;
       const item = systemData.repairing.find(x => x.id === id);
       systemData.repairing = systemData.repairing.filter(x => x.id !== id);
       logAction("Delete Repair", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
@@ -793,61 +849,104 @@
       syncCloud();
     }
 
-    // --- LABOUR & WAGES LOGIC ---
-    function renderLabourTable() {
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE LOGIC ---
+    function switchLabourSubView(view) {
+      const btnLedger = document.getElementById('subBtnLedger');
+      const btnAttendance = document.getElementById('subBtnAttendance');
+      const vLedger = document.getElementById('labourLedgerView');
+      const vAttendance = document.getElementById('labourAttendanceView');
+
+      if (view === 'ledger') {
+        btnLedger.classList.add('active');
+        btnAttendance.classList.remove('active');
+        vLedger.classList.remove('hidden');
+        vAttendance.classList.add('hidden');
+        renderLabourLedgerTable();
+      } else {
+        btnAttendance.classList.add('active');
+        btnLedger.classList.remove('active');
+        vAttendance.classList.remove('hidden');
+        vLedger.classList.add('hidden');
+        renderLabourAttendanceTable();
+      }
+    }
+
+    function renderLabourLedgerTable() {
       const filter = document.getElementById('workerGroupFilter').value;
-      const tbody = document.getElementById('labourTableBody');
+      const tbody = document.getElementById('labourLedgerTableBody');
       tbody.innerHTML = '';
-      let totalWages = 0;
+      
+      let totalEarned = 0;
       let totalPaid = 0;
-      let totalPending = 0;
+      let runningBalance = 0;
 
-      systemData.labour.forEach(l => {
-        const amt = Number(l.totalCharge) || Number(l.hisaabTotal) || 0;
-        const status = l.paymentStatus || 'PAID'; // default past records are paid
+      // Filter and sort chronologically for true running ledger
+      const records = systemData.labour
+        .filter(l => filter === 'ALL' || l.workerGroup === filter)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
 
-        if (filter === 'ALL' || l.workerGroup === filter) {
-          totalWages += amt;
-          if (status === 'PAID') {
-            totalPaid += amt;
-          } else {
-            totalPending += amt;
-          }
+      records.forEach(l => {
+        const earned = Number(l.totalCharge) || 0;
+        const paid = Number(l.hisaabTotal) || (l.paymentStatus === 'PAID' ? earned : 0);
+        
+        totalEarned += earned;
+        totalPaid += paid;
+        runningBalance += (earned - paid);
 
-          const statusBadge = status === 'PAID' 
-            ? `<span class="badge badge-paid">PAID</span>`
-            : `<span class="badge badge-pending">PENDING</span>`;
+        const statusBadge = runningBalance <= 0 
+          ? `<span class="badge badge-paid">CLEARED (0)</span>`
+          : `<span class="badge badge-pending">₹${runningBalance} PENDING</span>`;
 
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><strong>${l.workerGroup}</strong></td>
-            <td>${l.date || '-'}</td>
-            <td>${l.labourCount ? l.labourCount + ' (@' + (l.labourCharge || 0) + ')' : '-'}</td>
-            <td>${l.mistriCount ? l.mistriCount + ' (@' + (l.mistriCharge || 0) + ')' : '-'}</td>
-            <td style="color:#fff; font-weight:700;">₹${amt.toLocaleString('en-IN')}</td>
-            <td>${statusBadge}</td>
-            <td style="color:var(--accent); font-weight:700;">${l.hisaabTotal ? '₹' + Number(l.hisaabTotal).toLocaleString('en-IN') : '-'}</td>
-            <td style="max-width:180px; white-space:normal;">${l.remarks || '-'}</td>
-            <td>
-              <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
-              <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${l.date || '-'}</td>
+          <td><strong>${l.workerGroup}</strong></td>
+          <td style="max-width:200px; white-space:normal;">${l.remarks || (l.labourCount ? l.labourCount + ' Labour' : 'Work')}</td>
+          <td style="color:#fff; font-weight:600;">${earned > 0 ? '+₹' + earned.toLocaleString('en-IN') : '-'}</td>
+          <td style="color:var(--success); font-weight:600;">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
 
       // Update Summary Cards
-      document.getElementById('labTotalAmount').textContent = '₹' + totalWages.toLocaleString('en-IN');
+      document.getElementById('labTotalAmount').textContent = '₹' + totalEarned.toLocaleString('en-IN');
       document.getElementById('labPaidAmount').textContent = '₹' + totalPaid.toLocaleString('en-IN');
-      document.getElementById('labPendingAmount').textContent = '₹' + totalPending.toLocaleString('en-IN');
+      document.getElementById('labPendingAmount').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
+    }
+
+    function renderLabourAttendanceTable() {
+      const tbody = document.getElementById('labourAttendanceTableBody');
+      tbody.innerHTML = '';
+      
+      const records = [...systemData.labour].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+      records.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${l.date || '-'}</strong></td>
+          <td style="color:var(--accent); font-weight:600;">${l.workerGroup}</td>
+          <td>${l.labourCount ? `${l.labourCount} (@₹${l.labourCharge || 0})` : '-'}</td>
+          <td>${l.mistriCount ? `${l.mistriCount} (@₹${l.mistriCharge || 0})` : '-'}</td>
+          <td style="font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
+          <td style="max-width:240px; white-space:normal;">${l.remarks || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function saveLabourRecord(e) {
       e.preventDefault();
       if (!requireActiveMember()) return;
       const editId = document.getElementById('labEditId').value;
+      const earned = parseFloat(document.getElementById('labTotalCharge').value) || 0;
+      const hisaab = parseFloat(document.getElementById('labHisaabTotal').value) || 0;
       const status = document.getElementById('labPaymentStatus').value;
+
       const record = {
         id: editId || 'lab_' + Date.now(),
         workerGroup: document.getElementById('labGroup').value,
@@ -856,9 +955,9 @@
         labourCharge: parseFloat(document.getElementById('labCharge').value) || 0,
         mistriCount: parseFloat(document.getElementById('labMistriCount').value) || 0,
         mistriCharge: parseFloat(document.getElementById('labMistriCharge').value) || 0,
-        totalCharge: parseFloat(document.getElementById('labTotalCharge').value) || 0,
+        totalCharge: earned,
+        hisaabTotal: hisaab,
         paymentStatus: status,
-        hisaabTotal: parseFloat(document.getElementById('labHisaabTotal').value) || 0,
         remarks: document.getElementById('labRemarks').value.trim(),
         updatedBy: currentMember.name,
         updatedAt: new Date().toLocaleString('en-IN')
@@ -867,14 +966,15 @@
       if (editId) {
         const idx = systemData.labour.findIndex(x => x.id === editId);
         if (idx !== -1) systemData.labour[idx] = record;
-        logAction("Edit Labour", `Edited: ${record.workerGroup} (${record.paymentStatus} ₹${record.totalCharge || record.hisaabTotal})`);
+        logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       } else {
         systemData.labour.unshift(record);
-        logAction("Add Labour", `Added: ${record.workerGroup} (${record.paymentStatus} ₹${record.totalCharge || record.hisaabTotal})`);
+        logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       }
 
       saveLocal();
-      renderLabourTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
       renderLogs();
       toggleForm('labFormContainer');
       document.getElementById('labEditId').value = '';
@@ -893,52 +993,53 @@
       document.getElementById('labMistriCount').value = l.mistriCount || '';
       document.getElementById('labMistriCharge').value = l.mistriCharge || '';
       document.getElementById('labTotalCharge').value = l.totalCharge || '';
-      document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
       document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
+      document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
       document.getElementById('labRemarks').value = l.remarks || '';
       document.getElementById('labFormContainer').classList.remove('hidden');
     }
 
     function deleteLabour(id) {
       if (!requireActiveMember()) return;
-      if (!confirm("Haziri record delete karein?")) return;
+      if (!confirm("Entry delete karni hai?")) return;
       const item = systemData.labour.find(x => x.id === id);
       systemData.labour = systemData.labour.filter(x => x.id !== id);
-      logAction("Delete Labour", `Deleted Haziri for ${item ? item.workerGroup : ''}`);
+      logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
       saveLocal();
-      renderLabourTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
       renderLogs();
       syncCloud();
     }
 
-    // --- SAMAAN IN/OUT LOGIC ---
+    // --- SAMAAN PARTY LEDGER LOGIC ---
     function renderSamaanTable() {
       const tbody = document.getElementById('samaanTableBody');
       tbody.innerHTML = '';
+      let totalVal = 0;
       let inCount = 0;
-      let outCount = 0;
       let pendingCount = 0;
 
       systemData.samaan.forEach(s => {
+        const val = Number(s.amount) || 0;
+        totalVal += val;
         if (s.samaanIn && s.samaanIn.trim()) inCount++;
-        if (s.samaanOut && s.samaanOut.trim()) outCount++;
-        const status = s.status || "IN STOCK / RECEIVED";
+        const status = s.status || "RECEIVED / IN USE";
         if (status.includes("PENDING")) pendingCount++;
 
-        let badgeClass = "badge-stock";
-        if (status.includes("RETURNED")) badgeClass = "badge-paid";
+        let badgeClass = "badge-neutral";
+        if (status.includes("RETURNED") || status.includes("CLEARED")) badgeClass = "badge-paid";
         if (status.includes("PENDING")) badgeClass = "badge-pending";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${s.date || '-'}</td>
-          <td><span class="badge ${badgeClass}">${status}</span></td>
-          <td style="color:var(--success); font-weight:600;">${s.samaanIn || '-'}</td>
-          <td>${s.refFrom || '-'}</td>
-          <td style="color:var(--danger); font-weight:600;">${s.samaanOut || '-'}</td>
+          <td><strong>${s.date || '-'}</strong></td>
+          <td style="color:var(--accent); font-weight:600;">${s.refFrom || '-'}</td>
+          <td>${s.samaanIn || '-'}</td>
+          <td style="font-weight:700; color:#fff;">${val > 0 ? '₹' + val.toLocaleString('en-IN') : '-'}</td>
           <td>${s.refTo || '-'}</td>
-          <td>${s.reason || '-'}</td>
-          <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border);">${s.remarks || 'DONE'}</span></td>
+          <td><span class="badge ${badgeClass}">${status}</span></td>
+          <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
             <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
@@ -948,8 +1049,8 @@
       });
 
       // Update Samaan Cards
+      document.getElementById('samTotalValue').textContent = '₹' + totalVal.toLocaleString('en-IN');
       document.getElementById('samInCount').textContent = inCount;
-      document.getElementById('samOutCount').textContent = outCount;
       document.getElementById('samPendingCount').textContent = pendingCount;
     }
 
@@ -960,13 +1061,13 @@
       const record = {
         id: editId || 'sam_' + Date.now(),
         date: document.getElementById('samDate').value,
-        status: document.getElementById('samStatus').value,
-        samaanIn: document.getElementById('samIn').value.trim(),
         refFrom: document.getElementById('samRefFrom').value.trim(),
+        samaanIn: document.getElementById('samIn').value.trim(),
+        amount: parseFloat(document.getElementById('samAmount').value) || 0,
         samaanOut: document.getElementById('samOut').value.trim(),
         refTo: document.getElementById('samRefTo').value.trim(),
+        status: document.getElementById('samStatus').value,
         reason: document.getElementById('samReason').value.trim(),
-        remarks: document.getElementById('samRemarks').value.trim(),
         updatedBy: currentMember.name,
         updatedAt: new Date().toLocaleString('en-IN')
       };
@@ -974,10 +1075,10 @@
       if (editId) {
         const idx = systemData.samaan.findIndex(x => x.id === editId);
         if (idx !== -1) systemData.samaan[idx] = record;
-        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn || record.samaanOut} (${record.status})`);
+        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} from ${record.refFrom}`);
       } else {
         systemData.samaan.unshift(record);
-        logAction("Add Samaan", `Added Samaan: ${record.samaanIn || record.samaanOut} (${record.status})`);
+        logAction("Add Samaan", `Added Samaan: ${record.samaanIn} from ${record.refFrom}`);
       }
 
       saveLocal();
@@ -994,26 +1095,113 @@
       if (!s) return;
       document.getElementById('samEditId').value = s.id;
       document.getElementById('samDate').value = s.date;
-      document.getElementById('samStatus').value = s.status || "IN STOCK / RECEIVED";
-      document.getElementById('samIn').value = s.samaanIn;
-      document.getElementById('samRefFrom').value = s.refFrom;
-      document.getElementById('samOut').value = s.samaanOut;
-      document.getElementById('samRefTo').value = s.refTo;
-      document.getElementById('samReason').value = s.reason;
-      document.getElementById('samRemarks').value = s.remarks;
+      document.getElementById('samRefFrom').value = s.refFrom || '';
+      document.getElementById('samIn').value = s.samaanIn || '';
+      document.getElementById('samAmount').value = s.amount || '';
+      document.getElementById('samOut').value = s.samaanOut || '';
+      document.getElementById('samRefTo').value = s.refTo || '';
+      document.getElementById('samStatus').value = s.status || 'RECEIVED / IN USE';
+      document.getElementById('samReason').value = s.reason || '';
       document.getElementById('samFormContainer').classList.remove('hidden');
     }
 
     function deleteSamaan(id) {
       if (!requireActiveMember()) return;
-      if (!confirm("Samaan record delete karein?")) return;
+      if (!confirm("Samaan entry delete karni hai?")) return;
       const item = systemData.samaan.find(x => x.id === id);
       systemData.samaan = systemData.samaan.filter(x => x.id !== id);
-      logAction("Delete Samaan", `Deleted: ${item ? (item.samaanIn || item.samaanOut) : ''}`);
+      logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
       saveLocal();
       renderSamaanTable();
       renderLogs();
       syncCloud();
+    }
+
+    // --- EXCEL (.CSV) EXPORT ENGINE ---
+    function exportTableToCSV(type) {
+      let csvContent = "";
+      let filename = `GuruShraddha_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+
+      if (type === 'repairing') {
+        csvContent = "Date,Amount,Payment Ref,Reason,Logged By\n";
+        systemData.repairing.forEach(r => {
+          csvContent += `"${r.date}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
+        });
+      } else if (type === 'labour_ledger') {
+        csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
+        systemData.labour.forEach(l => {
+          csvContent += `"${l.date}","${l.workerGroup}","${(l.remarks||'').replace(/"/g, '""')}","${l.totalCharge||0}","${l.hisaabTotal||0}","${l.remarks||''}","${l.paymentStatus}"\n`;
+        });
+      } else if (type === 'labour_attendance') {
+        csvContent = "Date,Worker,Labour Count,Labour Rate,Mistri Count,Mistri Rate,Total Charge,Remarks\n";
+        systemData.labour.forEach(l => {
+          csvContent += `"${l.date}","${l.workerGroup}","${l.labourCount||0}","${l.labourCharge||0}","${l.mistriCount||0}","${l.mistriCharge||0}","${l.totalCharge||0}","${(l.remarks||'').replace(/"/g, '""')}"\n`;
+        });
+      } else if (type === 'samaan_ledger') {
+        csvContent = "Date,Kisse Aaya (Party),Kya Aaya (Item),Kitne Ka (Amount),Kisko Diya (To),Status,Remarks\n";
+        systemData.samaan.forEach(s => {
+          csvContent += `"${s.date}","${s.refFrom||''}","${(s.samaanIn||'').replace(/"/g, '""')}","${s.amount||0}","${s.refTo||''}","${s.status||''}","${(s.reason||'').replace(/"/g, '""')}"\n`;
+        });
+      }
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // --- SYSTEM BACKUP & RESTORE JSON ENGINE ---
+    function downloadSystemBackupJSON() {
+      const backupPacket = {
+        meta: {
+          app: "Guru Shraddha 2.0",
+          exportDate: new Date().toISOString(),
+          version: "2.0"
+        },
+        payload: systemData
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `GuruShraddha_FullBackup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      logAction("System Backup", "Downloaded full JSON backup file.");
+      renderLogs();
+    }
+
+    function restoreSystemBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const dataToRestore = parsed.payload || parsed;
+          if (dataToRestore.repairing && dataToRestore.labour && dataToRestore.samaan) {
+            if (confirm("Restore karne se naya data combine/merge ho jayega. Proceed karein?")) {
+              mergeState(dataToRestore);
+              saveLocal();
+              renderWorkerDropdowns();
+              renderAllViews();
+              syncCloud();
+              alert("System Backup successfully restored and synchronized!");
+            }
+          } else {
+            alert("Galat backup format! File me required fields nahi hain.");
+          }
+        } catch(err) {
+          alert("Error parsing JSON backup file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
     }
 
     // --- LOGS & AUDIT ---
@@ -1228,6 +1416,7 @@
       }
 
       updateSyncBadge("Syncing...", "var(--accent)");
+      document.getElementById('syncIcon').style.display = 'inline-block';
       const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
       try {
@@ -1294,36 +1483,30 @@
     function mergeState(cloud) {
       if (!cloud) return;
 
-      // Merge Workers
       if (cloud.workers && Array.isArray(cloud.workers)) {
         systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
       }
 
-      // Merge Repairing by ID
       const repMap = new Map();
       (cloud.repairing || []).forEach(x => repMap.set(x.id, x));
       systemData.repairing.forEach(x => repMap.set(x.id, x));
       systemData.repairing = Array.from(repMap.values());
 
-      // Merge Labour by ID
       const labMap = new Map();
       (cloud.labour || []).forEach(x => labMap.set(x.id, x));
       systemData.labour.forEach(x => labMap.set(x.id, x));
       systemData.labour = Array.from(labMap.values());
 
-      // Merge Samaan by ID
       const samMap = new Map();
       (cloud.samaan || []).forEach(x => samMap.set(x.id, x));
       systemData.samaan.forEach(x => samMap.set(x.id, x));
       systemData.samaan = Array.from(samMap.values());
 
-      // Merge Members
       const memberMap = new Map();
       (cloud.members || []).forEach(x => memberMap.set(x.id, x));
       systemData.members.forEach(x => memberMap.set(x.id, x));
       systemData.members = Array.from(memberMap.values());
 
-      // Merge Logs
       const logMap = new Map();
       (cloud.activityLogs || []).forEach(x => logMap.set(x.id, x));
       systemData.activityLogs.forEach(x => logMap.set(x.id, x));
@@ -1339,7 +1522,8 @@
     // --- UI UTILITIES ---
     function renderAllViews() {
       renderRepairingTable();
-      renderLabourTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
       renderSamaanTable();
       renderLogs();
     }
