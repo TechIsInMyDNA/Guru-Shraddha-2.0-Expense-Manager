@@ -87,11 +87,11 @@
     .hidden { display: none !important; }
     .log-item { background: var(--card-inner); padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 6px; border-left: 3px solid var(--accent); }
     
-    .sync-pulse { animation: pulse 1.5s infinite; }
+    .sync-pulse { animation: pulse 1s infinite; }
     @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; filter: drop-shadow(0 0 4px var(--accent)); }
-      100% { opacity: 0.6; }
+      0% { opacity: 0.5; }
+      50% { opacity: 1; filter: drop-shadow(0 0 6px var(--accent)); }
+      100% { opacity: 0.5; }
     }
   </style>
 </head>
@@ -109,7 +109,6 @@
         <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
       <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage Members">👥</button>
-      <button class="small warning" onclick="restoreExcelDataDirect()" title="Restore Original Excel Data">📥 Reset Data</button>
       <button class="small secondary" id="manualSyncBtn" onclick="syncCloud(true)"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
@@ -119,7 +118,7 @@
     
     <!-- Sync Status Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
-      <span id="syncStatus">Status: Ready</span>
+      <span id="syncStatus">Status: Checking...</span>
       <span id="activeBookDisplay" style="color:var(--accent); font-weight:bold;">Book: GURU SHRADDHA 2.0</span>
       <span id="lastSyncedTime">Last Sync: Never</span>
     </div>
@@ -483,19 +482,21 @@
 
     <!-- TAB 5: MEMBERS & MASTER CONFIG -->
     <div id="tab-settings" class="tab-content hidden">
+      <!-- Hidden Secure Master Password Gate (NO PLAIN TEXT SHOWN) -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings access karne ke liye Master Passphrase (<b>GuruShraddha@144</b>) daalein:</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Sensitive Settings unlock karne ke liye Master Passphrase daalein:</p>
         <div class="grid-1">
           <input type="password" id="masterPassInput" placeholder="Master Passphrase enter karein">
         </div>
-        <button onclick="unlockMasterGate()" style="width:100%;">Verify Master Passphrase</button>
+        <button onclick="unlockMasterGate()" style="width:100%;">Verify & Unlock</button>
       </div>
 
+      <!-- Unlocked Settings Panel -->
       <div id="masterConfigSection" class="hidden">
         <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
           <div class="card-title">📦 Complete System Backup & Restore</div>
-          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein (All Books, Categories, Workers, Parties, Members):</p>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein:</p>
           <div class="grid-2">
             <button onclick="downloadSystemBackupJSON()" class="secondary" style="width:100%;">💾 Download Backup JSON</button>
             <button onclick="document.getElementById('restoreFileInput').click()" class="warning" style="width:100%;">📂 Restore from JSON</button>
@@ -514,7 +515,7 @@
         <div class="card">
           <div class="card-title">GitHub Encrypted Cloud Storage</div>
           <div class="grid-1">
-            <label>GitHub Repository (Auto-configured):</label>
+            <label>GitHub Repository:</label>
             <input type="text" id="cfgRepo" value="TechIsInMyDNA/Guru-Shraddha-2.0-Expense-Manager" disabled style="background:#1a233a; color:var(--accent); font-weight:bold;">
           </div>
           <div class="grid-1">
@@ -637,7 +638,7 @@
   </div>
 
   <script>
-    // HARDCODED SECURE CONSTANTS
+    // HARDCODED CONSTANTS
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_OWNER = "TechIsInMyDNA";
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
@@ -732,7 +733,7 @@
     let fileSha = null;
     let syncIntervalTimer = null;
 
-    // --- APPLICATION STARTUP & AUTO-HEALING ---
+    // --- APPLICATION STARTUP ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
       renderBookSelectors();
@@ -741,30 +742,28 @@
       renderPartyDropdowns();
       renderAllViews();
       autoCheckMemberSession();
-      
-      // Auto-unlock token settings view if master pass is already remembered
+
       if (sessionStorage.getItem('gs_master_unlocked') === 'true') {
         unlockMasterGate(true);
       }
 
-      // Initial Sync
       if (getPatToken()) {
         syncCloud(false);
       } else {
         updateSyncBadge("Token Required (Set in Settings)", "var(--warning)");
       }
 
-      // START REAL-TIME LIVE SYNC POLLING (Every 6 Seconds)
       startRealTimePolling();
     });
 
     function startRealTimePolling() {
       if (syncIntervalTimer) clearInterval(syncIntervalTimer);
+      // Auto-polls remote every 5 seconds for instant multi-device sync
       syncIntervalTimer = setInterval(() => {
         if (getPatToken()) {
           syncCloudSilent();
         }
-      }, 6000); // Polls every 6 seconds for live updates
+      }, 5000);
     }
 
     function loadLocalStorage() {
@@ -775,7 +774,6 @@
           if (parsed && parsed.books && parsed.bookData) {
             systemData = parsed;
           } else {
-            // Restore default structure
             systemData.activeBookId = "book_gs2";
             systemData.books = [
               { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
@@ -787,7 +785,7 @@
             };
           }
 
-          // Self-heal: ensure Guru Shraddha 2.0 has all records
+          // HARD GUARANTEE: Ensure Guru Shraddha 2.0 always has all records
           if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
             systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
           }
@@ -808,7 +806,7 @@
           }
           saveLocal();
         } catch(e) {
-          console.error("Local parse error, re-initializing", e);
+          console.error("Local parse error", e);
           saveLocal();
         }
       } else {
@@ -820,25 +818,37 @@
       localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
     }
 
-    // Force restore excel data
-    function restoreExcelDataDirect() {
-      if (confirm("Kya aap Excel ka poora purana data 'GURU SHRADDHA 2.0' Book me wapas restore karna chahte hain?")) {
-        systemData.activeBookId = "book_gs2";
-        systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
-        saveLocal();
-        renderBookSelectors();
-        renderAllViews();
-        alert("Pura Excel Data successfully restore ho gaya!");
-        syncCloud(true);
+    function getActiveDataset() {
+      const bid = systemData.activeBookId || "book_gs2";
+      if (!systemData.bookData[bid]) {
+        systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
       }
+      return systemData.bookData[bid];
     }
 
-    // --- REAL-TIME LIVE SYNC ENGINE (CONFLICT-FREE) ---
+    function getActiveBookObj() {
+      return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
+    }
+
+    function logAction(action, details) {
+      const logEntry = {
+        id: "log_" + Date.now(),
+        action: action,
+        book: getActiveBookObj().name,
+        performedBy: currentMember ? currentMember.name : "Unknown",
+        timestamp: new Date().toLocaleString('en-IN'),
+        details: details
+      };
+      systemData.activityLogs.unshift(logEntry);
+      if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
+    }
+
+    // --- REAL-TIME LIVE SYNC ENGINE (INSTANT & ROBUST) ---
     async function syncCloud(isManual = false) {
       const token = getPatToken();
       if (!token) {
         updateSyncBadge("Token Not Set (Open Settings)", "var(--danger)");
-        if (isManual) alert("Pehle Settings me jakar Master Passphrase (GuruShraddha@144) verify karein aur apna GitHub Token save karein!");
+        if (isManual) alert("Pehle Settings me jakar Master Passphrase verify karein aur apna GitHub Token save karein!");
         return;
       }
 
@@ -847,7 +857,6 @@
       const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
       try {
-        // Step 1: Fetch remote
         const getRes = await fetch(url, {
           headers: {
             'Authorization': `token ${token}`,
@@ -866,20 +875,16 @@
           } catch(e) {
             cloudData = JSON.parse(rawContent);
           }
-
-          // Merge local and cloud seamlessly
           mergeState(cloudData);
         } else if (getRes.status === 404) {
-          fileSha = null; // New remote creation
+          fileSha = null;
         } else {
-          throw new Error(`GitHub HTTP ${getRes.status} (Invalid Token or Access Denied)`);
+          throw new Error(`GitHub HTTP ${getRes.status} (Check Token permissions & Repo access)`);
         }
 
-        // Step 2: Encrypt system state with AES-256-GCM
         const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
         const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
 
-        // Step 3: Put to remote
         const putRes = await fetch(url, {
           method: 'PUT',
           headers: {
@@ -916,7 +921,6 @@
       }
     }
 
-    // Silent background poll (Checks if another device updated GitHub)
     async function syncCloudSilent() {
       const token = getPatToken();
       if (!token) return;
@@ -932,7 +936,6 @@
 
         if (getRes.status === 200) {
           const fileData = await getRes.json();
-          // If remote SHA is different, someone edited remotely!
           if (fileSha && fileData.sha !== fileSha) {
             fileSha = fileData.sha;
             const rawContent = decodeURIComponent(escape(atob(fileData.content)));
@@ -946,15 +949,13 @@
             mergeState(cloudData);
             saveLocal();
             renderAllViews();
-            updateSyncBadge("Auto-Updated 🟢", "var(--success)");
+            updateSyncBadge("Live Synced 🟢", "var(--success)");
             document.getElementById('lastSyncedTime').textContent = "Updated: " + new Date().toLocaleTimeString('en-IN');
           } else {
             fileSha = fileData.sha;
           }
         }
-      } catch (e) {
-        // silent fail
-      }
+      } catch (e) {}
     }
 
     // --- MASTER CONFIG & SECURITY GATE ---
@@ -969,7 +970,7 @@
         document.getElementById('cfgPat').value = getPatToken();
         renderMembersManagement();
       } else {
-        alert("Galat Master Passphrase! Kripya GuruShraddha@144 enter karein.");
+        alert("Galat Master Passphrase! Kripya sahi Passphrase enter karein.");
       }
     }
 
@@ -1171,7 +1172,7 @@
       toggleForm('repFormContainer');
       document.getElementById('repEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live push
+      syncCloud();
     }
 
     function editRepair(id) {
@@ -1371,7 +1372,7 @@
       closeLabourForm();
       document.getElementById('labEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live push
+      syncCloud();
     }
 
     function editLabour(id) {
@@ -1447,7 +1448,7 @@
           <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
-            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️️</button>
+            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1496,13 +1497,13 @@
       toggleForm('samFormContainer');
       document.getElementById('samEditId').value = '';
       e.target.reset();
-      syncCloud(); // Live push
+      syncCloud();
     }
 
     function editSamaan(id) {
       const data = getActiveDataset();
       const s = data.samaan.find(x => x.id === id);
-      if (!s) return; // Fixed bug (earlier was if (!r))
+      if (!s) return;
       document.getElementById('samEditId').value = s.id;
       document.getElementById('samDate').value = s.date;
       document.getElementById('samPartySelect').value = s.refFrom || '';
@@ -1711,7 +1712,7 @@
       syncCloud();
     }
 
-    // Direct Members Management
+    // Members Management
     function openMemberManagerDirect() {
       renderDirectMemberList();
       document.getElementById('directMemberManagerModal').classList.remove('hidden');
@@ -1786,7 +1787,7 @@
       syncCloud();
     }
 
-    // Workers Manager
+    // Workers Management
     function openWorkerManagerModal() {
       renderWorkerManagerList();
       document.getElementById('workerManagerModal').classList.remove('hidden');
@@ -1863,7 +1864,7 @@
       syncCloud();
     }
 
-    // Party Manager
+    // Party Management
     function openPartyManagerModal() {
       renderPartyManagerList();
       document.getElementById('partyManagerModal').classList.remove('hidden');
@@ -2016,7 +2017,7 @@
               renderWorkerDropdowns();
               renderPartyDropdowns();
               renderAllViews();
-              syncCloud();
+              syncCloud(true);
               alert("System Backup successfully restored!");
             }
           } else {
