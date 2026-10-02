@@ -730,7 +730,99 @@
     let isSyncing = false;
     let syncIntervalTimer = null;
 
-    // --- FORM OPEN/CLOSE & EDIT HELPERS (SMOOTH SCROLL & AUTOFILL) ---
+    // --- CORE HELPERS DEFINED AT THE TOP (PREVENTS UNDEFINED ERRORS) ---
+    function getActiveDataset() {
+      const bid = systemData.activeBookId || "book_gs2";
+      if (!systemData.bookData[bid]) {
+        systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
+      }
+      return systemData.bookData[bid];
+    }
+
+    function getActiveBookObj() {
+      if (!systemData.books || systemData.books.length === 0) {
+        systemData.books = [{ id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
+      }
+      return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
+    }
+
+    function logAction(action, details) {
+      const logEntry = {
+        id: "log_" + Date.now(),
+        action: action,
+        book: getActiveBookObj().name,
+        performedBy: currentMember ? currentMember.name : "Unknown",
+        timestamp: new Date().toLocaleString('en-IN'),
+        details: details
+      };
+      systemData.activityLogs.unshift(logEntry);
+      if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
+    }
+
+    function renderAllViews() {
+      renderRepairingTable();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
+      renderSamaanTable();
+      renderLogs();
+    }
+
+    // --- REPAIRING & EXPENSES ---
+    function renderRepairingTable() {
+      const data = getActiveDataset();
+      const catFilter = document.getElementById('expenseCategoryFilter').value;
+      const tbody = document.getElementById('repairingTableBody');
+      tbody.innerHTML = '';
+      
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      (data.repairing || []).forEach(r => {
+        const amt = Number(r.amount) || 0;
+        const type = r.type || "EXPENSE";
+        const cat = r.category || "General Expense";
+
+        if (catFilter === 'ALL' || cat === catFilter) {
+          if (type === "INCOME") {
+            totalIncome += amt;
+          } else {
+            totalExpense += amt;
+          }
+
+          const typeBadge = type === "INCOME" 
+            ? `<span class="badge badge-paid">INCOME</span>` 
+            : `<span class="badge badge-pending">EXPENSE</span>`;
+
+          const amtColor = type === "INCOME" ? "var(--success)" : "var(--danger)";
+          const amtSign = type === "INCOME" ? "+₹" : "-₹";
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.date || '-'}</td>
+            <td>${typeBadge}</td>
+            <td><span class="badge" style="background:#1e293b; color:var(--accent);">${cat}</span></td>
+            <td style="font-weight:700; color:${amtColor};">${amtSign}${amt.toLocaleString('en-IN')}</td>
+            <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--text);">${r.ref || 'CASH'}</span></td>
+            <td style="max-width:240px; white-space:normal;">${r.reason}</td>
+            <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
+            <td>
+              <button class="small secondary" onclick="editRepair('${r.id}')">✏️</button>
+              <button class="small danger" onclick="deleteRepair('${r.id}')">🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      const netSurplus = totalIncome - totalExpense;
+      document.getElementById('repTotalIncome').textContent = '₹' + totalIncome.toLocaleString('en-IN');
+      document.getElementById('repTotalCost').textContent = '₹' + totalExpense.toLocaleString('en-IN');
+      
+      const netElem = document.getElementById('repNetBalance');
+      netElem.textContent = (netSurplus >= 0 ? '+₹' : '-₹') + Math.abs(netSurplus).toLocaleString('en-IN');
+      netElem.style.color = netSurplus >= 0 ? "var(--success)" : "var(--danger)";
+    }
+
     function openNewExpenseForm() {
       document.getElementById('repEditId').value = '';
       document.getElementById('repFormHeaderTitle').textContent = "Naya Entry / Kharcha";
@@ -757,7 +849,6 @@
         return;
       }
 
-      // Check category in dropdown, if missing auto add
       const catSelect = document.getElementById('repCategory');
       const catVal = r.category || "General Expense";
       let hasOption = false;
@@ -783,6 +874,327 @@
       const container = document.getElementById('repFormContainer');
       container.classList.remove('hidden');
       container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function saveRepairRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const data = getActiveDataset();
+      const editId = document.getElementById('repEditId').value;
+      const type = document.getElementById('repType').value;
+      const cat = document.getElementById('repCategory').value;
+      const amt = parseFloat(document.getElementById('repAmount').value);
+
+      const record = {
+        id: editId || 'rep_' + Date.now(),
+        type: type,
+        category: cat,
+        date: document.getElementById('repDate').value,
+        amount: amt,
+        ref: document.getElementById('repRef').value.trim(),
+        reason: document.getElementById('repReason').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = data.repairing.findIndex(x => x.id === editId);
+        if (idx !== -1) data.repairing[idx] = record;
+        logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
+      } else {
+        data.repairing.unshift(record);
+        logAction("Add Entry", `Added ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
+      }
+
+      saveLocal();
+      renderRepairingTable();
+      renderLogs();
+      closeExpenseForm();
+      e.target.reset();
+      syncCloud();
+    }
+
+    function deleteRepair(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Entry delete karni hai?")) return;
+      const data = getActiveDataset();
+      const item = data.repairing.find(x => x.id === id);
+      
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
+      data.repairing = data.repairing.filter(x => x.id !== id);
+      logAction("Delete Entry", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
+      saveLocal();
+      renderRepairingTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
+    function renderLabourLedgerTable() {
+      const data = getActiveDataset();
+      const filter = document.getElementById('workerGroupFilter').value;
+      const tbody = document.getElementById('labourLedgerTableBody');
+      tbody.innerHTML = '';
+      
+      let totalEarned = 0;
+      let totalPaid = 0;
+      let runningBalance = 0;
+
+      const records = (data.labour || [])
+        .filter(l => filter === 'ALL' || l.workerGroup === filter)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+
+      records.forEach(l => {
+        const earned = Number(l.totalCharge) || 0;
+        const paid = Number(l.hisaabTotal) || (l.paymentStatus === 'PAID' ? earned : 0);
+        
+        totalEarned += earned;
+        totalPaid += paid;
+        runningBalance += (earned - paid);
+
+        const statusBadge = runningBalance <= 0 
+          ? `<span class="badge badge-paid">CLEARED (0)</span>`
+          : `<span class="badge badge-pending">₹${runningBalance} PENDING</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${l.date || '-'}</td>
+          <td><strong>${l.workerGroup}</strong></td>
+          <td style="max-width:200px; white-space:normal;">${l.remarks || (l.labourCount ? l.labourCount + ' Labour' : 'Work')}</td>
+          <td style="color:#fff; font-weight:600;">${earned > 0 ? '+₹' + earned.toLocaleString('en-IN') : '-'}</td>
+          <td style="color:var(--success); font-weight:600;">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('labTotalAmount').textContent = '₹' + totalEarned.toLocaleString('en-IN');
+      document.getElementById('labPaidAmount').textContent = '₹' + totalPaid.toLocaleString('en-IN');
+      document.getElementById('labPendingAmount').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
+    }
+
+    function renderLabourAttendanceTable() {
+      const data = getActiveDataset();
+      const tbody = document.getElementById('labourAttendanceTableBody');
+      tbody.innerHTML = '';
+      
+      const records = [...(data.labour || [])].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+      records.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${l.date || '-'}</strong></td>
+          <td style="color:var(--accent); font-weight:600;">${l.workerGroup}</td>
+          <td>${l.labourCount ? `${l.labourCount} (@₹${l.labourCharge || 0})` : '-'}</td>
+          <td>${l.mistriCount ? `${l.mistriCount} (@₹${l.mistriCharge || 0})` : '-'}</td>
+          <td style="font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
+          <td style="max-width:240px; white-space:normal;">${l.remarks || '-'}</td>
+          <td>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openLabourForm(isEdit = false) {
+      const formCard = document.getElementById('labFormCard');
+      formCard.classList.remove('hidden');
+      if (!isEdit) {
+        document.getElementById('labEditId').value = '';
+        document.getElementById('labFormTitle').textContent = "Mark Haziri / Work Record";
+        document.getElementById('labSubmitBtn').textContent = "Save Record";
+        document.getElementById('labDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('labCount').value = '';
+        document.getElementById('labCharge').value = '';
+        document.getElementById('labMistriCount').value = '';
+        document.getElementById('labMistriCharge').value = '';
+        document.getElementById('labTotalCharge').value = '';
+        document.getElementById('labHisaabTotal').value = '';
+        document.getElementById('labRemarks').value = '';
+        document.getElementById('labPaymentStatus').value = 'PAID';
+      }
+      formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function closeLabourForm() {
+      document.getElementById('labFormCard').classList.add('hidden');
+      document.getElementById('labEditId').value = '';
+    }
+
+    function autoCalculateLabourTotal() {
+      const lCount = parseFloat(document.getElementById('labCount').value) || 0;
+      const lRate = parseFloat(document.getElementById('labCharge').value) || 0;
+      const mCount = parseFloat(document.getElementById('labMistriCount').value) || 0;
+      const mRate = parseFloat(document.getElementById('labMistriCharge').value) || 0;
+
+      const total = (lCount * lRate) + (mCount * mRate);
+      if (total > 0 || lCount > 0 || mCount > 0) {
+        document.getElementById('labTotalCharge').value = total;
+      }
+    }
+
+    function editLabour(id) {
+      const data = getActiveDataset();
+      const l = (data.labour || []).find(x => x.id === id);
+      if (!l) {
+        alert("Labour record nahi mila!");
+        return;
+      }
+      document.getElementById('labEditId').value = l.id;
+      document.getElementById('labFormTitle').textContent = "✏️ Edit Haziri (" + l.workerGroup + ")";
+      document.getElementById('labSubmitBtn').textContent = "Update Record";
+      document.getElementById('labGroup').value = l.workerGroup;
+      document.getElementById('labDate').value = l.date || '';
+      document.getElementById('labCount').value = l.labourCount || '';
+      document.getElementById('labCharge').value = l.labourCharge || '';
+      document.getElementById('labMistriCount').value = l.mistriCount || '';
+      document.getElementById('labMistriCharge').value = l.mistriCharge || '';
+      document.getElementById('labTotalCharge').value = l.totalCharge || '';
+      document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
+      document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
+      document.getElementById('labRemarks').value = l.remarks || '';
+      openLabourForm(true);
+    }
+
+    function saveLabourRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const data = getActiveDataset();
+      const editId = document.getElementById('labEditId').value;
+      const earned = parseFloat(document.getElementById('labTotalCharge').value) || 0;
+      const hisaab = parseFloat(document.getElementById('labHisaabTotal').value) || 0;
+      const status = document.getElementById('labPaymentStatus').value;
+
+      const record = {
+        id: editId || 'lab_' + Date.now(),
+        workerGroup: document.getElementById('labGroup').value,
+        date: document.getElementById('labDate').value,
+        labourCount: parseFloat(document.getElementById('labCount').value) || 0,
+        labourCharge: parseFloat(document.getElementById('labCharge').value) || 0,
+        mistriCount: parseFloat(document.getElementById('labMistriCount').value) || 0,
+        mistriCharge: parseFloat(document.getElementById('labMistriCharge').value) || 0,
+        totalCharge: earned,
+        hisaabTotal: hisaab,
+        paymentStatus: status,
+        remarks: document.getElementById('labRemarks').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = data.labour.findIndex(x => x.id === editId);
+        if (idx !== -1) data.labour[idx] = record;
+        logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
+      } else {
+        data.labour.unshift(record);
+        logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
+      }
+
+      saveLocal();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
+      renderLogs();
+      closeLabourForm();
+      e.target.reset();
+      syncCloud();
+    }
+
+    function deleteLabour(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Entry delete karni hai?")) return;
+      const data = getActiveDataset();
+      const item = data.labour.find(x => x.id === id);
+
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
+      data.labour = data.labour.filter(x => x.id !== id);
+      logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
+      saveLocal();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    function switchLabourSubView(view) {
+      const btnLedger = document.getElementById('subBtnLedger');
+      const btnAttendance = document.getElementById('subBtnAttendance');
+      const vLedger = document.getElementById('labourLedgerView');
+      const vAttendance = document.getElementById('labourAttendanceView');
+
+      if (view === 'ledger') {
+        btnLedger.classList.add('active');
+        btnAttendance.classList.remove('active');
+        vLedger.classList.remove('hidden');
+        vAttendance.classList.add('hidden');
+        renderLabourLedgerTable();
+      } else {
+        btnAttendance.classList.add('active');
+        btnLedger.classList.remove('active');
+        vAttendance.classList.remove('hidden');
+        vLedger.classList.add('hidden');
+        renderLabourAttendanceTable();
+      }
+    }
+
+    // --- SAMAAN PARTY RUNNING LEDGER ---
+    function renderSamaanTable() {
+      const data = getActiveDataset();
+      const filterParty = document.getElementById('partyFilterSelect').value;
+      const tbody = document.getElementById('samaanTableBody');
+      tbody.innerHTML = '';
+      
+      let totalValue = 0;
+      let totalPaid = 0;
+      let runningBalance = 0;
+
+      const records = (data.samaan || [])
+        .filter(s => filterParty === 'ALL' || s.refFrom === filterParty)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+
+      records.forEach(s => {
+        const val = Number(s.amount) || 0;
+        const paid = Number(s.paidAmount) || (s.status.includes('CLEARED') ? val : 0);
+
+        totalValue += val;
+        totalPaid += paid;
+        runningBalance += (val - paid);
+
+        let badgeClass = "badge-neutral";
+        if (runningBalance <= 0 || s.status.includes("RETURNED") || s.status.includes("CLEARED")) badgeClass = "badge-paid";
+        if (runningBalance > 0 && s.status.includes("PENDING")) badgeClass = "badge-pending";
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${s.date || '-'}</strong></td>
+          <td style="color:var(--accent); font-weight:600;">${s.refFrom || '-'}</td>
+          <td>${s.samaanIn || '-'}</td>
+          <td style="font-weight:700; color:#fff;">${val > 0 ? '+₹' + val.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:var(--success);">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
+          <td><span class="badge ${badgeClass}">${s.status || 'RECEIVED'}</span></td>
+          <td>${s.refTo || '-'}</td>
+          <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
+          <td>
+            <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
+            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('samTotalValue').textContent = '₹' + totalValue.toLocaleString('en-IN');
+      document.getElementById('samTotalPaid').textContent = '₹' + totalPaid.toLocaleString('en-IN');
+      document.getElementById('samTotalBalance').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
     }
 
     function openNewSamaanForm() {
@@ -814,7 +1226,6 @@
         return;
       }
 
-      // Check party in dropdown, if missing auto add
       const partySelect = document.getElementById('samPartySelect');
       const partyVal = s.refFrom || '';
       let hasParty = false;
@@ -845,7 +1256,64 @@
       container.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // --- APPLICATION STARTUP SEQUENCE ---
+    function saveSamaanRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const data = getActiveDataset();
+      const editId = document.getElementById('samEditId').value;
+      const val = parseFloat(document.getElementById('samAmount').value) || 0;
+      const paid = parseFloat(document.getElementById('samPaid').value) || 0;
+
+      const record = {
+        id: editId || 'sam_' + Date.now(),
+        date: document.getElementById('samDate').value,
+        refFrom: document.getElementById('samPartySelect').value.trim(),
+        samaanIn: document.getElementById('samIn').value.trim(),
+        amount: val,
+        paidAmount: paid,
+        samaanOut: document.getElementById('samOut').value.trim(),
+        refTo: document.getElementById('samRefTo').value.trim(),
+        status: document.getElementById('samStatus').value,
+        reason: document.getElementById('samReason').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = data.samaan.findIndex(x => x.id === editId);
+        if (idx !== -1) data.samaan[idx] = record;
+        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
+      } else {
+        data.samaan.unshift(record);
+        logAction("Add Samaan", `Added Samaan: ${record.samaanIn} (${record.refFrom} ₹${val})`);
+      }
+
+      saveLocal();
+      renderSamaanTable();
+      renderLogs();
+      closeSamaanForm();
+      e.target.reset();
+      syncCloud();
+    }
+
+    function deleteSamaan(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Samaan entry delete karni hai?")) return;
+      const data = getActiveDataset();
+      const item = data.samaan.find(x => x.id === id);
+
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+
+      data.samaan = data.samaan.filter(x => x.id !== id);
+      logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
+      saveLocal();
+      renderSamaanTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    // --- APPLICATION STARTUP SEQUENCE (CALLED ONCE) ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
       renderBookSelectors();
@@ -898,7 +1366,7 @@
 
           if (!systemData.deletedIds) systemData.deletedIds = [];
 
-          // GUARANTEE: If active book has 0 repairs, reload seed
+          // HARD GUARANTEE: If active book has 0 repairing entries, restore seed
           const curData = getActiveDataset();
           if (!curData.repairing || curData.repairing.length === 0) {
             systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
@@ -1378,7 +1846,7 @@
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
-            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑</button>` : ''}
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
           </div>
         `;
         container.appendChild(row);
