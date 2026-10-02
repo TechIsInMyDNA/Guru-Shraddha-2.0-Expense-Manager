@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Guru Shraddha 2.0 - Management System</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #131b2e;
+      --card-inner: #1c2742;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.2);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #243456;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
+    
+    /* Top Bar */
+    .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    
+    /* Container & Layout */
+    .container { max-width: 900px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+    .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* Summary Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .stat-card { background: var(--card-inner); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+    .stat-val { font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px; }
+
+    /* Inputs & Forms */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .grid-1 { margin-bottom: 10px; }
+    input, select, textarea { width: 100%; padding: 10px 12px; background: #0c1222; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; transition: 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+    label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: block; }
+    
+    /* Buttons */
+    button { background: var(--accent); color: #050b14; font-weight: 600; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+    button:hover { opacity: 0.9; }
+    button.secondary { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); }
+    button.danger { background: var(--danger); color: #fff; }
+    button.success { background: var(--success); color: #fff; }
+    button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
+
+    /* Tables & Lists */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    th { background: #0c1222; padding: 10px; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+    
+    /* Bottom Navigation Bar for Mobile */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(19, 27, 46, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; height: 100%; border: none; background: none; gap: 4px; }
+    .nav-item.active { color: var(--accent); font-weight: 700; }
+    .nav-item svg { width: 18px; height: 18px; stroke-width: 2; }
+
+    /* Modals & Overlays */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; padding: 20px; }
+    
+    .hidden { display: none !important; }
+    .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #243456; color: var(--accent); }
+    .log-item { background: var(--card-inner); padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 6px; border-left: 3px solid var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="brand">
+      <span>🏛️</span> Guru Shraddha 2.0
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
+        <span>👤</span> <span id="currentMemberDisplay">No Member</span>
+      </div>
+      <button class="small secondary" onclick="syncCloud()"><span id="syncIcon">🔄</span> Sync</button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    
+    <!-- Sync Status Banner -->
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
+      <span id="syncStatus">Status: Ready</span>
+      <span id="lastSyncedTime">Last Sync: Never</span>
+    </div>
+
+    <!-- TAB 1: REPAIRING & EXPENSES (Mapped to GURU_SHRADDHA PROJECT SHEET REPAIRING) -->
+    <div id="tab-repairing" class="tab-content">
+      <div class="stats-grid" style="margin-bottom: 12px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Repairing Cost</div>
+          <div id="repTotalCost" class="stat-val" style="color:var(--accent);">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Entries</div>
+          <div id="repCount" class="stat-val">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Add Repair / Kharcha Entry</span>
+          <button class="small" onclick="toggleForm('repFormContainer')">+ New Record</button>
+        </div>
+        <div id="repFormContainer" class="hidden">
+          <form onsubmit="saveRepairRecord(event)">
+            <input type="hidden" id="repEditId">
+            <div class="grid-2">
+              <div>
+                <label>Date</label>
+                <input type="date" id="repDate" required>
+              </div>
+              <div>
+                <label>Amount (₹)</label>
+                <input type="number" id="repAmount" step="any" placeholder="e.g. 500" required>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Payment Ref / Mode</label>
+                <input type="text" id="repRef" placeholder="e.g. CASH, PYTM, IMPS" required>
+              </div>
+              <div>
+                <label>Reason / Details</label>
+                <input type="text" id="repReason" placeholder="Parda holder, Tanki fit, etc." required>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="submit" class="flex-1">Save Entry</button>
+              <button type="button" class="secondary" onclick="toggleForm('repFormContainer')">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Payment Ref</th>
+                <th>Reason</th>
+                <th>Logged By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="repairingTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LABOUR ATTENDANCE (Mapped to GURU_SHRADDHA LABOUR BHIYA ATTENDANCE CHARGE SHEET) -->
+    <div id="tab-labour" class="tab-content hidden">
+      <div class="stats-grid" style="margin-bottom: 12px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Labour Wages</div>
+          <div id="labTotalAmount" class="stat-val" style="color:var(--warning);">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Filtered Group</div>
+          <select id="workerGroupFilter" onchange="renderLabourTable()" style="padding:4px; font-size:11px; margin-top:4px;">
+            <option value="ALL">All Worker Sheets</option>
+            <option value="DESHKAR BHIYA">DESHKAR BHIYA</option>
+            <option value="TEJU BHIYA">TEJU BHIYA</option>
+            <option value="MANGLA BAI REZA SERVICES">MANGLA BAI REZA</option>
+            <option value="NANDU BHIYA">NANDU BHIYA</option>
+            <option value="DESHKARGS BHIYA">DESHKARGS BHIYA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Labour Haziri / Attendance Form</span>
+          <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
+        </div>
+        <div id="labFormContainer" class="hidden">
+          <form onsubmit="saveLabourRecord(event)">
+            <input type="hidden" id="labEditId">
+            <div class="grid-2">
+              <div>
+                <label>Worker Sheet / Group</label>
+                <select id="labGroup" required>
+                  <option value="DESHKAR BHIYA">DESHKAR BHIYA</option>
+                  <option value="TEJU BHIYA">TEJU BHIYA</option>
+                  <option value="MANGLA BAI REZA SERVICES">MANGLA BAI REZA SERVICES</option>
+                  <option value="NANDU BHIYA">NANDU BHIYA</option>
+                  <option value="DESHKARGS BHIYA">DESHKARGS BHIYA</option>
+                </select>
+              </div>
+              <div>
+                <label>Date</label>
+                <input type="date" id="labDate">
+              </div>
+            </div>
+            <div class="grid-3">
+              <div>
+                <label>Labour (Qty / Chg)</label>
+                <div style="display:flex; gap:4px;">
+                  <input type="number" id="labCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labCharge" placeholder="₹" style="width:50%;">
+                </div>
+              </div>
+              <div>
+                <label>Mistri (Qty / Chg)</label>
+                <div style="display:flex; gap:4px;">
+                  <input type="number" id="labMistriCount" placeholder="Count" style="width:50%;">
+                  <input type="number" id="labMistriCharge" placeholder="₹" style="width:50%;">
+                </div>
+              </div>
+              <div>
+                <label>Total Charge (₹)</label>
+                <input type="number" id="labTotalCharge" placeholder="Total ₹">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Hisaab Total / Settlement (₹)</label>
+                <input type="number" id="labHisaabTotal" placeholder="Final Paid Hisaab">
+              </div>
+              <div>
+                <label>Remarks</label>
+                <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="submit" class="flex-1">Save Haziri</button>
+              <button type="button" class="secondary" onclick="toggleForm('labFormContainer')">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sheet Group</th>
+                <th>Date</th>
+                <th>Labour/Reza</th>
+                <th>Mistri</th>
+                <th>Total Chg</th>
+                <th>Hisaab Total</th>
+                <th>Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="labourTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SAMAAN IN/OUT (Mapped to GURU_SHRADDHA SAMAAN IN_OUT) -->
+    <div id="tab-samaan" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">
+          <span>Samaan IN / OUT Tracker</span>
+          <button class="small" onclick="toggleForm('samFormContainer')">+ Samaan Entry</button>
+        </div>
+        <div id="samFormContainer" class="hidden">
+          <form onsubmit="saveSamaanRecord(event)">
+            <input type="hidden" id="samEditId">
+            <div class="grid-2">
+              <div>
+                <label>Date</label>
+                <input type="date" id="samDate" required>
+              </div>
+              <div>
+                <label>Reason / Note</label>
+                <input type="text" id="samReason" placeholder="e.g. OLD TANKI DAMAGE">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Samaan IN (Aaya)</label>
+                <input type="text" id="samIn" placeholder="e.g. SINTEX 500 LTR TANKI">
+              </div>
+              <div>
+                <label>REF NO / FROM</label>
+                <input type="text" id="samRefFrom" placeholder="e.g. SR TRADERS">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Samaan OUT / RETURN (Gaya)</label>
+                <input type="text" id="samOut" placeholder="Returned material">
+              </div>
+              <div>
+                <label>REF NO / TO</label>
+                <input type="text" id="samRefTo" placeholder="Vendor / Person">
+              </div>
+            </div>
+            <div class="grid-1">
+              <label>Remarks</label>
+              <input type="text" id="samRemarks" placeholder="BAL, Complete, etc.">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="submit" class="flex-1">Save Samaan</button>
+              <button type="button" class="secondary" onclick="toggleForm('samFormContainer')">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Samaan IN</th>
+                <th>From</th>
+                <th>Samaan OUT</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="samaanTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: AUDIT TRAIL LOGS -->
+    <div id="tab-logs" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">Live Audit Trail (Who did what)</div>
+        <div id="logsContainer" style="max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: MEMBERS & MASTER CONFIG -->
+    <div id="tab-settings" class="tab-content hidden">
+      <!-- Master Passphrase Unlock Screen -->
+      <div id="masterLockGate" class="card">
+        <div class="card-title">🔒 Master Authorization Required</div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings ko access karne ke liye Master Passphrase daalein:</p>
+        <div class="grid-1">
+          <input type="password" id="masterPassInput" placeholder="Master Passphrase">
+        </div>
+        <button onclick="unlockMasterGate()" style="width:100%;">Verify Master Passphrase</button>
+      </div>
+
+      <!-- Master Unlocked View -->
+      <div id="masterConfigSection" class="hidden">
+        <!-- Family Members Management -->
+        <div class="card" style="margin-bottom: 14px;">
+          <div class="card-title">
+            <span>Family Members & 4-Digit PINs</span>
+            <button class="small" onclick="promptNewMember()">+ Add Member</button>
+          </div>
+          <div id="membersList"></div>
+        </div>
+
+        <!-- GitHub Integration Config -->
+        <div class="card">
+          <div class="card-title">GitHub Encrypted Cloud Storage</div>
+          <div class="grid-1">
+            <label>GitHub Repository (Hardcoded):</label>
+            <input type="text" id="cfgRepo" value="TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager" disabled style="background:#1a233a;">
+          </div>
+          <div class="grid-1">
+            <label>Target File:</label>
+            <input type="text" value="data.json (AES-256-GCM Encrypted)" disabled style="background:#1a233a;">
+          </div>
+          <div class="grid-1">
+            <label>GitHub Personal Access Token (PAT):</label>
+            <input type="password" id="cfgPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          </div>
+          <button onclick="saveMasterConfig()" class="success" style="width:100%;">Save Cloud Configuration</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="nav-bar">
+    <button class="nav-item active" onclick="switchTab('repairing', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span>Repairing</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('labour', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      <span>Labour</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('samaan', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+      <span>Samaan</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('logs', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span>Logs</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('settings', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+      <span>Settings</span>
+    </button>
+  </div>
+
+  <!-- Member PIN Verification Modal -->
+  <div id="memberLoginModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="card-title">Family Member Login</div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Apna naam select karein aur 4-digit PIN enter karein:</p>
+      <div class="grid-1">
+        <label>Select Member</label>
+        <select id="loginMemberSelect"></select>
+      </div>
+      <div class="grid-1">
+        <label>4-Digit Security PIN</label>
+        <input type="password" id="loginPinInput" maxlength="4" placeholder="••••" style="text-align:center; font-size:18px; letter-spacing:6px;">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button onclick="authenticateMember()" style="flex:1;">Login Member</button>
+        <button onclick="closeModal('memberLoginModal')" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // System Constants
+    const MASTER_PASSPHRASE = "GuruShraddha@144";
+    const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
+    const GITHUB_FILE = "data.json";
+
+    // Application State Loaded from Excel Seed
+    let systemData = {
+      repairing: [],
+      samaan: [],
+      labour: [],
+      members: [
+        { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
+        { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
+        { id: "m3", name: "Member 3", pin: "1234", role: "Member" },
+        { id: "m4", name: "Member 4", pin: "1234", role: "Member" }
+      ],
+      activityLogs: []
+    };
+
+    let currentMember = null;
+    let fileSha = null;
+
+    // --- EMBEDDED EXCEL SEED DATA ---
+    const initialSeedData = {
+      repairing: [
+        {"id":"rep_3","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_4","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_5","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_6","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_7","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_8","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_9","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_10","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_11","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_12","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_13","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_14","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_15","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_16","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_17","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_18","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+      ],
+      samaan: [
+        {"id":"sam_3","date":"2025-01-25","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY ","refFrom":"SR TRADERS","samaanOut":"","refTo":"","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+      ],
+      labour: [
+        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"remarks":"TILES LAGAE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"hisaabTotal":0,"remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":4200,"remarks":"PAINTING+CHILLAR WORKS (HISAAB DONE)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"hisaabTotal":0,"remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"hisaabTotal":7850,"remarks":"PALASTR C1G1 AND C1C2 + THEKEDAR 500","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_8","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"hisaabTotal":800,"remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_9","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":0,"remarks":"REZA HAZIRI + MISC 10","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1000,"remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"hisaabTotal":1570,"remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+      ],
+      members: [
+        { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
+        { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
+        { id: "m3", name: "Member 3", pin: "1234", role: "Member" },
+        { id: "m4", name: "Member 4", pin: "1234", role: "Member" }
+      ],
+      activityLogs: [
+        { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import from all 3 Excel sheets." }
+      ]
+    };
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLocalStorage();
+      renderAllViews();
+      autoCheckMemberSession();
+      if (getPatToken()) syncCloud();
+    });
+
+    function loadLocalStorage() {
+      const local = localStorage.getItem('gs_encrypted_system_state');
+      if (local) {
+        try {
+          systemData = JSON.parse(local);
+        } catch(e) {
+          console.error("Local parse error", e);
+        }
+      } else {
+        systemData = initialSeedData;
+        saveLocal();
+      }
+    }
+
+    function saveLocal() {
+      localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
+    }
+
+    function logAction(action, details) {
+      const logEntry = {
+        id: "log_" + Date.now(),
+        action: action,
+        performedBy: currentMember ? currentMember.name : "Unknown",
+        timestamp: new Date().toLocaleString('en-IN'),
+        details: details
+      };
+      systemData.activityLogs.unshift(logEntry);
+      if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
+    }
+
+    // --- REPAIRING & EXPENSES LOGIC ---
+    function renderRepairingTable() {
+      const tbody = document.getElementById('repairingTableBody');
+      tbody.innerHTML = '';
+      let total = 0;
+      systemData.repairing.forEach(r => {
+        total += Number(r.amount) || 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.date || '-'}</td>
+          <td style="font-weight:700; color:var(--accent);">₹${Number(r.amount).toLocaleString('en-IN')}</td>
+          <td><span class="badge">${r.ref || 'CASH'}</span></td>
+          <td style="max-width:240px; white-space:normal;">${r.reason}</td>
+          <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
+          <td>
+            <button class="small secondary" onclick="editRepair('${r.id}')">✏️</button>
+            <button class="small danger" onclick="deleteRepair('${r.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('repTotalCost').textContent = '₹' + total.toLocaleString('en-IN');
+      document.getElementById('repCount').textContent = systemData.repairing.length;
+    }
+
+    function saveRepairRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const editId = document.getElementById('repEditId').value;
+      const record = {
+        id: editId || 'rep_' + Date.now(),
+        date: document.getElementById('repDate').value,
+        amount: parseFloat(document.getElementById('repAmount').value),
+        ref: document.getElementById('repRef').value.trim(),
+        reason: document.getElementById('repReason').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = systemData.repairing.findIndex(x => x.id === editId);
+        if (idx !== -1) systemData.repairing[idx] = record;
+        logAction("Edit Repair", `Edited: ₹${record.amount} (${record.reason})`);
+      } else {
+        systemData.repairing.unshift(record);
+        logAction("Add Repair", `Added: ₹${record.amount} (${record.reason})`);
+      }
+
+      saveLocal();
+      renderRepairingTable();
+      renderLogs();
+      toggleForm('repFormContainer');
+      document.getElementById('repEditId').value = '';
+      e.target.reset();
+      syncCloud();
+    }
+
+    function editRepair(id) {
+      const r = systemData.repairing.find(x => x.id === id);
+      if (!r) return;
+      document.getElementById('repEditId').value = r.id;
+      document.getElementById('repDate').value = r.date;
+      document.getElementById('repAmount').value = r.amount;
+      document.getElementById('repRef').value = r.ref;
+      document.getElementById('repReason').value = r.reason;
+      document.getElementById('repFormContainer').classList.remove('hidden');
+    }
+
+    function deleteRepair(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Kya aap sach me is entry ko delete karna chahte hain?")) return;
+      const item = systemData.repairing.find(x => x.id === id);
+      systemData.repairing = systemData.repairing.filter(x => x.id !== id);
+      logAction("Delete Repair", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
+      saveLocal();
+      renderRepairingTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    // --- LABOUR LOGIC ---
+    function renderLabourTable() {
+      const filter = document.getElementById('workerGroupFilter').value;
+      const tbody = document.getElementById('labourTableBody');
+      tbody.innerHTML = '';
+      let total = 0;
+
+      systemData.labour.forEach(l => {
+        if (filter !== 'ALL' && l.workerGroup !== filter) return;
+        total += Number(l.totalCharge) || Number(l.hisaabTotal) || 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${l.workerGroup}</strong></td>
+          <td>${l.date || '-'}</td>
+          <td>${l.labourCount ? l.labourCount + ' (@' + (l.labourCharge || 0) + ')' : '-'}</td>
+          <td>${l.mistriCount ? l.mistriCount + ' (@' + (l.mistriCharge || 0) + ')' : '-'}</td>
+          <td style="color:var(--warning); font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
+          <td style="color:var(--success); font-weight:700;">${l.hisaabTotal ? '₹' + Number(l.hisaabTotal).toLocaleString('en-IN') : '-'}</td>
+          <td style="max-width:180px; white-space:normal;">${l.remarks || '-'}</td>
+          <td>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('labTotalAmount').textContent = '₹' + total.toLocaleString('en-IN');
+    }
+
+    function saveLabourRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const editId = document.getElementById('labEditId').value;
+      const record = {
+        id: editId || 'lab_' + Date.now(),
+        workerGroup: document.getElementById('labGroup').value,
+        date: document.getElementById('labDate').value,
+        labourCount: parseFloat(document.getElementById('labCount').value) || 0,
+        labourCharge: parseFloat(document.getElementById('labCharge').value) || 0,
+        mistriCount: parseFloat(document.getElementById('labMistriCount').value) || 0,
+        mistriCharge: parseFloat(document.getElementById('labMistriCharge').value) || 0,
+        totalCharge: parseFloat(document.getElementById('labTotalCharge').value) || 0,
+        hisaabTotal: parseFloat(document.getElementById('labHisaabTotal').value) || 0,
+        remarks: document.getElementById('labRemarks').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = systemData.labour.findIndex(x => x.id === editId);
+        if (idx !== -1) systemData.labour[idx] = record;
+        logAction("Edit Labour", `Edited: ${record.workerGroup} haziri/payment`);
+      } else {
+        systemData.labour.unshift(record);
+        logAction("Add Labour", `Added: ${record.workerGroup} (₹${record.totalCharge || record.hisaabTotal})`);
+      }
+
+      saveLocal();
+      renderLabourTable();
+      renderLogs();
+      toggleForm('labFormContainer');
+      document.getElementById('labEditId').value = '';
+      e.target.reset();
+      syncCloud();
+    }
+
+    function editLabour(id) {
+      const l = systemData.labour.find(x => x.id === id);
+      if (!l) return;
+      document.getElementById('labEditId').value = l.id;
+      document.getElementById('labGroup').value = l.workerGroup;
+      document.getElementById('labDate').value = l.date || '';
+      document.getElementById('labCount').value = l.labourCount || '';
+      document.getElementById('labCharge').value = l.labourCharge || '';
+      document.getElementById('labMistriCount').value = l.mistriCount || '';
+      document.getElementById('labMistriCharge').value = l.mistriCharge || '';
+      document.getElementById('labTotalCharge').value = l.totalCharge || '';
+      document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
+      document.getElementById('labRemarks').value = l.remarks || '';
+      document.getElementById('labFormContainer').classList.remove('hidden');
+    }
+
+    function deleteLabour(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Haziri record delete karein?")) return;
+      const item = systemData.labour.find(x => x.id === id);
+      systemData.labour = systemData.labour.filter(x => x.id !== id);
+      logAction("Delete Labour", `Deleted Haziri for ${item ? item.workerGroup : ''}`);
+      saveLocal();
+      renderLabourTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    // --- SAMAAN IN/OUT LOGIC ---
+    function renderSamaanTable() {
+      const tbody = document.getElementById('samaanTableBody');
+      tbody.innerHTML = '';
+      systemData.samaan.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${s.date || '-'}</td>
+          <td style="color:var(--success); font-weight:600;">${s.samaanIn || '-'}</td>
+          <td>${s.refFrom || '-'}</td>
+          <td style="color:var(--danger); font-weight:600;">${s.samaanOut || '-'}</td>
+          <td>${s.refTo || '-'}</td>
+          <td>${s.reason || '-'}</td>
+          <td><span class="badge">${s.remarks || 'DONE'}</span></td>
+          <td>
+            <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
+            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function saveSamaanRecord(e) {
+      e.preventDefault();
+      if (!requireActiveMember()) return;
+      const editId = document.getElementById('samEditId').value;
+      const record = {
+        id: editId || 'sam_' + Date.now(),
+        date: document.getElementById('samDate').value,
+        samaanIn: document.getElementById('samIn').value.trim(),
+        refFrom: document.getElementById('samRefFrom').value.trim(),
+        samaanOut: document.getElementById('samOut').value.trim(),
+        refTo: document.getElementById('samRefTo').value.trim(),
+        reason: document.getElementById('samReason').value.trim(),
+        remarks: document.getElementById('samRemarks').value.trim(),
+        updatedBy: currentMember.name,
+        updatedAt: new Date().toLocaleString('en-IN')
+      };
+
+      if (editId) {
+        const idx = systemData.samaan.findIndex(x => x.id === editId);
+        if (idx !== -1) systemData.samaan[idx] = record;
+        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn || record.samaanOut}`);
+      } else {
+        systemData.samaan.unshift(record);
+        logAction("Add Samaan", `Added Samaan: ${record.samaanIn || record.samaanOut}`);
+      }
+
+      saveLocal();
+      renderSamaanTable();
+      renderLogs();
+      toggleForm('samFormContainer');
+      document.getElementById('samEditId').value = '';
+      e.target.reset();
+      syncCloud();
+    }
+
+    function editSamaan(id) {
+      const s = systemData.samaan.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('samEditId').value = s.id;
+      document.getElementById('samDate').value = s.date;
+      document.getElementById('samIn').value = s.samaanIn;
+      document.getElementById('samRefFrom').value = s.refFrom;
+      document.getElementById('samOut').value = s.samaanOut;
+      document.getElementById('samRefTo').value = s.refTo;
+      document.getElementById('samReason').value = s.reason;
+      document.getElementById('samRemarks').value = s.remarks;
+      document.getElementById('samFormContainer').classList.remove('hidden');
+    }
+
+    function deleteSamaan(id) {
+      if (!requireActiveMember()) return;
+      if (!confirm("Samaan record delete karein?")) return;
+      const item = systemData.samaan.find(x => x.id === id);
+      systemData.samaan = systemData.samaan.filter(x => x.id !== id);
+      logAction("Delete Samaan", `Deleted: ${item ? (item.samaanIn || item.samaanOut) : ''}`);
+      saveLocal();
+      renderSamaanTable();
+      renderLogs();
+      syncCloud();
+    }
+
+    // --- LOGS & AUDIT ---
+    function renderLogs() {
+      const c = document.getElementById('logsContainer');
+      c.innerHTML = '';
+      systemData.activityLogs.forEach(l => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <strong>${l.action}</strong>
+            <span style="color:var(--text-muted); font-size:10px;">${l.timestamp}</span>
+          </div>
+          <div style="color:#cbd5e1;">${l.details}</div>
+          <div style="font-size:10px; color:var(--accent); margin-top:2px;">By: ${l.performedBy}</div>
+        `;
+        c.appendChild(item);
+      });
+    }
+
+    // --- MEMBERSHIP & PIN AUTHENTICATION ---
+    function showMemberLoginModal() {
+      const select = document.getElementById('loginMemberSelect');
+      select.innerHTML = '';
+      systemData.members.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.name;
+        select.appendChild(opt);
+      });
+      document.getElementById('loginPinInput').value = '';
+      document.getElementById('memberLoginModal').classList.remove('hidden');
+    }
+
+    function authenticateMember() {
+      const id = document.getElementById('loginMemberSelect').value;
+      const pin = document.getElementById('loginPinInput').value.trim();
+      const m = systemData.members.find(x => x.id === id);
+      if (m && m.pin === pin) {
+        currentMember = m;
+        sessionStorage.setItem('gs_active_member', JSON.stringify(m));
+        updateMemberUI();
+        closeModal('memberLoginModal');
+      } else {
+        alert("Galat PIN! Dubara check karein.");
+      }
+    }
+
+    function autoCheckMemberSession() {
+      const s = sessionStorage.getItem('gs_active_member');
+      if (s) {
+        try { currentMember = JSON.parse(s); } catch(e){}
+      }
+      if (!currentMember && systemData.members.length > 0) {
+        showMemberLoginModal();
+      }
+      updateMemberUI();
+    }
+
+    function updateMemberUI() {
+      const d = document.getElementById('currentMemberDisplay');
+      d.textContent = currentMember ? currentMember.name : "Select Member";
+    }
+
+    function requireActiveMember() {
+      if (!currentMember) {
+        alert("Kripya pehle apna Member select karke PIN enter karein!");
+        showMemberLoginModal();
+        return false;
+      }
+      return true;
+    }
+
+    function renderMembersManagement() {
+      const container = document.getElementById('membersList');
+      container.innerHTML = '';
+      systemData.members.forEach((m, idx) => {
+        const row = document.createElement('div');
+        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);";
+        row.innerHTML = `
+          <div>
+            <strong>${m.name}</strong> <span class="badge" style="margin-left:6px;">PIN: ${m.pin}</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editMemberDetails('${m.id}')">Edit PIN</button>
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function promptNewMember() {
+      const name = prompt("Family Member ka naam enter karein:");
+      if (!name || !name.trim()) return;
+      const pin = prompt("Member ke liye 4-Digit Security PIN set karein:");
+      if (!pin || pin.trim().length !== 4 || !/^\d+$/.test(pin)) {
+        alert("PIN sirf 4-digit number hona chahiye!");
+        return;
+      }
+      const newMember = {
+        id: "m_" + Date.now(),
+        name: name.trim(),
+        pin: pin.trim(),
+        role: "Member"
+      };
+      systemData.members.push(newMember);
+      saveLocal();
+      renderMembersManagement();
+      syncCloud();
+    }
+
+    function editMemberDetails(id) {
+      const m = systemData.members.find(x => x.id === id);
+      if (!m) return;
+      const newName = prompt("Member ka naam:", m.name);
+      if (!newName || !newName.trim()) return;
+      const newPin = prompt("Naya 4-Digit PIN:", m.pin);
+      if (!newPin || newPin.trim().length !== 4 || !/^\d+$/.test(newPin)) {
+        alert("PIN sirf 4 digit ka number hona chahiye!");
+        return;
+      }
+      m.name = newName.trim();
+      m.pin = newPin.trim();
+      saveLocal();
+      renderMembersManagement();
+      updateMemberUI();
+      syncCloud();
+    }
+
+    function removeFamilyMember(id) {
+      if (!confirm("Is member ko delete karna chahte hain?")) return;
+      systemData.members = systemData.members.filter(x => x.id !== id);
+      saveLocal();
+      renderMembersManagement();
+      syncCloud();
+    }
+
+    // --- MASTER CONFIG & SECURITY GATE ---
+    function unlockMasterGate() {
+      const pass = document.getElementById('masterPassInput').value.trim();
+      if (pass === MASTER_PASSPHRASE) {
+        document.getElementById('masterLockGate').classList.add('hidden');
+        document.getElementById('masterConfigSection').classList.remove('hidden');
+        document.getElementById('cfgPat').value = getPatToken();
+        renderMembersManagement();
+      } else {
+        alert("Galat Master Passphrase! Access Denied.");
+      }
+    }
+
+    function saveMasterConfig() {
+      const pat = document.getElementById('cfgPat').value.trim();
+      if (pat) {
+        localStorage.setItem('gs_github_pat', pat);
+        alert("GitHub Token securely saved!");
+        syncCloud();
+      }
+    }
+
+    function getPatToken() {
+      return localStorage.getItem('gs_github_pat') || '';
+    }
+
+    // --- AES-256-GCM MILITARY ENCRYPTION / DECRYPTION ---
+    async function deriveCryptoKey(passphrase, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptPayload(dataObj, passphrase) {
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const plaintext = enc.encode(JSON.stringify(dataObj));
+      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, plaintext);
+      return {
+        cipher: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+        iv: btoa(String.fromCharCode(...iv)),
+        salt: btoa(String.fromCharCode(...salt)),
+        version: "2.0-GCM"
+      };
+    }
+
+    async function decryptPayload(packet, passphrase) {
+      if (!packet.cipher || !packet.iv || !packet.salt) {
+        return packet; // fallback if plain JSON
+      }
+      const salt = Uint8Array.from(atob(packet.salt), c => c.charCodeAt(0));
+      const iv = Uint8Array.from(atob(packet.iv), c => c.charCodeAt(0));
+      const cipher = Uint8Array.from(atob(packet.cipher), c => c.charCodeAt(0));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, cipher);
+      return JSON.parse(new TextDecoder().decode(decrypted));
+    }
+
+    // --- GITHUB ZERO-OVERWRITE CLOUD SYNC ---
+    async function syncCloud() {
+      const token = getPatToken();
+      if (!token) {
+        updateSyncBadge("No Token (Set in Settings)", "var(--danger)");
+        return;
+      }
+
+      updateSyncBadge("Syncing...", "var(--accent)");
+      document.getElementById('syncIcon').style.display = 'inline-block';
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+
+      try {
+        // 1. Fetch current cloud state with SHA
+        const getRes = await fetch(url, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (getRes.status === 200) {
+          const fileData = await getRes.json();
+          fileSha = fileData.sha;
+          const rawContent = decodeURIComponent(escape(atob(fileData.content)));
+          let cloudData;
+          try {
+            const parsed = JSON.parse(rawContent);
+            cloudData = await decryptPayload(parsed, MASTER_PASSPHRASE);
+          } catch(e) {
+            cloudData = JSON.parse(rawContent);
+          }
+
+          // 2. Conflict-Free Merge
+          mergeState(cloudData);
+        } else if (getRes.status === 404) {
+          fileSha = null; // New file creation
+        } else {
+          throw new Error(`Fetch error HTTP ${getRes.status}`);
+        }
+
+        // 3. Encrypt system state before cloud push
+        const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
+        const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
+
+        // 4. Commit push to GitHub
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `Guru Shraddha live sync by ${currentMember ? currentMember.name : 'System'} [${new Date().toLocaleString('en-IN')}]`,
+            content: encodedContent,
+            ...(fileSha && { sha: fileSha })
+          })
+        });
+
+        if (putRes.ok) {
+          const putData = await putRes.json();
+          fileSha = putData.content.sha;
+          saveLocal();
+          renderAllViews();
+          updateSyncBadge("Synced Live", "var(--success)");
+          document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
+        } else {
+          throw new Error(`Push error HTTP ${putRes.status}`);
+        }
+      } catch (err) {
+        console.error("Sync Failure:", err);
+        updateSyncBadge("Sync Error", "var(--danger)");
+      }
+    }
+
+    function mergeState(cloud) {
+      if (!cloud) return;
+      // Merge Repairing by ID
+      const repMap = new Map();
+      (cloud.repairing || []).forEach(x => repMap.set(x.id, x));
+      systemData.repairing.forEach(x => repMap.set(x.id, x));
+      systemData.repairing = Array.from(repMap.values());
+
+      // Merge Labour by ID
+      const labMap = new Map();
+      (cloud.labour || []).forEach(x => labMap.set(x.id, x));
+      systemData.labour.forEach(x => labMap.set(x.id, x));
+      systemData.labour = Array.from(labMap.values());
+
+      // Merge Samaan by ID
+      const samMap = new Map();
+      (cloud.samaan || []).forEach(x => samMap.set(x.id, x));
+      systemData.samaan.forEach(x => samMap.set(x.id, x));
+      systemData.samaan = Array.from(samMap.values());
+
+      // Merge Members
+      const memberMap = new Map();
+      (cloud.members || []).forEach(x => memberMap.set(x.id, x));
+      systemData.members.forEach(x => memberMap.set(x.id, x));
+      systemData.members = Array.from(memberMap.values());
+
+      // Merge Logs
+      const logMap = new Map();
+      (cloud.activityLogs || []).forEach(x => logMap.set(x.id, x));
+      systemData.activityLogs.forEach(x => logMap.set(x.id, x));
+      systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
+    }
+
+    function updateSyncBadge(text, color) {
+      const el = document.getElementById('syncStatus');
+      el.textContent = `Status: ${text}`;
+      el.style.color = color;
+    }
+
+    // --- UI UTILITIES ---
+    function renderAllViews() {
+      renderRepairingTable();
+      renderLabourTable();
+      renderSamaanTable();
+      renderLogs();
+    }
+
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      el.classList.add('active');
+    }
+
+    function toggleForm(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
