@@ -23,7 +23,7 @@
     body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
     .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .book-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
+    .book-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 300px; }
     .book-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
     .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
@@ -94,11 +94,12 @@
       <select id="activeBookSelector" class="book-select" onchange="changeActiveBook(this.value)"></select>
       <button class="small secondary" onclick="openBookManagerModal()" title="Manage Books">⚙️ Books</button>
     </div>
-    <div style="display:flex; align-items:center; gap:6px;">
+    <div style="display:flex; align-items:center; gap:5px;">
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
         <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
       <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage Members">👥</button>
+      <button class="small warning" onclick="restoreExcelDataDirect()" title="Click to Restore All Excel Data">📥 Data Restore</button>
       <button class="small secondary" id="manualSyncBtn" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
@@ -629,14 +630,14 @@
   </div>
 
   <script>
-    // HARDCODED SECURE CONSTANTS
+    // HARDCODED SECURE REPOSITORY & CREDENTIAL DETAILS
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_OWNER = "TechIsInMyDNA";
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
 
-    // 100% COMPLETE EXCEL SEED DATA (All 16 Repairs, 28 Labour Entries, 1 Samaan Entry)
+    // 100% COMPLETE EXCEL SEED DATA (16 Repairs, 28 Labour Entries, 1 Samaan Entry)
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAtTime":1736553600000},
@@ -767,6 +768,17 @@
       renderLogs();
     }
 
+    // Direct manual rescue button to reload seed data into currently active book
+    function restoreExcelDataDirect() {
+      if (confirm("Kya aap Excel ka poora purana data is Book me restore karna chahte hain?")) {
+        systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
+        saveLocal();
+        renderAllViews();
+        alert("Pura Excel Data successfully restore ho gaya!");
+        syncCloud();
+      }
+    }
+
     // --- REPAIRING & EXPENSES ---
     function renderRepairingTable() {
       const data = getActiveDataset();
@@ -894,7 +906,7 @@
         ref: document.getElementById('repRef').value.trim(),
         reason: document.getElementById('repReason').value.trim(),
         updatedBy: currentMember.name,
-        updatedAtTime: Date.now() // NUMERIC TIMESTAMP GUARANTEES LWW SYNC
+        updatedAtTime: Date.now()
       };
 
       if (editId) {
@@ -911,7 +923,7 @@
       renderLogs();
       closeExpenseForm();
       e.target.reset();
-      syncCloud(); // Live push immediately
+      syncCloud();
     }
 
     function deleteRepair(id) {
@@ -928,7 +940,7 @@
       saveLocal();
       renderRepairingTable();
       renderLogs();
-      syncCloud(); // Push deletion immediately
+      syncCloud();
     }
 
     // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
@@ -1086,7 +1098,7 @@
         paymentStatus: status,
         remarks: document.getElementById('labRemarks').value.trim(),
         updatedBy: currentMember.name,
-        updatedAtTime: Date.now() // NUMERIC TIMESTAMP GUARANTEES LWW SYNC
+        updatedAtTime: Date.now()
       };
 
       if (editId) {
@@ -1104,7 +1116,7 @@
       renderLogs();
       closeLabourForm();
       e.target.reset();
-      syncCloud(); // Live push immediately
+      syncCloud();
     }
 
     function deleteLabour(id) {
@@ -1276,7 +1288,7 @@
         status: document.getElementById('samStatus').value,
         reason: document.getElementById('samReason').value.trim(),
         updatedBy: currentMember.name,
-        updatedAtTime: Date.now() // NUMERIC TIMESTAMP GUARANTEES LWW SYNC
+        updatedAtTime: Date.now()
       };
 
       if (editId) {
@@ -1293,7 +1305,7 @@
       renderLogs();
       closeSamaanForm();
       e.target.reset();
-      syncCloud(); // Live push immediately
+      syncCloud();
     }
 
     function deleteSamaan(id) {
@@ -1311,6 +1323,380 @@
       renderSamaanTable();
       renderLogs();
       syncCloud();
+    }
+
+    // --- BULLETPROOF CONFLICT-FREE SYNC (LAST-WRITE-WINS ENGINE) ---
+    async function syncCloud(retryCount = 0) {
+      const token = getPatToken();
+      if (!token) {
+        updateSyncBadge("Token Not Set (Open Settings)", "var(--danger)");
+        return;
+      }
+
+      if (isSyncing && retryCount === 0) return;
+      isSyncing = true;
+
+      updateSyncBadge("Syncing Live...", "var(--accent)");
+      document.getElementById('syncIcon').classList.add('sync-pulse');
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+
+      try {
+        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (getRes.status === 200) {
+          const fileData = await getRes.json();
+          fileSha = fileData.sha;
+          const rawContent = decodeURIComponent(escape(atob(fileData.content)));
+          let cloudData;
+          try {
+            const parsed = JSON.parse(rawContent);
+            cloudData = await decryptPayload(parsed, MASTER_PASSPHRASE);
+          } catch(e) {
+            cloudData = JSON.parse(rawContent);
+          }
+          mergeState(cloudData);
+        } else if (getRes.status === 404) {
+          fileSha = null;
+        } else {
+          throw new Error(`GitHub HTTP ${getRes.status}`);
+        }
+
+        const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
+        const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
+
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `Guru Shraddha live sync by ${currentMember ? currentMember.name : 'System'} [${new Date().toLocaleString('en-IN')}]`,
+            content: encodedContent,
+            ...(fileSha && { sha: fileSha })
+          })
+        });
+
+        if (putRes.status === 409 && retryCount < 3) {
+          isSyncing = false;
+          await new Promise(r => setTimeout(r, 600));
+          return syncCloud(retryCount + 1);
+        }
+
+        if (putRes.ok) {
+          const putData = await putRes.json();
+          fileSha = putData.content.sha;
+          saveLocal();
+          renderBookSelectors();
+          renderExpenseCategoryDropdowns();
+          renderWorkerDropdowns();
+          renderPartyDropdowns();
+          renderAllViews();
+          updateSyncBadge("Live Synced 🟢", "var(--success)");
+          document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
+        } else {
+          throw new Error(`Push Error HTTP ${putRes.status}`);
+        }
+      } catch (err) {
+        console.error("Sync Error:", err);
+        updateSyncBadge("Sync Error: " + err.message, "var(--danger)");
+      } finally {
+        isSyncing = false;
+        document.getElementById('syncIcon').classList.remove('sync-pulse');
+      }
+    }
+
+    async function syncCloudSilent() {
+      const token = getPatToken();
+      if (!token || isSyncing) return;
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+
+      try {
+        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (getRes.status === 200) {
+          const fileData = await getRes.json();
+          if (fileSha && fileData.sha !== fileSha) {
+            fileSha = fileData.sha;
+            const rawContent = decodeURIComponent(escape(atob(fileData.content)));
+            let cloudData;
+            try {
+              const parsed = JSON.parse(rawContent);
+              cloudData = await decryptPayload(parsed, MASTER_PASSPHRASE);
+            } catch(e) {
+              cloudData = JSON.parse(rawContent);
+            }
+            mergeState(cloudData);
+            saveLocal();
+            renderAllViews();
+            updateSyncBadge("Live Synced 🟢", "var(--success)");
+            document.getElementById('lastSyncedTime').textContent = "Updated: " + new Date().toLocaleTimeString('en-IN');
+          } else {
+            fileSha = fileData.sha;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // --- LAST-WRITE-WINS MERGE FUNCTION ---
+    function mergeState(cloud) {
+      if (!cloud) return;
+
+      if (cloud.deletedIds && Array.isArray(cloud.deletedIds)) {
+        systemData.deletedIds = Array.from(new Set([...(systemData.deletedIds || []), ...cloud.deletedIds]));
+      }
+      const deletedSet = new Set(systemData.deletedIds || []);
+
+      if (cloud.books && Array.isArray(cloud.books)) {
+        const bookMap = new Map();
+        cloud.books.forEach(b => bookMap.set(b.id, b));
+        systemData.books.forEach(b => bookMap.set(b.id, b));
+        systemData.books = Array.from(bookMap.values());
+      }
+
+      if (cloud.bookData) {
+        Object.keys(cloud.bookData).forEach(bid => {
+          if (!systemData.bookData[bid]) systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
+          const cData = cloud.bookData[bid];
+          const lData = systemData.bookData[bid];
+
+          // LWW MERGE FOR REPAIRING
+          const repMap = new Map();
+          (cData.repairing || []).forEach(x => { if (!deletedSet.has(x.id)) repMap.set(x.id, x); });
+          (lData.repairing || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              const existing = repMap.get(x.id);
+              if (!existing || ((x.updatedAtTime || 0) >= (existing.updatedAtTime || 0))) {
+                repMap.set(x.id, x);
+              }
+            }
+          });
+          lData.repairing = Array.from(repMap.values());
+
+          // LWW MERGE FOR LABOUR
+          const labMap = new Map();
+          (cData.labour || []).forEach(x => { if (!deletedSet.has(x.id)) labMap.set(x.id, x); });
+          (lData.labour || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              const existing = labMap.get(x.id);
+              if (!existing || ((x.updatedAtTime || 0) >= (existing.updatedAtTime || 0))) {
+                labMap.set(x.id, x);
+              }
+            }
+          });
+          lData.labour = Array.from(labMap.values());
+
+          // LWW MERGE FOR SAMAAN
+          const samMap = new Map();
+          (cData.samaan || []).forEach(x => { if (!deletedSet.has(x.id)) samMap.set(x.id, x); });
+          (lData.samaan || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              const existing = samMap.get(x.id);
+              if (!existing || ((x.updatedAtTime || 0) >= (existing.updatedAtTime || 0))) {
+                samMap.set(x.id, x);
+              }
+            }
+          });
+          lData.samaan = Array.from(samMap.values());
+        });
+      }
+
+      if (cloud.expenseCategories) systemData.expenseCategories = Array.from(new Set([...systemData.expenseCategories, ...cloud.expenseCategories]));
+      if (cloud.workers) systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
+      if (cloud.parties) systemData.parties = Array.from(new Set([...systemData.parties, ...cloud.parties]));
+
+      if (cloud.members) {
+        const memberMap = new Map();
+        cloud.members.forEach(x => memberMap.set(x.id, x));
+        systemData.members.forEach(x => memberMap.set(x.id, x));
+        systemData.members = Array.from(memberMap.values());
+      }
+      if (cloud.activityLogs) {
+        const logMap = new Map();
+        cloud.activityLogs.forEach(x => logMap.set(x.id, x));
+        systemData.activityLogs.forEach(x => logMap.set(x.id, x));
+        systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
+      }
+    }
+
+    // --- BOOKS MANAGEMENT ---
+    function renderBookSelectors() {
+      const select = document.getElementById('activeBookSelector');
+      select.innerHTML = '';
+      systemData.books.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (b.id === systemData.activeBookId) opt.selected = true;
+        select.appendChild(opt);
+      });
+      document.getElementById('activeBookDisplay').textContent = "Book: " + getActiveBookObj().name;
+    }
+
+    function changeActiveBook(bookId) {
+      systemData.activeBookId = bookId;
+      saveLocal();
+      renderBookSelectors();
+      renderAllViews();
+    }
+
+    function openBookManagerModal() {
+      renderBookManagerList();
+      document.getElementById('bookManagerModal').classList.remove('hidden');
+    }
+
+    function renderBookManagerList() {
+      const container = document.getElementById('bookListContainer');
+      container.innerHTML = '';
+      systemData.books.forEach((b) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:10px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <div>
+            <strong style="color:var(--accent); font-size:14px;">${b.name}</strong>
+            ${b.id === systemData.activeBookId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="renameBook('${b.id}')">✏️ Rename</button>
+            ${systemData.books.length > 1 ? `<button class="small danger" onclick="deleteBook('${b.id}')">🗑️ Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddBook() {
+      const name = prompt("Nayi Hisaab Book ka naam daalein (e.g. SHOP 2, GODOWN, PERSONAL):");
+      if (!name || !name.trim()) return;
+      const cleanName = name.trim().toUpperCase();
+      const newId = "book_" + Date.now();
+      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
+      systemData.bookData[newId] = { repairing: [], labour: [], samaan: [] };
+      systemData.activeBookId = newId;
+      logAction("Create Book", `Created new Book: ${cleanName}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    function renameBook(id) {
+      const b = systemData.books.find(x => x.id === id);
+      if (!b) return;
+      const newName = prompt("Book ka naya naam:", b.name);
+      if (!newName || !newName.trim()) return;
+      b.name = newName.trim().toUpperCase();
+      logAction("Rename Book", `Renamed Book to ${b.name}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      syncCloud();
+    }
+
+    function deleteBook(id) {
+      if (systemData.books.length <= 1) {
+        alert("Kam se kam ek active Book hona zaroori hai!");
+        return;
+      }
+      const b = systemData.books.find(x => x.id === id);
+      if (!confirm(`Kya aap Book "${b.name}" aur iska poora hisaab-kitaab delete karna chahte hain?`)) return;
+      
+      systemData.books = systemData.books.filter(x => x.id !== id);
+      delete systemData.bookData[id];
+      if (systemData.activeBookId === id) {
+        systemData.activeBookId = systemData.books[0].id;
+      }
+      logAction("Delete Book", `Deleted Book: ${b.name}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    // --- MASTER CONFIG & SECURITY GATE ---
+    function unlockMasterGate(bypassCheck = false) {
+      const passInput = document.getElementById('masterPassInput');
+      const pass = passInput ? passInput.value.trim() : "";
+      
+      if (bypassCheck || pass === MASTER_PASSPHRASE) {
+        sessionStorage.setItem('gs_master_unlocked', 'true');
+        document.getElementById('masterLockGate').classList.add('hidden');
+        document.getElementById('masterConfigSection').classList.remove('hidden');
+        document.getElementById('cfgPat').value = getPatToken();
+        renderMembersManagement();
+      } else {
+        alert("Galat Master Passphrase! Kripya sahi Passphrase enter karein.");
+      }
+    }
+
+    function saveMasterConfig() {
+      const pat = document.getElementById('cfgPat').value.trim();
+      if (pat) {
+        localStorage.setItem('gs_github_pat', pat);
+        alert("GitHub Token successfully saved! Ab Live Sync activate ho gaya hai.");
+        syncCloud();
+      } else {
+        alert("Kripya valid GitHub Token enter karein!");
+      }
+    }
+
+    function getPatToken() {
+      return localStorage.getItem('gs_github_pat') || '';
+    }
+
+    // --- CRYPTO UTILITIES (AES-256-GCM) ---
+    async function deriveCryptoKey(passphrase, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptPayload(dataObj, passphrase) {
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const plaintext = enc.encode(JSON.stringify(dataObj));
+      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, plaintext);
+      return {
+        cipher: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+        iv: btoa(String.fromCharCode(...iv)),
+        salt: btoa(String.fromCharCode(...salt)),
+        version: "2.0-GCM"
+      };
+    }
+
+    async function decryptPayload(packet, passphrase) {
+      if (!packet.cipher || !packet.iv || !packet.salt) {
+        return packet;
+      }
+      const salt = Uint8Array.from(atob(packet.salt), c => c.charCodeAt(0));
+      const iv = Uint8Array.from(atob(packet.iv), c => c.charCodeAt(0));
+      const cipher = Uint8Array.from(atob(packet.cipher), c => c.charCodeAt(0));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, cipher);
+      return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
     // --- UI UTILS & HELPERS ---
@@ -1551,8 +1937,8 @@
         div.innerHTML = `
           <strong style="color:var(--accent); font-size:13px;">${p}</strong>
           <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="editPartyName(${index})">✏️ Edit</button>
-            <button class="small danger" onclick="deletePartyName(${index})">🗑️</button>
+            <button class="small secondary" onclick="editPartyName(${index})">✏️️ Edit</button>
+            <button class="small danger" onclick="deletePartyName(${index})">🗑️️</button>
           </div>
         `;
         container.appendChild(div);
