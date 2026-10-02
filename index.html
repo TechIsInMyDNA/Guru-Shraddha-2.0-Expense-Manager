@@ -117,7 +117,6 @@
 
     <!-- TAB 1: REPAIRING, EXPENSES & INCOME -->
     <div id="tab-repairing" class="tab-content">
-      <!-- 3 Dynamic Summary Cards for Incomes & Expenses -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Income (Aaye)</div>
@@ -222,6 +221,68 @@
         </div>
       </div>
 
+      <!-- COMMON HAZIRI FORM (Visible for both Ledger & Attendance Views) -->
+      <div id="labFormCard" class="card hidden" style="border:1px solid var(--accent); margin-bottom: 12px;">
+        <div class="card-title">
+          <span id="labFormTitle">Mark Haziri / Work Record</span>
+          <button class="small secondary" onclick="closeLabourForm()">✕ Close</button>
+        </div>
+        <form onsubmit="saveLabourRecord(event)">
+          <input type="hidden" id="labEditId">
+          <div class="grid-2">
+            <div>
+              <label>Select Worker / Mistri</label>
+              <select id="labGroup" required></select>
+            </div>
+            <div>
+              <label>Date</label>
+              <input type="date" id="labDate" required>
+            </div>
+          </div>
+          <div class="grid-3">
+            <div>
+              <label>Labour (Count & Rate)</label>
+              <div style="display:flex; gap:4px;">
+                <input type="number" id="labCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
+                <input type="number" id="labCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
+              </div>
+            </div>
+            <div>
+              <label>Mistri (Count & Rate)</label>
+              <div style="display:flex; gap:4px;">
+                <input type="number" id="labMistriCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
+                <input type="number" id="labMistriCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
+              </div>
+            </div>
+            <div>
+              <label>Total Charge ₹ (Auto-Calculated)</label>
+              <input type="number" id="labTotalCharge" placeholder="Total ₹" style="font-weight:bold; color:var(--accent);">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label>Paid / Settlement Amount (₹)</label>
+              <input type="number" id="labHisaabTotal" placeholder="Given to Worker ₹">
+            </div>
+            <div>
+              <label>Payment Status</label>
+              <select id="labPaymentStatus" required>
+                <option value="PAID">PAID / SETTLED (चुका दिया)</option>
+                <option value="PENDING">PENDING (बाकी है)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-1">
+            <label>Work Description / Remarks</label>
+            <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="submit" class="flex-1">Save Record</button>
+            <button type="button" class="secondary" onclick="closeLabourForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
       <!-- VIEW 1: RUNNING LEDGER -->
       <div id="labourLedgerView" class="card">
         <div class="card-title">
@@ -234,66 +295,8 @@
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_ledger')">📥 Export Excel</button>
             <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
-            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
+            <button class="small" onclick="openLabourForm()">+ Mark Haziri</button>
           </div>
-        </div>
-
-        <!-- Add/Edit Entry Form with Auto-Calculate -->
-        <div id="labFormContainer" class="hidden">
-          <form onsubmit="saveLabourRecord(event)">
-            <input type="hidden" id="labEditId">
-            <div class="grid-2">
-              <div>
-                <label>Select Worker / Mistri</label>
-                <select id="labGroup" required></select>
-              </div>
-              <div>
-                <label>Date</label>
-                <input type="date" id="labDate">
-              </div>
-            </div>
-            <div class="grid-3">
-              <div>
-                <label>Labour (Count & Rate)</label>
-                <div style="display:flex; gap:4px;">
-                  <input type="number" id="labCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
-                  <input type="number" id="labCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
-                </div>
-              </div>
-              <div>
-                <label>Mistri (Count & Rate)</label>
-                <div style="display:flex; gap:4px;">
-                  <input type="number" id="labMistriCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
-                  <input type="number" id="labMistriCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
-                </div>
-              </div>
-              <div>
-                <label>Total Charge ₹ (Auto-Calculated)</label>
-                <input type="number" id="labTotalCharge" placeholder="Total ₹" style="font-weight:bold; color:var(--accent);">
-              </div>
-            </div>
-            <div class="grid-2">
-              <div>
-                <label>Paid / Settlement Amount (₹)</label>
-                <input type="number" id="labHisaabTotal" placeholder="Given to Worker ₹">
-              </div>
-              <div>
-                <label>Payment Status</label>
-                <select id="labPaymentStatus" required>
-                  <option value="PAID">PAID / SETTLED (चुका दिया)</option>
-                  <option value="PENDING">PENDING (बाकी है)</option>
-                </select>
-              </div>
-            </div>
-            <div class="grid-1">
-              <label>Work Description / Remarks</label>
-              <input type="text" id="labRemarks" placeholder="Diwaal fode, Tiles lagae, etc.">
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button type="submit" class="flex-1">Save Entry</button>
-              <button type="button" class="secondary" onclick="toggleForm('labFormContainer')">Cancel</button>
-            </div>
-          </form>
         </div>
 
         <div class="table-wrap">
@@ -321,7 +324,7 @@
           <span>Labour & Mistri Attendance Sheet</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_attendance')">📥 Export Excel</button>
-            <button class="small" onclick="toggleForm('labFormContainer')">+ Mark Haziri</button>
+            <button class="small" onclick="openLabourForm()">+ Mark Haziri</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -334,6 +337,7 @@
                 <th>Mistri Count</th>
                 <th>Work Charge</th>
                 <th>Attendance Remarks</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="labourAttendanceTableBody"></tbody>
@@ -462,7 +466,6 @@
 
     <!-- TAB 5: MEMBERS & MASTER CONFIG -->
     <div id="tab-settings" class="tab-content hidden">
-      <!-- Master Passphrase Lock Gate -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token & Security settings access karne ke liye Master Passphrase daalein:</p>
@@ -472,10 +475,7 @@
         <button onclick="unlockMasterGate()" style="width:100%;">Verify Master Passphrase</button>
       </div>
 
-      <!-- Master Unlocked View -->
       <div id="masterConfigSection" class="hidden">
-        
-        <!-- System Backup & Restore JSON Box -->
         <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
           <div class="card-title">📦 Complete System Backup & Restore</div>
           <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein (All Projects, Workers, Parties, Members):</p>
@@ -486,7 +486,6 @@
           <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="restoreSystemBackupJSON(event)">
         </div>
 
-        <!-- Family Members Management -->
         <div class="card" style="margin-bottom: 14px;">
           <div class="card-title">
             <span>Family Members & 4-Digit PINs</span>
@@ -495,7 +494,6 @@
           <div id="membersList"></div>
         </div>
 
-        <!-- GitHub Integration Config -->
         <div class="card">
           <div class="card-title">GitHub Encrypted Cloud Storage</div>
           <div class="grid-1">
@@ -561,14 +559,14 @@
     </div>
   </div>
 
-  <!-- Member Direct Manager Modal (Rename / Add / Edit PIN) -->
+  <!-- Member Direct Manager Modal -->
   <div id="directMemberManagerModal" class="modal-overlay hidden">
     <div class="modal-box">
       <div class="card-title">
         <span>Family Members Manager</span>
         <button class="small" onclick="promptNewMember()">+ Add Member</button>
       </div>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Yaha se aap kisi bhi member ka naam rename, PIN edit ya naya member add kar sakte hain:</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Members add, rename ya PIN edit karein:</p>
       <div id="directMembersListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
       <div style="margin-top:14px;">
         <button onclick="closeModal('directMemberManagerModal')" class="secondary" style="width:100%;">Close</button>
@@ -622,20 +620,14 @@
   </div>
 
   <script>
-    // System Constants
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_FILE = "data.json";
 
-    // Multi-Project Application State
     let systemData = {
       activeProjectId: "proj_default",
       projects: [
-        {
-          id: "proj_default",
-          name: "GURU SHRADDHA 2.0",
-          createdAt: "2026-10-02"
-        }
+        { id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }
       ],
       projectData: {
         "proj_default": {
@@ -672,7 +664,6 @@
     let currentMember = null;
     let fileSha = null;
 
-    // --- EMBEDDED EXCEL SEED DATA FOR GURU SHRADDHA 2.0 ---
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","type":"EXPENSE","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
@@ -711,7 +702,6 @@
       ]
     };
 
-    // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
       renderProjectSelectors();
@@ -727,7 +717,6 @@
       if (local) {
         try {
           systemData = JSON.parse(local);
-          // Migration check
           if (!systemData.projects || !Array.isArray(systemData.projects)) {
             systemData.activeProjectId = "proj_default";
             systemData.projects = [{ id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
@@ -824,8 +813,8 @@
             ${p.id === systemData.activeProjectId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="renameProject('${p.id}')">✏️ Rename</button>
-            ${systemData.projects.length > 1 ? `<button class="small danger" onclick="deleteProject('${p.id}')">🗑️ Delete</button>` : ''}
+            <button class="small secondary" onclick="renameProject('${p.id}')">✏️️ Rename</button>
+            ${systemData.projects.length > 1 ? `<button class="small danger" onclick="deleteProject('${p.id}')">🗑️</button>` : ''}
           </div>
         `;
         container.appendChild(div);
@@ -908,7 +897,30 @@
       });
     }
 
-    // --- LABOUR AUTO-CALCULATE LOGIC ---
+    // --- COMMON LABOUR FORM OPEN/CLOSE HANDLERS ---
+    function openLabourForm(isEdit = false) {
+      const formCard = document.getElementById('labFormCard');
+      formCard.classList.remove('hidden');
+      if (!isEdit) {
+        document.getElementById('labEditId').value = '';
+        document.getElementById('labFormTitle').textContent = "Mark Haziri / Work Record";
+        document.getElementById('labDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('labCount').value = '';
+        document.getElementById('labCharge').value = '';
+        document.getElementById('labMistriCount').value = '';
+        document.getElementById('labMistriCharge').value = '';
+        document.getElementById('labTotalCharge').value = '';
+        document.getElementById('labHisaabTotal').value = '';
+        document.getElementById('labRemarks').value = '';
+        document.getElementById('labPaymentStatus').value = 'PAID';
+      }
+      formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeLabourForm() {
+      document.getElementById('labFormCard').classList.add('hidden');
+    }
+
     function autoCalculateLabourTotal() {
       const lCount = parseFloat(document.getElementById('labCount').value) || 0;
       const lRate = parseFloat(document.getElementById('labCharge').value) || 0;
@@ -959,7 +971,7 @@
           <strong style="color:var(--accent); font-size:13px;">${w}</strong>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editWorkerName(${index})">✏️ Edit</button>
-            <button class="small danger" onclick="deleteWorkerName(${index})">🗑️ Delete</button>
+            <button class="small danger" onclick="deleteWorkerName(${index})">🗑️</button>
           </div>
         `;
         container.appendChild(div);
@@ -1058,7 +1070,7 @@
           <strong style="color:var(--accent); font-size:13px;">${p}</strong>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="editPartyName(${index})">✏️ Edit</button>
-            <button class="small danger" onclick="deletePartyName(${index})">🗑️ Delete</button>
+            <button class="small danger" onclick="deletePartyName(${index})">🗑️</button>
           </div>
         `;
         container.appendChild(div);
@@ -1128,7 +1140,7 @@
 
       data.repairing.forEach(r => {
         const amt = Number(r.amount) || 0;
-        const type = r.type || "EXPENSE"; // default past records are expense
+        const type = r.type || "EXPENSE";
 
         if (type === "INCOME") {
           totalIncome += amt;
@@ -1316,6 +1328,10 @@
           <td>${l.mistriCount ? `${l.mistriCount} (@₹${l.mistriCharge || 0})` : '-'}</td>
           <td style="font-weight:700;">₹${Number(l.totalCharge || 0).toLocaleString('en-IN')}</td>
           <td style="max-width:240px; white-space:normal;">${l.remarks || '-'}</td>
+          <td>
+            <button class="small secondary" onclick="editLabour('${l.id}')">✏️</button>
+            <button class="small danger" onclick="deleteLabour('${l.id}')">🗑️</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -1359,7 +1375,7 @@
       renderLabourLedgerTable();
       renderLabourAttendanceTable();
       renderLogs();
-      toggleForm('labFormContainer');
+      closeLabourForm();
       document.getElementById('labEditId').value = '';
       e.target.reset();
       syncCloud();
@@ -1370,6 +1386,7 @@
       const l = data.labour.find(x => x.id === id);
       if (!l) return;
       document.getElementById('labEditId').value = l.id;
+      document.getElementById('labFormTitle').textContent = "Edit Haziri Record";
       document.getElementById('labGroup').value = l.workerGroup;
       document.getElementById('labDate').value = l.date || '';
       document.getElementById('labCount').value = l.labourCount || '';
@@ -1380,7 +1397,7 @@
       document.getElementById('labHisaabTotal').value = l.hisaabTotal || '';
       document.getElementById('labPaymentStatus').value = l.paymentStatus || 'PAID';
       document.getElementById('labRemarks').value = l.remarks || '';
-      document.getElementById('labFormContainer').classList.remove('hidden');
+      openLabourForm(true);
     }
 
     function deleteLabour(id) {
@@ -1437,7 +1454,7 @@
           <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
-            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️️</button>
+            <button class="small danger" onclick="deleteSamaan('${s.id}')">🗑️</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1687,7 +1704,7 @@
       container.innerHTML = '';
       systemData.members.forEach((m) => {
         const row = document.createElement('div');
-        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);";
+        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
         row.innerHTML = `
           <div>
             <strong>${m.name}</strong> <span class="badge" style="background:#243456; color:var(--accent); margin-left:6px;">PIN: ${m.pin}</span>
@@ -1947,7 +1964,6 @@
       el.style.color = color;
     }
 
-    // --- UI UTILITIES ---
     function renderAllViews() {
       renderRepairingTable();
       renderLabourLedgerTable();
