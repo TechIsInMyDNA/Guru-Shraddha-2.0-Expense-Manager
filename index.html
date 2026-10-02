@@ -22,12 +22,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
-    /* Top Bar */
-    .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .brand { font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-    .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    /* Top Bar & Project Header */
+    .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .project-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
+    .project-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
+    .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
-    /* Container & Cards */
+    /* Container & Layout */
     .container { max-width: 960px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
     .card-title { font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
@@ -57,6 +58,7 @@
     button.secondary { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); }
     button.danger { background: var(--danger); color: #fff; }
     button.success { background: var(--success); color: #fff; }
+    button.warning { background: var(--warning); color: #050b14; }
     button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
 
     /* Tables */
@@ -80,7 +82,7 @@
 
     /* Modals & Overlays */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; padding: 20px; }
+    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 20px; }
     .hidden { display: none !important; }
     .log-item { background: var(--card-inner); padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 6px; border-left: 3px solid var(--accent); }
   </style>
@@ -89,14 +91,16 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div class="brand">
-      <span>🏛️</span> Guru Shraddha 2.0
+    <div class="project-selector-wrap">
+      <span>📁</span>
+      <select id="activeProjectSelector" class="project-select" onchange="changeActiveProject(this.value)"></select>
+      <button class="small secondary" onclick="openProjectManagerModal()" title="Manage Projects">⚙️</button>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
+    <div style="display:flex; align-items:center; gap:6px;">
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
-        <span>👤</span> <span id="currentMemberDisplay">No Member</span>
+        <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
-      <button class="small secondary" onclick="syncCloud()"><span id="syncIcon">🔄</span> Sync</button>
+      <button class="small secondary" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
 
@@ -106,6 +110,7 @@
     <!-- Sync Status Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
       <span id="syncStatus">Status: Ready</span>
+      <span id="activeProjectDisplay" style="color:var(--accent); font-weight:bold;">Project: Guru Shraddha 2.0</span>
       <span id="lastSyncedTime">Last Sync: Never</span>
     </div>
 
@@ -180,14 +185,14 @@
     </div>
 
     <!-- TAB 2: LABOUR - RUNNING LEDGER & ATTENDANCE -->
-    <div id="tab-labour" class="tab-content">
-      <!-- Sub Navigation: Running Ledger vs Attendance Sheet -->
+    <div id="tab-labour" class="tab-content hidden">
+      <!-- Sub Navigation -->
       <div class="sub-nav">
         <button class="sub-btn active" id="subBtnLedger" onclick="switchLabourSubView('ledger')">📊 Worker Running Ledger</button>
         <button class="sub-btn" id="subBtnAttendance" onclick="switchLabourSubView('attendance')">📋 Haziri / Attendance Sheet</button>
       </div>
 
-      <!-- Live Dynamic Labour Summary Cards -->
+      <!-- Summary Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Wages (Earned)</div>
@@ -215,11 +220,11 @@
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_ledger')">📥 Export Excel</button>
             <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
-            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Entry</button>
+            <button class="small" onclick="toggleForm('labFormContainer')">+ Add Haziri</button>
           </div>
         </div>
 
-        <!-- Add/Edit Entry Form -->
+        <!-- Add/Edit Entry Form with Auto-Calculate -->
         <div id="labFormContainer" class="hidden">
           <form onsubmit="saveLabourRecord(event)">
             <input type="hidden" id="labEditId">
@@ -237,20 +242,20 @@
               <div>
                 <label>Labour (Count & Rate)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labCount" placeholder="Count" style="width:50%;">
-                  <input type="number" id="labCharge" placeholder="₹ Rate" style="width:50%;">
+                  <input type="number" id="labCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
+                  <input type="number" id="labCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
                 </div>
               </div>
               <div>
                 <label>Mistri (Count & Rate)</label>
                 <div style="display:flex; gap:4px;">
-                  <input type="number" id="labMistriCount" placeholder="Count" style="width:50%;">
-                  <input type="number" id="labMistriCharge" placeholder="₹ Rate" style="width:50%;">
+                  <input type="number" id="labMistriCount" placeholder="Count" oninput="autoCalculateLabourTotal()" style="width:50%;">
+                  <input type="number" id="labMistriCharge" placeholder="₹ Rate" oninput="autoCalculateLabourTotal()" style="width:50%;">
                 </div>
               </div>
               <div>
-                <label>Work Charge / Total (₹)</label>
-                <input type="number" id="labTotalCharge" placeholder="Earned ₹">
+                <label>Total Charge ₹ (Auto-Calculated)</label>
+                <input type="number" id="labTotalCharge" placeholder="Total ₹" style="font-weight:bold; color:var(--accent);">
               </div>
             </div>
             <div class="grid-2">
@@ -331,19 +336,25 @@
           <div id="samTotalValue" class="stat-val" style="color:var(--accent);">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Items In</div>
-          <div id="samInCount" class="stat-val" style="color:var(--success);">0</div>
+          <div class="stat-label">Total Paid to Parties</div>
+          <div id="samTotalPaid" class="stat-val" style="color:var(--success);">₹0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Pending / Issues</div>
-          <div id="samPendingCount" class="stat-val" style="color:var(--danger);">0</div>
+          <div class="stat-label">Party Balance (Pending)</div>
+          <div id="samTotalBalance" class="stat-val" style="color:var(--danger);">₹0</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">
-          <span>Samaan Party / Item Ledger</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span>Samaan Party Running Ledger</span>
+            <select id="partyFilterSelect" onchange="renderSamaanTable()" style="padding:4px 8px; font-size:11px; width:auto;">
+              <option value="ALL">All Parties Combined</option>
+            </select>
+          </div>
           <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="openPartyManagerModal()">🏢 Manage Parties</button>
             <button class="small secondary" onclick="exportTableToCSV('samaan_ledger')">📥 Export Excel</button>
             <button class="small" onclick="toggleForm('samFormContainer')">+ New Samaan Entry</button>
           </div>
@@ -358,28 +369,32 @@
                 <input type="date" id="samDate" required>
               </div>
               <div>
-                <label>Kisse Aaya (From Party/Store)</label>
-                <input type="text" id="samRefFrom" placeholder="e.g. SR TRADERS / Bagde" required>
+                <label>Kisse Aaya (Party / Vendor)</label>
+                <select id="samPartySelect" required></select>
               </div>
               <div>
                 <label>Kitne Ka (Bill/Amount ₹)</label>
-                <input type="number" id="samAmount" step="any" placeholder="e.g. 4200">
+                <input type="number" id="samAmount" step="any" placeholder="e.g. 4200" required>
               </div>
             </div>
             <div class="grid-2">
               <div>
-                <label>Kya Aaya (Samaan IN / Received)</label>
+                <label>Kya Aaya (Samaan IN / Item Description)</label>
                 <input type="text" id="samIn" placeholder="e.g. SINTEX 500 LTR TANKI" required>
               </div>
               <div>
-                <label>Samaan OUT / Returned (If any)</label>
-                <input type="text" id="samOut" placeholder="Damage tanki, excess pipe, etc.">
+                <label>Amount Paid / Settled (₹)</label>
+                <input type="number" id="samPaid" step="any" placeholder="Paid to Party ₹">
               </div>
             </div>
             <div class="grid-3">
               <div>
-                <label>Kisko Diya (To Person/Vendor)</label>
-                <input type="text" id="samRefTo" placeholder="Nandu / Mistri / Store">
+                <label>Samaan OUT / Returned (If any)</label>
+                <input type="text" id="samOut" placeholder="Damage tanki, excess pipe, etc.">
+              </div>
+              <div>
+                <label>Kisko Diya (To Person/Worker)</label>
+                <input type="text" id="samRefTo" placeholder="Nandu / Bagde / Site">
               </div>
               <div>
                 <label>Status (Ledger Status)</label>
@@ -389,10 +404,10 @@
                   <option value="RETURNED / CLEARED">RETURNED / CLEARED</option>
                 </select>
               </div>
-              <div>
-                <label>Reason / Remarks</label>
-                <input type="text" id="samReason" placeholder="OLD DAMAGE, BAL, etc.">
-              </div>
+            </div>
+            <div class="grid-1">
+              <label>Reason / Remarks</label>
+              <input type="text" id="samReason" placeholder="OLD DAMAGE, BAL, Bill No, etc.">
             </div>
             <div style="display:flex; gap:8px;">
               <button type="submit" class="flex-1">Save Samaan Record</button>
@@ -406,12 +421,14 @@
             <thead>
               <tr>
                 <th>Kab Aaya (Date)</th>
-                <th>Kisse Aaya (From Party)</th>
+                <th>Kisse Aaya (Party)</th>
                 <th>Kya Aaya (Item)</th>
-                <th>Kitne Ka (₹)</th>
-                <th>Kisko Diya (To)</th>
+                <th>Bill Amt (+)</th>
+                <th>Paid Amt (-)</th>
+                <th>Running Bal</th>
                 <th>Status</th>
-                <th>Reason / Remarks</th>
+                <th>Kisko Diya</th>
+                <th>Remarks</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -431,10 +448,10 @@
 
     <!-- TAB 5: MEMBERS & MASTER CONFIG -->
     <div id="tab-settings" class="tab-content hidden">
-      <!-- Master Passphrase Lock -->
+      <!-- Master Passphrase Lock Gate -->
       <div id="masterLockGate" class="card">
         <div class="card-title">🔒 Master Authorization Required</div>
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Settings, GitHub Token & System Backup access karne ke liye Master Passphrase daalein:</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Token, Members & System Backup access karne ke liye Master Passphrase daalein:</p>
         <div class="grid-1">
           <input type="password" id="masterPassInput" placeholder="Master Passphrase">
         </div>
@@ -447,7 +464,7 @@
         <!-- System Backup & Restore JSON Box -->
         <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
           <div class="card-title">📦 Complete System Backup & Restore</div>
-          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Yaha se aap poore system (Expenses, Labour, Samaan, Workers, Members) ka ek single JSON backup download ya restore kar sakte hain:</p>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein (All Projects, Workers, Parties, Members):</p>
           <div class="grid-2">
             <button onclick="downloadSystemBackupJSON()" class="secondary" style="width:100%;">💾 Download Backup JSON</button>
             <button onclick="document.getElementById('restoreFileInput').click()" class="warning" style="width:100%;">📂 Restore from JSON</button>
@@ -545,23 +562,75 @@
     </div>
   </div>
 
+  <!-- Party Management Modal -->
+  <div id="partyManagerModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="card-title">
+        <span>Party / Vendor Manager</span>
+        <button class="small" onclick="promptAddParty()">+ New Party</button>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Manage vendors, shops, and parties for Samaan Ledger:</p>
+      <div id="partyListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="margin-top:14px;">
+        <button onclick="closeModal('partyManagerModal')" class="secondary" style="width:100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Manager Modal -->
+  <div id="projectManagerModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="card-title">
+        <span>Projects Manager</span>
+        <button class="small" onclick="promptAddProject()">+ New Project</button>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Create, rename, or switch projects. Each project has independent expenses, labour & samaan records:</p>
+      <div id="projectListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="margin-top:14px;">
+        <button onclick="closeModal('projectManagerModal')" class="secondary" style="width:100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // System Constants
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_FILE = "data.json";
 
-    // Application State
+    // Multi-Project Application State
     let systemData = {
-      repairing: [],
-      samaan: [],
-      labour: [],
+      activeProjectId: "proj_default",
+      projects: [
+        {
+          id: "proj_default",
+          name: "GURU SHRADDHA 2.0",
+          createdAt: "2026-10-02"
+        }
+      ],
+      // Project-specific datasets mapped by projectId
+      projectData: {
+        "proj_default": {
+          repairing: [],
+          samaan: [],
+          labour: []
+        }
+      },
       workers: [
         "DESHKAR BHIYA",
         "TEJU BHIYA",
         "MANGLA BAI REZA SERVICES",
         "NANDU BHIYA",
         "DESHKARGS BHIYA"
+      ],
+      parties: [
+        "SR TRADERS",
+        "HARIOM PIPES",
+        "MANOJ PLYWOOD",
+        "SHREE ANAND ELEC",
+        "HEMANT UNCLE SS PLYWOOD",
+        "RAMANI MOTORS",
+        "BAGDE"
       ],
       members: [
         { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
@@ -575,7 +644,7 @@
     let currentMember = null;
     let fileSha = null;
 
-    // --- EMBEDDED EXCEL SEED DATA ---
+    // --- EMBEDDED EXCEL SEED DATA FOR GURU SHRADDHA 2.0 ---
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
@@ -596,7 +665,7 @@
         {"id":"rep_18","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       samaan: [
-        {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"paidAmount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       labour: [
         {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"SAMAAN ALTI PALTI","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
@@ -611,29 +680,15 @@
         {"id":"lab_10","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1000,"paymentStatus":"PAID","remarks":"PAID CASH 1000","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
         {"id":"lab_11","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1570,"hisaabTotal":1570,"paymentStatus":"PAID","remarks":"NANDU+BAREWAR + CAPACITOR 70 (PAID 1470)","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
         {"id":"lab_12","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
-      ],
-      workers: [
-        "DESHKAR BHIYA",
-        "TEJU BHIYA",
-        "MANGLA BAI REZA SERVICES",
-        "NANDU BHIYA",
-        "DESHKARGS BHIYA"
-      ],
-      members: [
-        { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
-        { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
-        { id: "m3", name: "Member 3", pin: "1234", role: "Member" },
-        { id: "m4", name: "Member 4", pin: "1234", role: "Member" }
-      ],
-      activityLogs: [
-        { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import from all 3 Excel sheets." }
       ]
     };
 
     // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
+      renderProjectSelectors();
       renderWorkerDropdowns();
+      renderPartyDropdowns();
       renderAllViews();
       autoCheckMemberSession();
       if (getPatToken()) syncCloud();
@@ -644,14 +699,34 @@
       if (local) {
         try {
           systemData = JSON.parse(local);
-          if (!systemData.workers || systemData.workers.length === 0) {
-            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
+          // Migration check for older data format
+          if (!systemData.projects || !Array.isArray(systemData.projects)) {
+            const oldRepairing = systemData.repairing || initialSeedData.repairing;
+            const oldLabour = systemData.labour || initialSeedData.labour;
+            const oldSamaan = systemData.samaan || initialSeedData.samaan;
+
+            systemData.activeProjectId = "proj_default";
+            systemData.projects = [{ id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
+            systemData.projectData = {
+              "proj_default": {
+                repairing: oldRepairing,
+                labour: oldLabour,
+                samaan: oldSamaan
+              }
+            };
+          }
+          if (!systemData.parties) {
+            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "BAGDE"];
           }
         } catch(e) {
           console.error("Local parse error", e);
         }
       } else {
-        systemData = initialSeedData;
+        // Initialize fresh state with embedded data
+        systemData.projectData["proj_default"] = initialSeedData;
+        systemData.activityLogs = [
+          { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import of Guru Shraddha 2.0 project." }
+        ];
         saveLocal();
       }
     }
@@ -660,16 +735,139 @@
       localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
     }
 
+    // Helper to get active project's dataset
+    function getActiveDataset() {
+      const pid = systemData.activeProjectId || "proj_default";
+      if (!systemData.projectData[pid]) {
+        systemData.projectData[pid] = { repairing: [], labour: [], samaan: [] };
+      }
+      return systemData.projectData[pid];
+    }
+
+    function getActiveProjectObj() {
+      return systemData.projects.find(p => p.id === systemData.activeProjectId) || systemData.projects[0];
+    }
+
     function logAction(action, details) {
       const logEntry = {
         id: "log_" + Date.now(),
         action: action,
+        project: getActiveProjectObj().name,
         performedBy: currentMember ? currentMember.name : "Unknown",
         timestamp: new Date().toLocaleString('en-IN'),
         details: details
       };
       systemData.activityLogs.unshift(logEntry);
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
+    }
+
+    // --- MULTI-PROJECT MANAGEMENT ---
+    function renderProjectSelectors() {
+      const select = document.getElementById('activeProjectSelector');
+      select.innerHTML = '';
+      systemData.projects.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        if (p.id === systemData.activeProjectId) opt.selected = true;
+        select.appendChild(opt);
+      });
+      document.getElementById('activeProjectDisplay').textContent = "Project: " + getActiveProjectObj().name;
+    }
+
+    function changeActiveProject(projectId) {
+      systemData.activeProjectId = projectId;
+      saveLocal();
+      renderProjectSelectors();
+      renderAllViews();
+    }
+
+    function openProjectManagerModal() {
+      renderProjectManagerList();
+      document.getElementById('projectManagerModal').classList.remove('hidden');
+    }
+
+    function renderProjectManagerList() {
+      const container = document.getElementById('projectListContainer');
+      container.innerHTML = '';
+      systemData.projects.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <div>
+            <strong style="color:var(--accent); font-size:13px;">${p.name}</strong>
+            ${p.id === systemData.activeProjectId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="renameProject('${p.id}')">✏️ Rename</button>
+            ${systemData.projects.length > 1 ? `<button class="small danger" onclick="deleteProject('${p.id}')">🗑️ Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddProject() {
+      const name = prompt("Naye Project ka naam daalein (e.g. SHOP RENOVATION, PLOT 4):");
+      if (!name || !name.trim()) return;
+      const cleanName = name.trim().toUpperCase();
+      const newId = "proj_" + Date.now();
+      systemData.projects.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
+      systemData.projectData[newId] = { repairing: [], labour: [], samaan: [] };
+      systemData.activeProjectId = newId;
+      logAction("Create Project", `Created new project: ${cleanName}`);
+      saveLocal();
+      renderProjectSelectors();
+      renderProjectManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    function renameProject(id) {
+      const p = systemData.projects.find(x => x.id === id);
+      if (!p) return;
+      const newName = prompt("Project ka naya naam:", p.name);
+      if (!newName || !newName.trim()) return;
+      p.name = newName.trim().toUpperCase();
+      logAction("Rename Project", `Renamed project to ${p.name}`);
+      saveLocal();
+      renderProjectSelectors();
+      renderProjectManagerList();
+      syncCloud();
+    }
+
+    function deleteProject(id) {
+      if (systemData.projects.length <= 1) {
+        alert("Kam se kam ek active project hona zaroori hai!");
+        return;
+      }
+      const p = systemData.projects.find(x => x.id === id);
+      if (!confirm(`Kya aap project "${p.name}" aur uska saara data delete karna chahte hain?`)) return;
+      
+      systemData.projects = systemData.projects.filter(x => x.id !== id);
+      delete systemData.projectData[id];
+      if (systemData.activeProjectId === id) {
+        systemData.activeProjectId = systemData.projects[0].id;
+      }
+      logAction("Delete Project", `Deleted project: ${p.name}`);
+      saveLocal();
+      renderProjectSelectors();
+      renderProjectManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    // --- LABOUR AUTO-CALCULATE LOGIC ---
+    function autoCalculateLabourTotal() {
+      const lCount = parseFloat(document.getElementById('labCount').value) || 0;
+      const lRate = parseFloat(document.getElementById('labCharge').value) || 0;
+      const mCount = parseFloat(document.getElementById('labMistriCount').value) || 0;
+      const mRate = parseFloat(document.getElementById('labMistriCharge').value) || 0;
+
+      const total = (lCount * lRate) + (mCount * mRate);
+      if (total > 0 || lCount > 0 || mCount > 0) {
+        document.getElementById('labTotalCharge').value = total;
+      }
     }
 
     // --- WORKER DYNAMIC MANAGEMENT ---
@@ -692,7 +890,6 @@
         opt2.textContent = w;
         formSelect.appendChild(opt2);
       });
-
       filterSelect.value = currentFilter;
     }
 
@@ -740,8 +937,12 @@
       if (!newName || !newName.trim()) return;
       const clean = newName.trim().toUpperCase();
       systemData.workers[index] = clean;
-      systemData.labour.forEach(l => {
-        if (l.workerGroup === oldName) l.workerGroup = clean;
+      
+      // Update in all projects
+      Object.keys(systemData.projectData).forEach(pid => {
+        (systemData.projectData[pid].labour || []).forEach(l => {
+          if (l.workerGroup === oldName) l.workerGroup = clean;
+        });
       });
       logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
       saveLocal();
@@ -755,7 +956,7 @@
     function deleteWorkerName(index) {
       const name = systemData.workers[index];
       if (systemData.workers.length <= 1) {
-        alert("Kam se kam ek worker rehna chahiye!");
+        alert("Kam se kam ek worker hona chahiye!");
         return;
       }
       if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
@@ -769,12 +970,111 @@
       syncCloud();
     }
 
+    // --- SAMAAN PARTY MANAGEMENT ---
+    function renderPartyDropdowns() {
+      const filterSelect = document.getElementById('partyFilterSelect');
+      const formSelect = document.getElementById('samPartySelect');
+      const current = filterSelect.value || "ALL";
+
+      filterSelect.innerHTML = '<option value="ALL">All Parties Combined</option>';
+      formSelect.innerHTML = '';
+
+      systemData.parties.forEach(p => {
+        const opt1 = document.createElement('option');
+        opt1.value = p;
+        opt1.textContent = p;
+        filterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = p;
+        opt2.textContent = p;
+        formSelect.appendChild(opt2);
+      });
+      filterSelect.value = current;
+    }
+
+    function openPartyManagerModal() {
+      renderPartyManagerList();
+      document.getElementById('partyManagerModal').classList.remove('hidden');
+    }
+
+    function renderPartyManagerList() {
+      const container = document.getElementById('partyListContainer');
+      container.innerHTML = '';
+      systemData.parties.forEach((p, index) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <strong style="color:var(--accent); font-size:13px;">${p}</strong>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editPartyName(${index})">✏️ Edit</button>
+            <button class="small danger" onclick="deletePartyName(${index})">🗑️ Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddParty() {
+      const name = prompt("Nayi Party / Vendor ka naam daalein (e.g. SR TRADERS, HARDWARE SHOP):");
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+      if (systemData.parties.includes(clean)) {
+        alert("Yeh party pehle se maujood hai!");
+        return;
+      }
+      systemData.parties.push(clean);
+      logAction("Add Party", `Added Party: ${clean}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      syncCloud();
+    }
+
+    function editPartyName(index) {
+      const oldName = systemData.parties[index];
+      const newName = prompt("Party ka naya naam:", oldName);
+      if (!newName || !newName.trim()) return;
+      const clean = newName.trim().toUpperCase();
+      systemData.parties[index] = clean;
+      
+      // Update in all projects
+      Object.keys(systemData.projectData).forEach(pid => {
+        (systemData.projectData[pid].samaan || []).forEach(s => {
+          if (s.refFrom === oldName) s.refFrom = clean;
+        });
+      });
+      logAction("Edit Party", `Renamed party from ${oldName} to ${clean}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      renderSamaanTable();
+      syncCloud();
+    }
+
+    function deletePartyName(index) {
+      const name = systemData.parties[index];
+      if (systemData.parties.length <= 1) {
+        alert("Kam se kam ek party rehna zaroori hai!");
+        return;
+      }
+      if (!confirm(`Kya aap party "${name}" ko delete karna chahte hain?`)) return;
+      systemData.parties.splice(index, 1);
+      logAction("Delete Party", `Deleted party: ${name}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      renderSamaanTable();
+      syncCloud();
+    }
+
     // --- REPAIRING & EXPENSES LOGIC ---
     function renderRepairingTable() {
+      const data = getActiveDataset();
       const tbody = document.getElementById('repairingTableBody');
       tbody.innerHTML = '';
       let total = 0;
-      systemData.repairing.forEach(r => {
+      data.repairing.forEach(r => {
         total += Number(r.amount) || 0;
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -791,12 +1091,13 @@
         tbody.appendChild(tr);
       });
       document.getElementById('repTotalCost').textContent = '₹' + total.toLocaleString('en-IN');
-      document.getElementById('repCount').textContent = systemData.repairing.length;
+      document.getElementById('repCount').textContent = data.repairing.length;
     }
 
     function saveRepairRecord(e) {
       e.preventDefault();
       if (!requireActiveMember()) return;
+      const data = getActiveDataset();
       const editId = document.getElementById('repEditId').value;
       const record = {
         id: editId || 'rep_' + Date.now(),
@@ -809,11 +1110,11 @@
       };
 
       if (editId) {
-        const idx = systemData.repairing.findIndex(x => x.id === editId);
-        if (idx !== -1) systemData.repairing[idx] = record;
+        const idx = data.repairing.findIndex(x => x.id === editId);
+        if (idx !== -1) data.repairing[idx] = record;
         logAction("Edit Repair", `Edited: ₹${record.amount} (${record.reason})`);
       } else {
-        systemData.repairing.unshift(record);
+        data.repairing.unshift(record);
         logAction("Add Repair", `Added: ₹${record.amount} (${record.reason})`);
       }
 
@@ -827,7 +1128,8 @@
     }
 
     function editRepair(id) {
-      const r = systemData.repairing.find(x => x.id === id);
+      const data = getActiveDataset();
+      const r = data.repairing.find(x => x.id === id);
       if (!r) return;
       document.getElementById('repEditId').value = r.id;
       document.getElementById('repDate').value = r.date;
@@ -840,8 +1142,9 @@
     function deleteRepair(id) {
       if (!requireActiveMember()) return;
       if (!confirm("Entry delete karni hai?")) return;
-      const item = systemData.repairing.find(x => x.id === id);
-      systemData.repairing = systemData.repairing.filter(x => x.id !== id);
+      const data = getActiveDataset();
+      const item = data.repairing.find(x => x.id === id);
+      data.repairing = data.repairing.filter(x => x.id !== id);
       logAction("Delete Repair", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
       saveLocal();
       renderRepairingTable();
@@ -849,7 +1152,7 @@
       syncCloud();
     }
 
-    // --- LABOUR RUNNING LEDGER & ATTENDANCE LOGIC ---
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
     function switchLabourSubView(view) {
       const btnLedger = document.getElementById('subBtnLedger');
       const btnAttendance = document.getElementById('subBtnAttendance');
@@ -872,6 +1175,7 @@
     }
 
     function renderLabourLedgerTable() {
+      const data = getActiveDataset();
       const filter = document.getElementById('workerGroupFilter').value;
       const tbody = document.getElementById('labourLedgerTableBody');
       tbody.innerHTML = '';
@@ -880,8 +1184,7 @@
       let totalPaid = 0;
       let runningBalance = 0;
 
-      // Filter and sort chronologically for true running ledger
-      const records = systemData.labour
+      const records = data.labour
         .filter(l => filter === 'ALL' || l.workerGroup === filter)
         .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
 
@@ -914,17 +1217,17 @@
         tbody.appendChild(tr);
       });
 
-      // Update Summary Cards
       document.getElementById('labTotalAmount').textContent = '₹' + totalEarned.toLocaleString('en-IN');
       document.getElementById('labPaidAmount').textContent = '₹' + totalPaid.toLocaleString('en-IN');
       document.getElementById('labPendingAmount').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
     }
 
     function renderLabourAttendanceTable() {
+      const data = getActiveDataset();
       const tbody = document.getElementById('labourAttendanceTableBody');
       tbody.innerHTML = '';
       
-      const records = [...systemData.labour].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+      const records = [...data.labour].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
       records.forEach(l => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -942,6 +1245,7 @@
     function saveLabourRecord(e) {
       e.preventDefault();
       if (!requireActiveMember()) return;
+      const data = getActiveDataset();
       const editId = document.getElementById('labEditId').value;
       const earned = parseFloat(document.getElementById('labTotalCharge').value) || 0;
       const hisaab = parseFloat(document.getElementById('labHisaabTotal').value) || 0;
@@ -964,11 +1268,11 @@
       };
 
       if (editId) {
-        const idx = systemData.labour.findIndex(x => x.id === editId);
-        if (idx !== -1) systemData.labour[idx] = record;
+        const idx = data.labour.findIndex(x => x.id === editId);
+        if (idx !== -1) data.labour[idx] = record;
         logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       } else {
-        systemData.labour.unshift(record);
+        data.labour.unshift(record);
         logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       }
 
@@ -983,7 +1287,8 @@
     }
 
     function editLabour(id) {
-      const l = systemData.labour.find(x => x.id === id);
+      const data = getActiveDataset();
+      const l = data.labour.find(x => x.id === id);
       if (!l) return;
       document.getElementById('labEditId').value = l.id;
       document.getElementById('labGroup').value = l.workerGroup;
@@ -1002,8 +1307,9 @@
     function deleteLabour(id) {
       if (!requireActiveMember()) return;
       if (!confirm("Entry delete karni hai?")) return;
-      const item = systemData.labour.find(x => x.id === id);
-      systemData.labour = systemData.labour.filter(x => x.id !== id);
+      const data = getActiveDataset();
+      const item = data.labour.find(x => x.id === id);
+      data.labour = data.labour.filter(x => x.id !== id);
       logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
       saveLocal();
       renderLabourLedgerTable();
@@ -1012,33 +1318,43 @@
       syncCloud();
     }
 
-    // --- SAMAAN PARTY LEDGER LOGIC ---
+    // --- SAMAAN PARTY RUNNING LEDGER LOGIC ---
     function renderSamaanTable() {
+      const data = getActiveDataset();
+      const filterParty = document.getElementById('partyFilterSelect').value;
       const tbody = document.getElementById('samaanTableBody');
       tbody.innerHTML = '';
-      let totalVal = 0;
-      let inCount = 0;
-      let pendingCount = 0;
+      
+      let totalValue = 0;
+      let totalPaid = 0;
+      let runningBalance = 0;
 
-      systemData.samaan.forEach(s => {
+      const records = data.samaan
+        .filter(s => filterParty === 'ALL' || s.refFrom === filterParty)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+
+      records.forEach(s => {
         const val = Number(s.amount) || 0;
-        totalVal += val;
-        if (s.samaanIn && s.samaanIn.trim()) inCount++;
-        const status = s.status || "RECEIVED / IN USE";
-        if (status.includes("PENDING")) pendingCount++;
+        const paid = Number(s.paidAmount) || (s.status.includes('CLEARED') ? val : 0);
+
+        totalValue += val;
+        totalPaid += paid;
+        runningBalance += (val - paid);
 
         let badgeClass = "badge-neutral";
-        if (status.includes("RETURNED") || status.includes("CLEARED")) badgeClass = "badge-paid";
-        if (status.includes("PENDING")) badgeClass = "badge-pending";
+        if (runningBalance <= 0 || s.status.includes("RETURNED") || s.status.includes("CLEARED")) badgeClass = "badge-paid";
+        if (runningBalance > 0 && s.status.includes("PENDING")) badgeClass = "badge-pending";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${s.date || '-'}</strong></td>
           <td style="color:var(--accent); font-weight:600;">${s.refFrom || '-'}</td>
           <td>${s.samaanIn || '-'}</td>
-          <td style="font-weight:700; color:#fff;">${val > 0 ? '₹' + val.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:#fff;">${val > 0 ? '+₹' + val.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:var(--success);">${paid > 0 ? '-₹' + paid.toLocaleString('en-IN') : '-'}</td>
+          <td style="font-weight:700; color:${runningBalance > 0 ? 'var(--danger)' : 'var(--success)'};">₹${runningBalance.toLocaleString('en-IN')}</td>
+          <td><span class="badge ${badgeClass}">${s.status || 'RECEIVED'}</span></td>
           <td>${s.refTo || '-'}</td>
-          <td><span class="badge ${badgeClass}">${status}</span></td>
           <td style="max-width:180px; white-space:normal;">${s.reason || s.remarks || '-'}</td>
           <td>
             <button class="small secondary" onclick="editSamaan('${s.id}')">✏️</button>
@@ -1048,22 +1364,27 @@
         tbody.appendChild(tr);
       });
 
-      // Update Samaan Cards
-      document.getElementById('samTotalValue').textContent = '₹' + totalVal.toLocaleString('en-IN');
-      document.getElementById('samInCount').textContent = inCount;
-      document.getElementById('samPendingCount').textContent = pendingCount;
+      // Update Samaan Summary Cards
+      document.getElementById('samTotalValue').textContent = '₹' + totalValue.toLocaleString('en-IN');
+      document.getElementById('samTotalPaid').textContent = '₹' + totalPaid.toLocaleString('en-IN');
+      document.getElementById('samTotalBalance').textContent = '₹' + Math.max(0, runningBalance).toLocaleString('en-IN');
     }
 
     function saveSamaanRecord(e) {
       e.preventDefault();
       if (!requireActiveMember()) return;
+      const data = getActiveDataset();
       const editId = document.getElementById('samEditId').value;
+      const val = parseFloat(document.getElementById('samAmount').value) || 0;
+      const paid = parseFloat(document.getElementById('samPaid').value) || 0;
+
       const record = {
         id: editId || 'sam_' + Date.now(),
         date: document.getElementById('samDate').value,
-        refFrom: document.getElementById('samRefFrom').value.trim(),
+        refFrom: document.getElementById('samPartySelect').value.trim(),
         samaanIn: document.getElementById('samIn').value.trim(),
-        amount: parseFloat(document.getElementById('samAmount').value) || 0,
+        amount: val,
+        paidAmount: paid,
         samaanOut: document.getElementById('samOut').value.trim(),
         refTo: document.getElementById('samRefTo').value.trim(),
         status: document.getElementById('samStatus').value,
@@ -1073,12 +1394,12 @@
       };
 
       if (editId) {
-        const idx = systemData.samaan.findIndex(x => x.id === editId);
-        if (idx !== -1) systemData.samaan[idx] = record;
-        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} from ${record.refFrom}`);
+        const idx = data.samaan.findIndex(x => x.id === editId);
+        if (idx !== -1) data.samaan[idx] = record;
+        logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
       } else {
-        systemData.samaan.unshift(record);
-        logAction("Add Samaan", `Added Samaan: ${record.samaanIn} from ${record.refFrom}`);
+        data.samaan.unshift(record);
+        logAction("Add Samaan", `Added Samaan: ${record.samaanIn} (${record.refFrom} ₹${val})`);
       }
 
       saveLocal();
@@ -1091,13 +1412,15 @@
     }
 
     function editSamaan(id) {
-      const s = systemData.samaan.find(x => x.id === id);
+      const data = getActiveDataset();
+      const s = data.samaan.find(x => x.id === id);
       if (!s) return;
       document.getElementById('samEditId').value = s.id;
       document.getElementById('samDate').value = s.date;
-      document.getElementById('samRefFrom').value = s.refFrom || '';
+      document.getElementById('samPartySelect').value = s.refFrom || '';
       document.getElementById('samIn').value = s.samaanIn || '';
       document.getElementById('samAmount').value = s.amount || '';
+      document.getElementById('samPaid').value = s.paidAmount || '';
       document.getElementById('samOut').value = s.samaanOut || '';
       document.getElementById('samRefTo').value = s.refTo || '';
       document.getElementById('samStatus').value = s.status || 'RECEIVED / IN USE';
@@ -1108,8 +1431,9 @@
     function deleteSamaan(id) {
       if (!requireActiveMember()) return;
       if (!confirm("Samaan entry delete karni hai?")) return;
-      const item = systemData.samaan.find(x => x.id === id);
-      systemData.samaan = systemData.samaan.filter(x => x.id !== id);
+      const data = getActiveDataset();
+      const item = data.samaan.find(x => x.id === id);
+      data.samaan = data.samaan.filter(x => x.id !== id);
       logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
       saveLocal();
       renderSamaanTable();
@@ -1119,28 +1443,30 @@
 
     // --- EXCEL (.CSV) EXPORT ENGINE ---
     function exportTableToCSV(type) {
+      const data = getActiveDataset();
+      const pName = getActiveProjectObj().name.replace(/\s+/g, '_');
       let csvContent = "";
-      let filename = `GuruShraddha_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+      let filename = `${pName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
 
       if (type === 'repairing') {
         csvContent = "Date,Amount,Payment Ref,Reason,Logged By\n";
-        systemData.repairing.forEach(r => {
+        data.repairing.forEach(r => {
           csvContent += `"${r.date}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
         });
       } else if (type === 'labour_ledger') {
         csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
-        systemData.labour.forEach(l => {
+        data.labour.forEach(l => {
           csvContent += `"${l.date}","${l.workerGroup}","${(l.remarks||'').replace(/"/g, '""')}","${l.totalCharge||0}","${l.hisaabTotal||0}","${l.remarks||''}","${l.paymentStatus}"\n`;
         });
       } else if (type === 'labour_attendance') {
         csvContent = "Date,Worker,Labour Count,Labour Rate,Mistri Count,Mistri Rate,Total Charge,Remarks\n";
-        systemData.labour.forEach(l => {
+        data.labour.forEach(l => {
           csvContent += `"${l.date}","${l.workerGroup}","${l.labourCount||0}","${l.labourCharge||0}","${l.mistriCount||0}","${l.mistriCharge||0}","${l.totalCharge||0}","${(l.remarks||'').replace(/"/g, '""')}"\n`;
         });
       } else if (type === 'samaan_ledger') {
-        csvContent = "Date,Kisse Aaya (Party),Kya Aaya (Item),Kitne Ka (Amount),Kisko Diya (To),Status,Remarks\n";
-        systemData.samaan.forEach(s => {
-          csvContent += `"${s.date}","${s.refFrom||''}","${(s.samaanIn||'').replace(/"/g, '""')}","${s.amount||0}","${s.refTo||''}","${s.status||''}","${(s.reason||'').replace(/"/g, '""')}"\n`;
+        csvContent = "Date,Party (From),Item (Kya Aaya),Bill Amount,Paid Amount,Kisko Diya,Status,Remarks\n";
+        data.samaan.forEach(s => {
+          csvContent += `"${s.date}","${s.refFrom||''}","${(s.samaanIn||'').replace(/"/g, '""')}","${s.amount||0}","${s.paidAmount||0}","${s.refTo||''}","${s.status||''}","${(s.reason||'').replace(/"/g, '""')}"\n`;
         });
       }
 
@@ -1157,9 +1483,9 @@
     function downloadSystemBackupJSON() {
       const backupPacket = {
         meta: {
-          app: "Guru Shraddha 2.0",
+          app: "Guru Shraddha 2.0 Multi-Project",
           exportDate: new Date().toISOString(),
-          version: "2.0"
+          activeProject: getActiveProjectObj().name
         },
         payload: systemData
       };
@@ -1167,11 +1493,11 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `GuruShraddha_FullBackup_${new Date().toISOString().split('T')[0]}.json`);
+      downloadAnchor.setAttribute("download", `GuruShraddha_MultiProject_Backup_${new Date().toISOString().split('T')[0]}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      logAction("System Backup", "Downloaded full JSON backup file.");
+      logAction("System Backup", "Downloaded full multi-project JSON backup file.");
       renderLogs();
     }
 
@@ -1184,14 +1510,16 @@
         try {
           const parsed = JSON.parse(e.target.result);
           const dataToRestore = parsed.payload || parsed;
-          if (dataToRestore.repairing && dataToRestore.labour && dataToRestore.samaan) {
-            if (confirm("Restore karne se naya data combine/merge ho jayega. Proceed karein?")) {
-              mergeState(dataToRestore);
+          if (dataToRestore.projects && dataToRestore.projectData) {
+            if (confirm("Restore karne se backup ka pura data load ho jayega. Proceed karein?")) {
+              systemData = dataToRestore;
               saveLocal();
+              renderProjectSelectors();
               renderWorkerDropdowns();
+              renderPartyDropdowns();
               renderAllViews();
               syncCloud();
-              alert("System Backup successfully restored and synchronized!");
+              alert("System Backup successfully restored!");
             }
           } else {
             alert("Galat backup format! File me required fields nahi hain.");
@@ -1217,7 +1545,7 @@
             <span style="color:var(--text-muted); font-size:10px;">${l.timestamp}</span>
           </div>
           <div style="color:#cbd5e1;">${l.details}</div>
-          <div style="font-size:10px; color:var(--accent); margin-top:2px;">By: ${l.performedBy}</div>
+          <div style="font-size:10px; color:var(--accent); margin-top:2px;">Project: ${l.project || 'GURU SHRADDHA 2.0'} | By: ${l.performedBy}</div>
         `;
         c.appendChild(item);
       });
@@ -1467,7 +1795,9 @@
           const putData = await putRes.json();
           fileSha = putData.content.sha;
           saveLocal();
+          renderProjectSelectors();
           renderWorkerDropdowns();
+          renderPartyDropdowns();
           renderAllViews();
           updateSyncBadge("Synced Live", "var(--success)");
           document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
@@ -1483,34 +1813,58 @@
     function mergeState(cloud) {
       if (!cloud) return;
 
-      if (cloud.workers && Array.isArray(cloud.workers)) {
-        systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
+      // Merge Projects
+      if (cloud.projects && Array.isArray(cloud.projects)) {
+        const projMap = new Map();
+        cloud.projects.forEach(p => projMap.set(p.id, p));
+        systemData.projects.forEach(p => projMap.set(p.id, p));
+        systemData.projects = Array.from(projMap.values());
       }
 
-      const repMap = new Map();
-      (cloud.repairing || []).forEach(x => repMap.set(x.id, x));
-      systemData.repairing.forEach(x => repMap.set(x.id, x));
-      systemData.repairing = Array.from(repMap.values());
+      // Merge Project Datasets
+      if (cloud.projectData) {
+        Object.keys(cloud.projectData).forEach(pid => {
+          if (!systemData.projectData[pid]) systemData.projectData[pid] = { repairing: [], labour: [], samaan: [] };
+          const cData = cloud.projectData[pid];
+          const lData = systemData.projectData[pid];
 
-      const labMap = new Map();
-      (cloud.labour || []).forEach(x => labMap.set(x.id, x));
-      systemData.labour.forEach(x => labMap.set(x.id, x));
-      systemData.labour = Array.from(labMap.values());
+          // Repairing
+          const repMap = new Map();
+          (cData.repairing || []).forEach(x => repMap.set(x.id, x));
+          (lData.repairing || []).forEach(x => repMap.set(x.id, x));
+          lData.repairing = Array.from(repMap.values());
 
-      const samMap = new Map();
-      (cloud.samaan || []).forEach(x => samMap.set(x.id, x));
-      systemData.samaan.forEach(x => samMap.set(x.id, x));
-      systemData.samaan = Array.from(samMap.values());
+          // Labour
+          const labMap = new Map();
+          (cData.labour || []).forEach(x => labMap.set(x.id, x));
+          (lData.labour || []).forEach(x => labMap.set(x.id, x));
+          lData.labour = Array.from(labMap.values());
 
-      const memberMap = new Map();
-      (cloud.members || []).forEach(x => memberMap.set(x.id, x));
-      systemData.members.forEach(x => memberMap.set(x.id, x));
-      systemData.members = Array.from(memberMap.values());
+          // Samaan
+          const samMap = new Map();
+          (cData.samaan || []).forEach(x => samMap.set(x.id, x));
+          (lData.samaan || []).forEach(x => samMap.set(x.id, x));
+          lData.samaan = Array.from(samMap.values());
+        });
+      }
 
-      const logMap = new Map();
-      (cloud.activityLogs || []).forEach(x => logMap.set(x.id, x));
-      systemData.activityLogs.forEach(x => logMap.set(x.id, x));
-      systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
+      // Merge Workers & Parties
+      if (cloud.workers) systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
+      if (cloud.parties) systemData.parties = Array.from(new Set([...systemData.parties, ...cloud.parties]));
+
+      // Merge Members & Logs
+      if (cloud.members) {
+        const memberMap = new Map();
+        cloud.members.forEach(x => memberMap.set(x.id, x));
+        systemData.members.forEach(x => memberMap.set(x.id, x));
+        systemData.members = Array.from(memberMap.values());
+      }
+      if (cloud.activityLogs) {
+        const logMap = new Map();
+        cloud.activityLogs.forEach(x => logMap.set(x.id, x));
+        systemData.activityLogs.forEach(x => logMap.set(x.id, x));
+        systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
+      }
     }
 
     function updateSyncBadge(text, color) {
