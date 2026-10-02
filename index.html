@@ -24,8 +24,8 @@
     
     /* Top Bar */
     .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .project-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
-    .project-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
+    .book-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 320px; }
+    .book-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
     .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
     /* Container & Cards */
@@ -47,6 +47,7 @@
     /* Inputs & Forms */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
     .grid-1 { margin-bottom: 10px; }
     input, select, textarea { width: 100%; padding: 10px 12px; background: #0c1222; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; transition: 0.2s; }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
@@ -91,10 +92,10 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div class="project-selector-wrap">
-      <span>📁</span>
-      <select id="activeProjectSelector" class="project-select" onchange="changeActiveProject(this.value)"></select>
-      <button class="small secondary" onclick="openProjectManagerModal()" title="Manage Projects">⚙️</button>
+    <div class="book-selector-wrap">
+      <span>📖</span>
+      <select id="activeBookSelector" class="book-select" onchange="changeActiveBook(this.value)"></select>
+      <button class="small secondary" onclick="openBookManagerModal()" title="Manage Books">⚙️</button>
     </div>
     <div style="display:flex; align-items:center; gap:6px;">
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
@@ -111,12 +112,13 @@
     <!-- Sync Status Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); padding:0 4px;">
       <span id="syncStatus">Status: Ready</span>
-      <span id="activeProjectDisplay" style="color:var(--accent); font-weight:bold;">Project: Guru Shraddha 2.0</span>
+      <span id="activeBookDisplay" style="color:var(--accent); font-weight:bold;">Book: Guru Shraddha 2.0</span>
       <span id="lastSyncedTime">Last Sync: Never</span>
     </div>
 
-    <!-- TAB 1: REPAIRING, EXPENSES & INCOME -->
+    <!-- TAB 1: BOOK INCOME & EXPENSES -->
     <div id="tab-repairing" class="tab-content">
+      <!-- 3 Dynamic Summary Cards -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Income (Aaye)</div>
@@ -134,7 +136,12 @@
 
       <div class="card">
         <div class="card-title">
-          <span>Project Income & Expenses</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span>Book Income & Expenses</span>
+            <select id="expenseCategoryFilter" onchange="renderRepairingTable()" style="padding:4px 8px; font-size:11px; width:auto;">
+              <option value="ALL">All Categories</option>
+            </select>
+          </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('repairing')">📥 Export Excel</button>
             <button class="small" onclick="toggleForm('repFormContainer')">+ New Entry</button>
@@ -144,13 +151,17 @@
         <div id="repFormContainer" class="hidden">
           <form onsubmit="saveRepairRecord(event)">
             <input type="hidden" id="repEditId">
-            <div class="grid-3">
+            <div class="grid-4">
               <div>
                 <label>Entry Type</label>
                 <select id="repType" required style="font-weight:bold;">
                   <option value="EXPENSE" style="color:var(--danger);">🔴 EXPENSE (Money Out / Kharcha)</option>
                   <option value="INCOME" style="color:var(--success);">🟢 INCOME (Money In / Fund Aaya)</option>
                 </select>
+              </div>
+              <div>
+                <label>Category <a href="javascript:void(0)" onclick="promptAddExpenseCategory()" style="color:var(--accent); text-decoration:none; margin-left:4px;">(+ Nayi)</a></label>
+                <select id="repCategory" required></select>
               </div>
               <div>
                 <label>Date</label>
@@ -184,6 +195,7 @@
               <tr>
                 <th>Date</th>
                 <th>Type</th>
+                <th>Category</th>
                 <th>Amount</th>
                 <th>Payment Mode</th>
                 <th>Reason / Item Details</th>
@@ -221,7 +233,7 @@
         </div>
       </div>
 
-      <!-- COMMON HAZIRI FORM (Visible for both Ledger & Attendance Views) -->
+      <!-- COMMON HAZIRI FORM -->
       <div id="labFormCard" class="card hidden" style="border:1px solid var(--accent); margin-bottom: 12px;">
         <div class="card-title">
           <span id="labFormTitle">Mark Haziri / Work Record</span>
@@ -478,7 +490,7 @@
       <div id="masterConfigSection" class="hidden">
         <div class="card" style="margin-bottom: 14px; border:1px solid var(--accent);">
           <div class="card-title">📦 Complete System Backup & Restore</div>
-          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein (All Projects, Workers, Parties, Members):</p>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Pura system backup JSON download ya restore karein (All Books, Categories, Workers, Parties, Members):</p>
           <div class="grid-2">
             <button onclick="downloadSystemBackupJSON()" class="secondary" style="width:100%;">💾 Download Backup JSON</button>
             <button onclick="document.getElementById('restoreFileInput').click()" class="warning" style="width:100%;">📂 Restore from JSON</button>
@@ -519,7 +531,7 @@
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchTab('repairing', this)">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span>Repair/Income</span>
+      <span>Income/Exp</span>
     </button>
     <button class="nav-item" onclick="switchTab('labour', this)">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -604,17 +616,17 @@
     </div>
   </div>
 
-  <!-- Project Manager Modal -->
-  <div id="projectManagerModal" class="modal-overlay hidden">
+  <!-- Book Manager Modal -->
+  <div id="bookManagerModal" class="modal-overlay hidden">
     <div class="modal-box">
       <div class="card-title">
-        <span>Projects Manager</span>
-        <button class="small" onclick="promptAddProject()">+ New Project</button>
+        <span>Hisaab Books Manager</span>
+        <button class="small" onclick="promptAddBook()">+ New Book</button>
       </div>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Projects switch, create ya rename karein:</p>
-      <div id="projectListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Nayi Book banayein, rename karein ya switch karein:</p>
+      <div id="bookListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
       <div style="margin-top:14px;">
-        <button onclick="closeModal('projectManagerModal')" class="secondary" style="width:100%;">Close</button>
+        <button onclick="closeModal('bookManagerModal')" class="secondary" style="width:100%;">Close</button>
       </div>
     </div>
   </div>
@@ -624,18 +636,38 @@
     const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_FILE = "data.json";
 
+    // Application Multi-Book State
     let systemData = {
-      activeProjectId: "proj_default",
-      projects: [
-        { id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }
+      activeBookId: "book_gs2",
+      books: [
+        { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
+        { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
       ],
-      projectData: {
-        "proj_default": {
+      bookData: {
+        "book_gs2": {
+          repairing: [],
+          samaan: [],
+          labour: []
+        },
+        "book_regular": {
           repairing: [],
           samaan: [],
           labour: []
         }
       },
+      expenseCategories: [
+        "Hardware & Plywood",
+        "Electric & Motor",
+        "Plumbing & Pipes",
+        "Tiles & Masonry",
+        "Vehicle & Repair",
+        "Food & Tiffin",
+        "Govt & DMC Fees",
+        "Advance Payment",
+        "General Expense",
+        "Rental Income",
+        "Other Income"
+      ],
       workers: [
         "DESHKAR BHIYA",
         "TEJU BHIYA",
@@ -664,24 +696,25 @@
     let currentMember = null;
     let fileSha = null;
 
+    // Excel Seed Records with Categories mapped
     const initialSeedData = {
       repairing: [
-        {"id":"rep_3","type":"EXPENSE","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_4","type":"EXPENSE","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_5","type":"EXPENSE","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_6","type":"EXPENSE","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_7","type":"EXPENSE","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_8","type":"EXPENSE","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_9","type":"EXPENSE","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_10","type":"EXPENSE","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_11","type":"EXPENSE","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_12","type":"EXPENSE","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_13","type":"EXPENSE","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_14","type":"EXPENSE","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_15","type":"EXPENSE","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_16","type":"EXPENSE","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_17","type":"EXPENSE","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_18","type":"EXPENSE","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
+        {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_4","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_12","type":"EXPENSE","category":"Advance Payment","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_13","type":"EXPENSE","category":"Govt & DMC Fees","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_14","type":"EXPENSE","category":"Electric & Motor","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_15","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_16","type":"EXPENSE","category":"Tiles & Masonry","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_17","type":"EXPENSE","category":"Food & Tiffin","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"},
+        {"id":"rep_18","type":"EXPENSE","category":"Vehicle & Repair","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
       ],
       samaan: [
         {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"paidAmount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Initial Seed","updatedAt":"2026-10-02 17:30:00"}
@@ -704,7 +737,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
-      renderProjectSelectors();
+      renderBookSelectors();
+      renderExpenseCategoryDropdowns();
       renderWorkerDropdowns();
       renderPartyDropdowns();
       renderAllViews();
@@ -717,30 +751,33 @@
       if (local) {
         try {
           systemData = JSON.parse(local);
-          if (!systemData.projects || !Array.isArray(systemData.projects)) {
-            systemData.activeProjectId = "proj_default";
-            systemData.projects = [{ id: "proj_default", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
-            systemData.projectData = {
-              "proj_default": {
-                repairing: initialSeedData.repairing,
-                labour: initialSeedData.labour,
-                samaan: initialSeedData.samaan
-              }
+          // Migration from projects to books
+          if (!systemData.books) {
+            systemData.activeBookId = "book_gs2";
+            systemData.books = [
+              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
+              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
+            ];
+            systemData.bookData = {
+              "book_gs2": systemData.projectData ? (systemData.projectData[systemData.activeProjectId] || initialSeedData) : initialSeedData,
+              "book_regular": { repairing: [], labour: [], samaan: [] }
             };
           }
-          if (!systemData.workers || systemData.workers.length === 0) {
-            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
-          }
-          if (!systemData.parties || systemData.parties.length === 0) {
-            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"];
+          if (!systemData.expenseCategories) {
+            systemData.expenseCategories = [
+              "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
+              "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
+              "Govt & DMC Fees", "Advance Payment", "General Expense",
+              "Rental Income", "Other Income"
+            ];
           }
         } catch(e) {
           console.error("Local parse error", e);
         }
       } else {
-        systemData.projectData["proj_default"] = initialSeedData;
+        systemData.bookData["book_gs2"] = initialSeedData;
         systemData.activityLogs = [
-          { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import of Guru Shraddha 2.0 project." }
+          { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Initial import into Guru Shraddha 2.0 Book." }
         ];
         saveLocal();
       }
@@ -751,22 +788,22 @@
     }
 
     function getActiveDataset() {
-      const pid = systemData.activeProjectId || "proj_default";
-      if (!systemData.projectData[pid]) {
-        systemData.projectData[pid] = { repairing: [], labour: [], samaan: [] };
+      const bid = systemData.activeBookId || "book_gs2";
+      if (!systemData.bookData[bid]) {
+        systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
       }
-      return systemData.projectData[pid];
+      return systemData.bookData[bid];
     }
 
-    function getActiveProjectObj() {
-      return systemData.projects.find(p => p.id === systemData.activeProjectId) || systemData.projects[0];
+    function getActiveBookObj() {
+      return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
     }
 
     function logAction(action, details) {
       const logEntry = {
         id: "log_" + Date.now(),
         action: action,
-        project: getActiveProjectObj().name,
+        book: getActiveBookObj().name,
         performedBy: currentMember ? currentMember.name : "Unknown",
         timestamp: new Date().toLocaleString('en-IN'),
         details: details
@@ -775,103 +812,138 @@
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
-    // --- MULTI-PROJECT MANAGEMENT ---
-    function renderProjectSelectors() {
-      const select = document.getElementById('activeProjectSelector');
+    // --- BOOKS MANAGEMENT ---
+    function renderBookSelectors() {
+      const select = document.getElementById('activeBookSelector');
       select.innerHTML = '';
-      systemData.projects.forEach(p => {
+      systemData.books.forEach(b => {
         const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.name;
-        if (p.id === systemData.activeProjectId) opt.selected = true;
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (b.id === systemData.activeBookId) opt.selected = true;
         select.appendChild(opt);
       });
-      document.getElementById('activeProjectDisplay').textContent = "Project: " + getActiveProjectObj().name;
+      document.getElementById('activeBookDisplay').textContent = "Book: " + getActiveBookObj().name;
     }
 
-    function changeActiveProject(projectId) {
-      systemData.activeProjectId = projectId;
+    function changeActiveBook(bookId) {
+      systemData.activeBookId = bookId;
       saveLocal();
-      renderProjectSelectors();
+      renderBookSelectors();
       renderAllViews();
     }
 
-    function openProjectManagerModal() {
-      renderProjectManagerList();
-      document.getElementById('projectManagerModal').classList.remove('hidden');
+    function openBookManagerModal() {
+      renderBookManagerList();
+      document.getElementById('bookManagerModal').classList.remove('hidden');
     }
 
-    function renderProjectManagerList() {
-      const container = document.getElementById('projectListContainer');
+    function renderBookManagerList() {
+      const container = document.getElementById('bookListContainer');
       container.innerHTML = '';
-      systemData.projects.forEach((p) => {
+      systemData.books.forEach((b) => {
         const div = document.createElement('div');
         div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
         div.innerHTML = `
           <div>
-            <strong style="color:var(--accent); font-size:13px;">${p.name}</strong>
-            ${p.id === systemData.activeProjectId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
+            <strong style="color:var(--accent); font-size:13px;">${b.name}</strong>
+            ${b.id === systemData.activeBookId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="renameProject('${p.id}')">✏️️ Rename</button>
-            ${systemData.projects.length > 1 ? `<button class="small danger" onclick="deleteProject('${p.id}')">🗑️</button>` : ''}
+            <button class="small secondary" onclick="renameBook('${b.id}')">✏️ Rename</button>
+            ${systemData.books.length > 1 ? `<button class="small danger" onclick="deleteBook('${b.id}')">🗑️</button>` : ''}
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    function promptAddProject() {
-      const name = prompt("Naye Project ka naam daalein (e.g. SHOP RENOVATION, GODOWN 2):");
+    function promptAddBook() {
+      const name = prompt("Nayi Hisaab Book ka naam daalein (e.g. REGULAR BOOK, SHOP 2):");
       if (!name || !name.trim()) return;
       const cleanName = name.trim().toUpperCase();
-      const newId = "proj_" + Date.now();
-      systemData.projects.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
-      systemData.projectData[newId] = { repairing: [], labour: [], samaan: [] };
-      systemData.activeProjectId = newId;
-      logAction("Create Project", `Created new project: ${cleanName}`);
+      const newId = "book_" + Date.now();
+      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
+      systemData.bookData[newId] = { repairing: [], labour: [], samaan: [] };
+      systemData.activeBookId = newId;
+      logAction("Create Book", `Created new Book: ${cleanName}`);
       saveLocal();
-      renderProjectSelectors();
-      renderProjectManagerList();
+      renderBookSelectors();
+      renderBookManagerList();
       renderAllViews();
       syncCloud();
     }
 
-    function renameProject(id) {
-      const p = systemData.projects.find(x => x.id === id);
-      if (!p) return;
-      const newName = prompt("Project ka naya naam:", p.name);
+    function renameBook(id) {
+      const b = systemData.books.find(x => x.id === id);
+      if (!b) return;
+      const newName = prompt("Book ka naya naam:", b.name);
       if (!newName || !newName.trim()) return;
-      p.name = newName.trim().toUpperCase();
-      logAction("Rename Project", `Renamed project to ${p.name}`);
+      b.name = newName.trim().toUpperCase();
+      logAction("Rename Book", `Renamed Book to ${b.name}`);
       saveLocal();
-      renderProjectSelectors();
-      renderProjectManagerList();
+      renderBookSelectors();
+      renderBookManagerList();
       syncCloud();
     }
 
-    function deleteProject(id) {
-      if (systemData.projects.length <= 1) {
-        alert("Kam se kam ek active project hona zaroori hai!");
+    function deleteBook(id) {
+      if (systemData.books.length <= 1) {
+        alert("Kam se kam ek active Book hona zaroori hai!");
         return;
       }
-      const p = systemData.projects.find(x => x.id === id);
-      if (!confirm(`Kya aap project "${p.name}" aur uska saara data delete karna chahte hain?`)) return;
+      const b = systemData.books.find(x => x.id === id);
+      if (!confirm(`Kya aap "${b.name}" aur iska pura hisaab delete karna chahte hain?`)) return;
       
-      systemData.projects = systemData.projects.filter(x => x.id !== id);
-      delete systemData.projectData[id];
-      if (systemData.activeProjectId === id) {
-        systemData.activeProjectId = systemData.projects[0].id;
+      systemData.books = systemData.books.filter(x => x.id !== id);
+      delete systemData.bookData[id];
+      if (systemData.activeBookId === id) {
+        systemData.activeBookId = systemData.books[0].id;
       }
-      logAction("Delete Project", `Deleted project: ${p.name}`);
+      logAction("Delete Book", `Deleted Book: ${b.name}`);
       saveLocal();
-      renderProjectSelectors();
-      renderProjectManagerList();
+      renderBookSelectors();
+      renderBookManagerList();
       renderAllViews();
       syncCloud();
     }
 
-    // --- DIRECT MEMBER MANAGEMENT (RENAME / ADD / EDIT PIN) ---
+    // --- EXPENSE CATEGORIES LOGIC ---
+    function renderExpenseCategoryDropdowns() {
+      const formSelect = document.getElementById('repCategory');
+      const filterSelect = document.getElementById('expenseCategoryFilter');
+      const curFilter = filterSelect.value || "ALL";
+
+      formSelect.innerHTML = '';
+      filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
+
+      systemData.expenseCategories.forEach(cat => {
+        const opt1 = document.createElement('option');
+        opt1.value = cat;
+        opt1.textContent = cat;
+        formSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = cat;
+        opt2.textContent = cat;
+        filterSelect.appendChild(opt2);
+      });
+      filterSelect.value = curFilter;
+    }
+
+    function promptAddExpenseCategory() {
+      const name = prompt("Nayi Category ka naam daalein:");
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      if (!systemData.expenseCategories.includes(clean)) {
+        systemData.expenseCategories.push(clean);
+        saveLocal();
+        renderExpenseCategoryDropdowns();
+        document.getElementById('repCategory').value = clean;
+      }
+    }
+
+    // --- DIRECT MEMBER MANAGEMENT ---
     function openMemberManagerDirect() {
       renderDirectMemberList();
       document.getElementById('directMemberManagerModal').classList.remove('hidden');
@@ -1001,8 +1073,8 @@
       const clean = newName.trim().toUpperCase();
       systemData.workers[index] = clean;
       
-      Object.keys(systemData.projectData).forEach(pid => {
-        (systemData.projectData[pid].labour || []).forEach(l => {
+      Object.keys(systemData.bookData).forEach(bid => {
+        (systemData.bookData[bid].labour || []).forEach(l => {
           if (l.workerGroup === oldName) l.workerGroup = clean;
         });
       });
@@ -1100,8 +1172,8 @@
       const clean = newName.trim().toUpperCase();
       systemData.parties[index] = clean;
       
-      Object.keys(systemData.projectData).forEach(pid => {
-        (systemData.projectData[pid].samaan || []).forEach(s => {
+      Object.keys(systemData.bookData).forEach(bid => {
+        (systemData.bookData[bid].samaan || []).forEach(s => {
           if (s.refFrom === oldName) s.refFrom = clean;
         });
       });
@@ -1132,6 +1204,7 @@
     // --- REPAIRING & EXPENSES & INCOME LOGIC ---
     function renderRepairingTable() {
       const data = getActiveDataset();
+      const catFilter = document.getElementById('expenseCategoryFilter').value;
       const tbody = document.getElementById('repairingTableBody');
       tbody.innerHTML = '';
       
@@ -1141,34 +1214,38 @@
       data.repairing.forEach(r => {
         const amt = Number(r.amount) || 0;
         const type = r.type || "EXPENSE";
+        const cat = r.category || "General Expense";
 
-        if (type === "INCOME") {
-          totalIncome += amt;
-        } else {
-          totalExpense += amt;
+        if (catFilter === 'ALL' || cat === catFilter) {
+          if (type === "INCOME") {
+            totalIncome += amt;
+          } else {
+            totalExpense += amt;
+          }
+
+          const typeBadge = type === "INCOME" 
+            ? `<span class="badge badge-paid">INCOME</span>` 
+            : `<span class="badge badge-pending">EXPENSE</span>`;
+
+          const amtColor = type === "INCOME" ? "var(--success)" : "var(--danger)";
+          const amtSign = type === "INCOME" ? "+₹" : "-₹";
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.date || '-'}</td>
+            <td>${typeBadge}</td>
+            <td><span class="badge" style="background:#1e293b; color:var(--accent);">${cat}</span></td>
+            <td style="font-weight:700; color:${amtColor};">${amtSign}${amt.toLocaleString('en-IN')}</td>
+            <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--text);">${r.ref || 'CASH'}</span></td>
+            <td style="max-width:240px; white-space:normal;">${r.reason}</td>
+            <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
+            <td>
+              <button class="small secondary" onclick="editRepair('${r.id}')">✏️</button>
+              <button class="small danger" onclick="deleteRepair('${r.id}')">🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
         }
-
-        const typeBadge = type === "INCOME" 
-          ? `<span class="badge badge-paid">INCOME</span>` 
-          : `<span class="badge badge-pending">EXPENSE</span>`;
-
-        const amtColor = type === "INCOME" ? "var(--success)" : "var(--danger)";
-        const amtSign = type === "INCOME" ? "+₹" : "-₹";
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.date || '-'}</td>
-          <td>${typeBadge}</td>
-          <td style="font-weight:700; color:${amtColor};">${amtSign}${amt.toLocaleString('en-IN')}</td>
-          <td><span class="badge" style="background:var(--card-inner); border:1px solid var(--border); color:var(--accent);">${r.ref || 'CASH'}</span></td>
-          <td style="max-width:240px; white-space:normal;">${r.reason}</td>
-          <td style="font-size:10px; color:var(--text-muted);">${r.updatedBy || '-'}</td>
-          <td>
-            <button class="small secondary" onclick="editRepair('${r.id}')">✏️</button>
-            <button class="small danger" onclick="deleteRepair('${r.id}')">🗑️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
       });
 
       const netSurplus = totalIncome - totalExpense;
@@ -1186,11 +1263,13 @@
       const data = getActiveDataset();
       const editId = document.getElementById('repEditId').value;
       const type = document.getElementById('repType').value;
+      const cat = document.getElementById('repCategory').value;
       const amt = parseFloat(document.getElementById('repAmount').value);
 
       const record = {
         id: editId || 'rep_' + Date.now(),
         type: type,
+        category: cat,
         date: document.getElementById('repDate').value,
         amount: amt,
         ref: document.getElementById('repRef').value.trim(),
@@ -1202,10 +1281,10 @@
       if (editId) {
         const idx = data.repairing.findIndex(x => x.id === editId);
         if (idx !== -1) data.repairing[idx] = record;
-        logAction("Edit Entry", `Edited ${type}: ₹${record.amount} (${record.reason})`);
+        logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       } else {
         data.repairing.unshift(record);
-        logAction("Add Entry", `Added ${type}: ₹${record.amount} (${record.reason})`);
+        logAction("Add Entry", `Added ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       }
 
       saveLocal();
@@ -1223,6 +1302,7 @@
       if (!r) return;
       document.getElementById('repEditId').value = r.id;
       document.getElementById('repType').value = r.type || "EXPENSE";
+      document.getElementById('repCategory').value = r.category || "General Expense";
       document.getElementById('repDate').value = r.date;
       document.getElementById('repAmount').value = r.amount;
       document.getElementById('repRef').value = r.ref;
@@ -1539,14 +1619,14 @@
     // --- EXCEL (.CSV) EXPORT ENGINE ---
     function exportTableToCSV(type) {
       const data = getActiveDataset();
-      const pName = getActiveProjectObj().name.replace(/\s+/g, '_');
+      const bName = getActiveBookObj().name.replace(/\s+/g, '_');
       let csvContent = "";
-      let filename = `${pName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+      let filename = `${bName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
 
       if (type === 'repairing') {
-        csvContent = "Date,Type,Amount,Payment Ref,Reason,Logged By\n";
+        csvContent = "Date,Type,Category,Amount,Payment Ref,Reason,Logged By\n";
         data.repairing.forEach(r => {
-          csvContent += `"${r.date}","${r.type||'EXPENSE'}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
+          csvContent += `"${r.date}","${r.type||'EXPENSE'}","${r.category||'General Expense'}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
         });
       } else if (type === 'labour_ledger') {
         csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
@@ -1578,9 +1658,9 @@
     function downloadSystemBackupJSON() {
       const backupPacket = {
         meta: {
-          app: "Guru Shraddha 2.0 Multi-Project",
+          app: "Guru Shraddha 2.0 Multi-Book",
           exportDate: new Date().toISOString(),
-          activeProject: getActiveProjectObj().name
+          activeBook: getActiveBookObj().name
         },
         payload: systemData
       };
@@ -1588,11 +1668,11 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `GuruShraddha_MultiProject_Backup_${new Date().toISOString().split('T')[0]}.json`);
+      downloadAnchor.setAttribute("download", `GuruShraddha_MultiBook_Backup_${new Date().toISOString().split('T')[0]}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      logAction("System Backup", "Downloaded full multi-project JSON backup file.");
+      logAction("System Backup", "Downloaded full multi-book JSON backup file.");
       renderLogs();
     }
 
@@ -1605,11 +1685,12 @@
         try {
           const parsed = JSON.parse(e.target.result);
           const dataToRestore = parsed.payload || parsed;
-          if (dataToRestore.projects && dataToRestore.projectData) {
+          if (dataToRestore.books && dataToRestore.bookData) {
             if (confirm("Restore karne se backup ka pura data load ho jayega. Proceed karein?")) {
               systemData = dataToRestore;
               saveLocal();
-              renderProjectSelectors();
+              renderBookSelectors();
+              renderExpenseCategoryDropdowns();
               renderWorkerDropdowns();
               renderPartyDropdowns();
               renderAllViews();
@@ -1640,7 +1721,7 @@
             <span style="color:var(--text-muted); font-size:10px;">${l.timestamp}</span>
           </div>
           <div style="color:#cbd5e1;">${l.details}</div>
-          <div style="font-size:10px; color:var(--accent); margin-top:2px;">Project: ${l.project || 'GURU SHRADDHA 2.0'} | By: ${l.performedBy}</div>
+          <div style="font-size:10px; color:var(--accent); margin-top:2px;">Book: ${l.book || 'GURU SHRADDHA 2.0'} | By: ${l.performedBy}</div>
         `;
         c.appendChild(item);
       });
@@ -1893,7 +1974,8 @@
           const putData = await putRes.json();
           fileSha = putData.content.sha;
           saveLocal();
-          renderProjectSelectors();
+          renderBookSelectors();
+          renderExpenseCategoryDropdowns();
           renderWorkerDropdowns();
           renderPartyDropdowns();
           renderAllViews();
@@ -1911,18 +1993,20 @@
     function mergeState(cloud) {
       if (!cloud) return;
 
-      if (cloud.projects && Array.isArray(cloud.projects)) {
-        const projMap = new Map();
-        cloud.projects.forEach(p => projMap.set(p.id, p));
-        systemData.projects.forEach(p => projMap.set(p.id, p));
-        systemData.projects = Array.from(projMap.values());
+      // Merge Books
+      if (cloud.books && Array.isArray(cloud.books)) {
+        const bookMap = new Map();
+        cloud.books.forEach(b => bookMap.set(b.id, b));
+        systemData.books.forEach(b => bookMap.set(b.id, b));
+        systemData.books = Array.from(bookMap.values());
       }
 
-      if (cloud.projectData) {
-        Object.keys(cloud.projectData).forEach(pid => {
-          if (!systemData.projectData[pid]) systemData.projectData[pid] = { repairing: [], labour: [], samaan: [] };
-          const cData = cloud.projectData[pid];
-          const lData = systemData.projectData[pid];
+      // Merge Book Datasets
+      if (cloud.bookData) {
+        Object.keys(cloud.bookData).forEach(bid => {
+          if (!systemData.bookData[bid]) systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
+          const cData = cloud.bookData[bid];
+          const lData = systemData.bookData[bid];
 
           const repMap = new Map();
           (cData.repairing || []).forEach(x => repMap.set(x.id, x));
@@ -1941,6 +2025,7 @@
         });
       }
 
+      if (cloud.expenseCategories) systemData.expenseCategories = Array.from(new Set([...systemData.expenseCategories, ...cloud.expenseCategories]));
       if (cloud.workers) systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
       if (cloud.parties) systemData.parties = Array.from(new Set([...systemData.parties, ...cloud.parties]));
 
