@@ -119,7 +119,6 @@
 
     <!-- TAB 1: BOOK INCOME & EXPENSES -->
     <div id="tab-repairing" class="tab-content">
-      <!-- 3 Dynamic Summary Cards -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Income (Aaye)</div>
@@ -212,13 +211,11 @@
 
     <!-- TAB 2: LABOUR - RUNNING LEDGER & ATTENDANCE -->
     <div id="tab-labour" class="tab-content hidden">
-      <!-- Sub Navigation -->
       <div class="sub-nav">
         <button class="sub-btn active" id="subBtnLedger" onclick="switchLabourSubView('ledger')">📊 Worker Running Ledger</button>
         <button class="sub-btn" id="subBtnAttendance" onclick="switchLabourSubView('attendance')">📋 Haziri / Attendance Sheet</button>
       </div>
 
-      <!-- Summary Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Total Wages (Earned)</div>
@@ -511,7 +508,8 @@
           <div class="card-title">GitHub Encrypted Cloud Storage</div>
           <div class="grid-1">
             <label>GitHub Repository (Hardcoded):</label>
-            <input type="text" id="cfgRepo" value="TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager" disabled style="background:#1a233a;">
+            <!-- REPOSITORY OWNER EXACT SPELLING FIXED HERE -->
+            <input type="text" id="cfgRepo" value="TechIsInMyDNA/Guru-Shraddha-2.0-Expense-Manager" disabled style="background:#1a233a; color:var(--accent); font-weight:bold;">
           </div>
           <div class="grid-1">
             <label>Target File:</label>
@@ -633,175 +631,11 @@
   </div>
 
   <script>
-    const MASTER_PASSPHRASE = "GuruShraddha@144";
-    const GITHUB_REPO = "TechInMyDNA/Guru-Shraddha-2.0-Expense-Manager";
+    // EXACT GITHUB OWNER SPELLING FIXED: 'TechIsInMyDNA'
+    const GITHUB_OWNER = "TechIsInMyDNA";
+    const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
+    const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
-
-    // 100% COMPLETE EXCEL SEED DATA (All 16 Repairs, 24 Labour Records, 1 Samaan Entry)
-    const initialSeedData = {
-      repairing: [
-        {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_4","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_12","type":"EXPENSE","category":"Advance Payment","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_13","type":"EXPENSE","category":"Govt & DMC Fees","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_14","type":"EXPENSE","category":"Electric & Motor","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_15","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABOUR ATTENDANCE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_16","type":"EXPENSE","category":"Tiles & Masonry","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_17","type":"EXPENSE","category":"Food & Tiffin","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"rep_18","type":"EXPENSE","category":"Vehicle & Repair","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"}
-      ],
-      samaan: [
-        {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"paidAmount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"}
-      ],
-      labour: [
-        {"id":"lab_1","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1,"labourCharge":400,"mistriCount":0,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"SAMAAN ALTI PALTI","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_2","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2,"labourCharge":800,"mistriCount":1,"mistriCharge":500,"totalCharge":1300,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"painterCount":1,"painterCharge":400,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"PAINTING SINGLE HATH DISTEMPER","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-13","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"totalCharge":0,"hisaabTotal":0,"paymentStatus":"PAID","remarks":"NO WORK","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":4200,"paymentStatus":"PAID","remarks":"PAINTING+CHILLAR WORKS (HISAAB DONE TILL TODAY)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-15","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"2ND HISAAB CHALU YAHA SE","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_8","workerGroup":"DESHKAR BHIYA","date":"2025-01-16","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_9","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_10","workerGroup":"DESHKAR BHIYA","date":"2025-01-18","labourCount":2,"labourCharge":1200,"mistriCount":0,"mistriCharge":0,"totalCharge":1200,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE (DEDH DIN)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_11","workerGroup":"DESHKAR BHIYA","date":"2025-01-19","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE C1-G1KE BEECH (SONU+MORESHWAR)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_12","workerGroup":"DESHKAR BHIYA","date":"2025-01-20","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FODD RHE HAI C1-C2 (SONU+MORESHWAR)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_13","workerGroup":"DESHKAR BHIYA","date":"2025-01-21","labourCount":2,"labourCharge":800,"mistriCount":0,"mistriCharge":0,"totalCharge":800,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"DIWAAL FINISHING+ANIL MISTRI CANCEL","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_14","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":1450,"hisaabTotal":7850,"paymentStatus":"PAID","remarks":"PALASTR C1G1 + THEKEDAR 500 (HISAAB DONE TILL TODAY)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_15","workerGroup":"DESHKAR BHIYA","date":"2025-01-23","labourCount":1,"labourCharge":400,"mistriCount":1,"mistriCharge":550,"totalCharge":950,"hisaabTotal":950,"paymentStatus":"PAID","remarks":"3RD HISAAB (SONU+ANIL - HISAAB DONE)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_16","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0,"labourCharge":0,"mistriCount":2,"mistriCharge":0,"totalCharge":0,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"RACK KHOLE DONO TINO (NARENDRA/DEEPAK)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_17","workerGroup":"TEJU BHIYA","date":"2025-02-23","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"totalCharge":0,"hisaabTotal":800,"paymentStatus":"PAID","remarks":"HISAAB CLEAR (800)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_18","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"REZA HAZIRI (MISC 10)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_19","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1000,"paymentStatus":"PAID","remarks":"PAID CASH 1000 (MISC 20, TTL PAID 30)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_20","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-30","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"REZA HAZIRI (MISC 25)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_21","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-31","labourCount":2,"labourCharge":250,"mistriCount":0,"mistriCharge":0,"totalCharge":500,"hisaabTotal":1100,"paymentStatus":"PAID","remarks":"PAID 100 EXTRA (MISC 20, TTL 45)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_22","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1,"labourCharge":750,"mistriCount":1,"mistriCharge":750,"totalCharge":1500,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"NANDU+BAREWAR","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_23","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":0,"labourCharge":0,"mistriCount":0,"mistriCharge":0,"totalCharge":70,"hisaabTotal":1570,"paymentStatus":"PAID","remarks":"EK CAPACITOR 70 (PAY KRNE ME 1470 AAYE HAI)","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"},
-        {"id":"lab_24","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1,"labourCharge":0,"mistriCount":1,"mistriCharge":0,"totalCharge":400,"hisaabTotal":0,"paymentStatus":"PENDING","remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedBy":"Excel Seed","updatedAt":"2026-10-02 17:30:00"}
-      ]
-    };
-
-    let systemData = {
-      activeBookId: "book_gs2",
-      books: [
-        { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
-        { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
-      ],
-      bookData: {
-        "book_gs2": initialSeedData,
-        "book_regular": { repairing: [], labour: [], samaan: [] }
-      },
-      expenseCategories: [
-        "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
-        "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
-        "Govt & DMC Fees", "Advance Payment", "General Expense",
-        "Rental Income", "Other Income"
-      ],
-      workers: [
-        "DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"
-      ],
-      parties: [
-        "SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"
-      ],
-      members: [
-        { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
-        { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
-        { id: "m3", name: "Member 3", pin: "1234", role: "Member" },
-        { id: "m4", name: "Member 4", pin: "1234", role: "Member" }
-      ],
-      activityLogs: [
-        { id: "log_0", action: "Excel Import", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Imported 16 Repairing, 24 Labour, and Samaan entries into Guru Shraddha 2.0." }
-      ]
-    };
-
-    let currentMember = null;
-    let fileSha = null;
-
-    // --- INITIALIZATION WITH AUTO-REPAIR ---
-    window.addEventListener('DOMContentLoaded', () => {
-      loadLocalStorage();
-      renderBookSelectors();
-      renderExpenseCategoryDropdowns();
-      renderWorkerDropdowns();
-      renderPartyDropdowns();
-      renderAllViews();
-      autoCheckMemberSession();
-      if (getPatToken()) syncCloud();
-    });
-
-    function loadLocalStorage() {
-      const local = localStorage.getItem('gs_encrypted_system_state');
-      if (local) {
-        try {
-          const parsed = JSON.parse(local);
-          
-          // Check if parsed data has books structure
-          if (parsed.books && parsed.bookData) {
-            systemData = parsed;
-          } else {
-            // Migrating from old project structure
-            systemData.activeBookId = "book_gs2";
-            systemData.books = [
-              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
-              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
-            ];
-            systemData.bookData = {
-              "book_gs2": initialSeedData,
-              "book_regular": { repairing: [], labour: [], samaan: [] }
-            };
-          }
-
-          // SELF-HEALING: If GURU SHRADDHA 2.0 has 0 repairing entries, force reload seed
-          if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
-            systemData.bookData["book_gs2"] = initialSeedData;
-          }
-
-          if (!systemData.expenseCategories || systemData.expenseCategories.length === 0) {
-            systemData.expenseCategories = [
-              "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
-              "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
-              "Govt & DMC Fees", "Advance Payment", "General Expense",
-              "Rental Income", "Other Income"
-            ];
-          }
-          if (!systemData.workers || systemData.workers.length === 0) {
-            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
-          }
-          if (!systemData.parties || systemData.parties.length === 0) {
-            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"];
-          }
-          saveLocal();
-        } catch(e) {
-          console.error("Local parse error, re-initializing seed", e);
-          saveLocal();
-        }
-      } else {
-        saveLocal();
-      }
-    }
-
-    function saveLocal() {
-      localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
-    }
-
-    // Direct Rescue Function to Reload Excel Seed
-    function restoreExcelDataDirect() {
-      if (confirm("Kya aap Excel ka poora 100% purana data 'GURU SHRADDHA 2.0' Book me wapas load karna chahte hain?")) {
-        systemData.activeBookId = "book_gs2";
-        systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
-        saveLocal();
-        renderBookSelectors();
-        renderAllViews();
-        alert("Pura Excel Data (16 Repairs, 24 Labour Haziri & Samaan) successfully restore ho gaya!");
-      }
-    }
 
     function getActiveDataset() {
       const bid = systemData.activeBookId || "book_gs2";
@@ -1605,7 +1439,7 @@
     function editSamaan(id) {
       const data = getActiveDataset();
       const s = data.samaan.find(x => x.id === id);
-      if (!r) return;
+      if (!s) return;
       document.getElementById('samEditId').value = s.id;
       document.getElementById('samDate').value = s.date;
       document.getElementById('samPartySelect').value = s.refFrom || '';
@@ -1930,7 +1764,7 @@
       return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
-    // --- GITHUB ZERO-OVERWRITE CLOUD SYNC ---
+    // --- GITHUB ZERO-OVERWRITE CLOUD SYNC (WITH ERROR ALERT) ---
     async function syncCloud() {
       const token = getPatToken();
       if (!token) {
@@ -1964,9 +1798,10 @@
 
           mergeState(cloudData);
         } else if (getRes.status === 404) {
+          // File does not exist yet in repo (first sync push)
           fileSha = null;
         } else {
-          throw new Error(`Fetch error HTTP ${getRes.status}`);
+          throw new Error(`GitHub HTTP ${getRes.status} (Check Token permissions & Repo access)`);
         }
 
         const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
@@ -1998,11 +1833,11 @@
           updateSyncBadge("Synced Live", "var(--success)");
           document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
         } else {
-          throw new Error(`Push error HTTP ${putRes.status}`);
+          throw new Error(`Push failed: HTTP ${putRes.status}`);
         }
       } catch (err) {
         console.error("Sync Failure:", err);
-        updateSyncBadge("Sync Error", "var(--danger)");
+        updateSyncBadge("Sync Error: " + err.message, "var(--danger)");
       }
     }
 
