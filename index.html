@@ -696,8 +696,8 @@
       activeBookId: "book_gs2",
       deletedIds: [],
       books: [
-        { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
-        { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
+        { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: 1736553600000 },
+        { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02", updatedAtTime: 1736553600000 }
       ],
       bookData: {
         "book_gs2": initialSeedData,
@@ -716,10 +716,10 @@
         "SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"
       ],
       members: [
-        { id: "m1", name: "Family Head", pin: "1234", role: "Head" },
-        { id: "m2", name: "Member 2", pin: "1234", role: "Member" },
-        { id: "m3", name: "Member 3", pin: "1234", role: "Member" },
-        { id: "m4", name: "Member 4", pin: "1234", role: "Member" }
+        { id: "m1", name: "Family Head", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
+        { id: "m2", name: "Member 2", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+        { id: "m3", name: "Member 3", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+        { id: "m4", name: "Member 4", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
       ],
       activityLogs: [
         { id: "log_0", action: "System Init", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Loaded Guru Shraddha system." }
@@ -731,7 +731,7 @@
     let isSyncing = false;
     let syncIntervalTimer = null;
 
-    // --- ESSENTIAL CORE HELPERS (GUARANTEES TOP-LEVEL DEFINITION) ---
+    // --- ESSENTIAL CORE HELPERS (TOP-LEVEL) ---
     function getActiveDataset() {
       const bid = systemData.activeBookId || "book_gs2";
       if (!systemData.bookData[bid]) {
@@ -742,7 +742,7 @@
 
     function getActiveBookObj() {
       if (!systemData.books || systemData.books.length === 0) {
-        systemData.books = [{ id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" }];
+        systemData.books = [{ id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: Date.now() }];
       }
       return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
     }
@@ -1460,10 +1460,18 @@
       }
       const deletedSet = new Set(systemData.deletedIds || []);
 
+      // LWW FOR BOOKS
       if (cloud.books && Array.isArray(cloud.books)) {
         const bookMap = new Map();
-        cloud.books.forEach(b => bookMap.set(b.id, b));
-        systemData.books.forEach(b => bookMap.set(b.id, b));
+        cloud.books.forEach(b => { if (!deletedSet.has(b.id)) bookMap.set(b.id, b); });
+        systemData.books.forEach(b => {
+          if (!deletedSet.has(b.id)) {
+            const existing = bookMap.get(b.id);
+            if (!existing || ((b.updatedAtTime || 0) >= (existing.updatedAtTime || 0))) {
+              bookMap.set(b.id, b);
+            }
+          }
+        });
         systemData.books = Array.from(bookMap.values());
       }
 
@@ -1521,7 +1529,12 @@
       if (cloud.members) {
         const memberMap = new Map();
         cloud.members.forEach(x => memberMap.set(x.id, x));
-        systemData.members.forEach(x => memberMap.set(x.id, x));
+        systemData.members.forEach(x => {
+          const existing = memberMap.get(x.id);
+          if (!existing || ((x.updatedAtTime || 0) >= (existing.updatedAtTime || 0))) {
+            memberMap.set(x.id, x);
+          }
+        });
         systemData.members = Array.from(memberMap.values());
       }
       if (cloud.activityLogs) {
@@ -1572,7 +1585,7 @@
           </div>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="renameBook('${b.id}')">✏️ Rename</button>
-            ${systemData.books.length > 1 ? `<button class="small danger" onclick="deleteBook('${b.id}')">🗑️️ Delete</button>` : ''}
+            ${systemData.books.length > 1 ? `<button class="small danger" onclick="deleteBook('${b.id}')">🗑️ Delete</button>` : ''}
           </div>
         `;
         container.appendChild(div);
@@ -1584,7 +1597,7 @@
       if (!name || !name.trim()) return;
       const cleanName = name.trim().toUpperCase();
       const newId = "book_" + Date.now();
-      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
+      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0], updatedAtTime: Date.now() });
       systemData.bookData[newId] = { repairing: [], labour: [], samaan: [] };
       systemData.activeBookId = newId;
       logAction("Create Book", `Created new Book: ${cleanName}`);
@@ -1601,6 +1614,7 @@
       const newName = prompt("Book ka naya naam:", b.name);
       if (!newName || !newName.trim()) return;
       b.name = newName.trim().toUpperCase();
+      b.updatedAtTime = Date.now(); // LWW timestamp for instant sync!
       logAction("Rename Book", `Renamed Book to ${b.name}`);
       saveLocal();
       renderBookSelectors();
@@ -1616,6 +1630,9 @@
       const b = systemData.books.find(x => x.id === id);
       if (!confirm(`Kya aap Book "${b.name}" aur iska poora hisaab-kitaab delete karna chahte hain?`)) return;
       
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      systemData.deletedIds.push(id);
+
       systemData.books = systemData.books.filter(x => x.id !== id);
       delete systemData.bookData[id];
       if (systemData.activeBookId === id) {
@@ -1812,7 +1829,7 @@
         alert("PIN sirf 4-digit number hona chahiye!");
         return;
       }
-      const newMember = { id: "m_" + Date.now(), name: name.trim(), pin: pin.trim(), role: "Member" };
+      const newMember = { id: "m_" + Date.now(), name: name.trim(), pin: pin.trim(), role: "Member", updatedAtTime: Date.now() };
       systemData.members.push(newMember);
       saveLocal();
       renderMembersManagement();
@@ -1832,6 +1849,7 @@
       }
       m.name = newName.trim();
       m.pin = newPin.trim();
+      m.updatedAtTime = Date.now();
       saveLocal();
       renderMembersManagement();
       renderDirectMemberList();
@@ -1895,7 +1913,10 @@
       
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].labour || []).forEach(l => {
-          if (l.workerGroup === oldName) l.workerGroup = clean;
+          if (l.workerGroup === oldName) {
+            l.workerGroup = clean;
+            l.updatedAtTime = Date.now();
+          }
         });
       });
       logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
@@ -1971,7 +1992,10 @@
       
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].samaan || []).forEach(s => {
-          if (s.refFrom === oldName) s.refFrom = clean;
+          if (s.refFrom === oldName) {
+            s.refFrom = clean;
+            s.updatedAtTime = Date.now();
+          }
         });
       });
       logAction("Edit Party", `Renamed party from ${oldName} to ${clean}`);
@@ -2242,8 +2266,8 @@
           } else {
             systemData.activeBookId = "book_gs2";
             systemData.books = [
-              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
-              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
+              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: Date.now() },
+              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02", updatedAtTime: Date.now() }
             ];
             systemData.bookData = {
               "book_gs2": initialSeedData,
