@@ -22,10 +22,10 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); padding-bottom: 85px; min-height: 100vh; overflow-x: hidden; }
     
-    .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .book-selector-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 300px; }
-    .book-select { padding: 6px 10px; font-size: 13px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
-    .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .topbar { background: rgba(19, 27, 46, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .book-selector-wrap { display: flex; align-items: center; gap: 4px; flex: 1; max-width: 280px; }
+    .book-select { padding: 6px 8px; font-size: 12px; font-weight: 700; color: var(--accent); background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; cursor: pointer; }
+    .user-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 5px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
     
     .container { max-width: 960px; margin: 0 auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
@@ -54,7 +54,7 @@
     button.danger { background: var(--danger); color: #fff; }
     button.success { background: var(--success); color: #fff; }
     button.warning { background: var(--warning); color: #050b14; }
-    button.small { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
+    button.small { padding: 4px 8px; font-size: 10px; border-radius: 6px; }
 
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
@@ -92,14 +92,14 @@
     <div class="book-selector-wrap">
       <span>📖</span>
       <select id="activeBookSelector" class="book-select" onchange="changeActiveBook(this.value)"></select>
-      <button class="small secondary" onclick="openBookManagerModal()" title="Manage Books">⚙️ Books</button>
+      <button class="small secondary" onclick="openBookManagerModal()" title="Manage Books">⚙️</button>
     </div>
     <div style="display:flex; align-items:center; gap:5px;">
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
         <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
       <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage Members">👥</button>
-      <button class="small warning" onclick="restoreExcelDataDirect()" title="Restore Data">📥 Restore</button>
+      <button class="small warning" onclick="restoreExcelDataDirect()" title="Restore Original Excel Data">📥 Data Restore</button>
       <button class="small secondary" id="manualSyncBtn" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
@@ -630,7 +630,7 @@
   </div>
 
   <script>
-    // HARDCODED CONSTANTS
+    // HARDCODED SECURE CONSTANTS
     const MASTER_PASSPHRASE = "GuruShraddha@144";
     const GITHUB_OWNER = "TechIsInMyDNA";
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
@@ -874,7 +874,7 @@
       }
 
       document.getElementById('repEditId').value = r.id;
-      document.getElementById('repFormHeaderTitle').textContent = "✏️️ Edit Record (" + (r.reason || 'Expense') + ")";
+      document.getElementById('repFormHeaderTitle').textContent = "✏️ Edit Record (" + (r.reason || 'Expense') + ")";
       document.getElementById('repSubmitBtn').textContent = "Update Entry";
       document.getElementById('repType').value = r.type || "EXPENSE";
       document.getElementById('repCategory').value = catVal;
@@ -1530,6 +1530,761 @@
         systemData.activityLogs.forEach(x => logMap.set(x.id, x));
         systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
       }
+    }
+
+    // --- BOOKS MANAGEMENT ---
+    function renderBookSelectors() {
+      const select = document.getElementById('activeBookSelector');
+      if (!select) return;
+      select.innerHTML = '';
+      systemData.books.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = b.name;
+        if (b.id === systemData.activeBookId) opt.selected = true;
+        select.appendChild(opt);
+      });
+      document.getElementById('activeBookDisplay').textContent = "Book: " + getActiveBookObj().name;
+    }
+
+    function changeActiveBook(bookId) {
+      systemData.activeBookId = bookId;
+      saveLocal();
+      renderBookSelectors();
+      renderAllViews();
+    }
+
+    function openBookManagerModal() {
+      renderBookManagerList();
+      document.getElementById('bookManagerModal').classList.remove('hidden');
+    }
+
+    function renderBookManagerList() {
+      const container = document.getElementById('bookListContainer');
+      container.innerHTML = '';
+      systemData.books.forEach((b) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:10px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <div>
+            <strong style="color:var(--accent); font-size:14px;">${b.name}</strong>
+            ${b.id === systemData.activeBookId ? '<span class="badge badge-paid" style="margin-left:6px;">ACTIVE</span>' : ''}
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="renameBook('${b.id}')">✏️ Rename</button>
+            ${systemData.books.length > 1 ? `<button class="small danger" onclick="deleteBook('${b.id}')">🗑️️ Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddBook() {
+      const name = prompt("Nayi Hisaab Book ka naam daalein (e.g. SHOP 2, GODOWN, PERSONAL):");
+      if (!name || !name.trim()) return;
+      const cleanName = name.trim().toUpperCase();
+      const newId = "book_" + Date.now();
+      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0] });
+      systemData.bookData[newId] = { repairing: [], labour: [], samaan: [] };
+      systemData.activeBookId = newId;
+      logAction("Create Book", `Created new Book: ${cleanName}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    function renameBook(id) {
+      const b = systemData.books.find(x => x.id === id);
+      if (!b) return;
+      const newName = prompt("Book ka naya naam:", b.name);
+      if (!newName || !newName.trim()) return;
+      b.name = newName.trim().toUpperCase();
+      logAction("Rename Book", `Renamed Book to ${b.name}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      syncCloud();
+    }
+
+    function deleteBook(id) {
+      if (systemData.books.length <= 1) {
+        alert("Kam se kam ek active Book hona zaroori hai!");
+        return;
+      }
+      const b = systemData.books.find(x => x.id === id);
+      if (!confirm(`Kya aap Book "${b.name}" aur iska poora hisaab-kitaab delete karna chahte hain?`)) return;
+      
+      systemData.books = systemData.books.filter(x => x.id !== id);
+      delete systemData.bookData[id];
+      if (systemData.activeBookId === id) {
+        systemData.activeBookId = systemData.books[0].id;
+      }
+      logAction("Delete Book", `Deleted Book: ${b.name}`);
+      saveLocal();
+      renderBookSelectors();
+      renderBookManagerList();
+      renderAllViews();
+      syncCloud();
+    }
+
+    // --- MASTER CONFIG & SECURITY GATE ---
+    function unlockMasterGate(bypassCheck = false) {
+      const passInput = document.getElementById('masterPassInput');
+      const pass = passInput ? passInput.value.trim() : "";
+      
+      if (bypassCheck || pass === MASTER_PASSPHRASE) {
+        sessionStorage.setItem('gs_master_unlocked', 'true');
+        document.getElementById('masterLockGate').classList.add('hidden');
+        document.getElementById('masterConfigSection').classList.remove('hidden');
+        document.getElementById('cfgPat').value = getPatToken();
+        renderMembersManagement();
+      } else {
+        alert("Galat Master Passphrase! Kripya sahi Passphrase enter karein.");
+      }
+    }
+
+    function saveMasterConfig() {
+      const pat = document.getElementById('cfgPat').value.trim();
+      if (pat) {
+        localStorage.setItem('gs_github_pat', pat);
+        alert("GitHub Token successfully saved! Ab Live Sync activate ho gaya hai.");
+        syncCloud();
+      } else {
+        alert("Kripya valid GitHub Token enter karein!");
+      }
+    }
+
+    function getPatToken() {
+      return localStorage.getItem('gs_github_pat') || '';
+    }
+
+    // --- CRYPTO UTILITIES (AES-256-GCM) ---
+    async function deriveCryptoKey(passphrase, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptPayload(dataObj, passphrase) {
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const plaintext = enc.encode(JSON.stringify(dataObj));
+      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, plaintext);
+      return {
+        cipher: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+        iv: btoa(String.fromCharCode(...iv)),
+        salt: btoa(String.fromCharCode(...salt)),
+        version: "2.0-GCM"
+      };
+    }
+
+    async function decryptPayload(packet, passphrase) {
+      if (!packet.cipher || !packet.iv || !packet.salt) {
+        return packet;
+      }
+      const salt = Uint8Array.from(atob(packet.salt), c => c.charCodeAt(0));
+      const iv = Uint8Array.from(atob(packet.iv), c => c.charCodeAt(0));
+      const cipher = Uint8Array.from(atob(packet.cipher), c => c.charCodeAt(0));
+      const key = await deriveCryptoKey(passphrase, salt);
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, cipher);
+      return JSON.parse(new TextDecoder().decode(decrypted));
+    }
+
+    // --- UI UTILS & HELPERS ---
+    function renderExpenseCategoryDropdowns() {
+      const formSelect = document.getElementById('repCategory');
+      const filterSelect = document.getElementById('expenseCategoryFilter');
+      const curFilter = filterSelect.value || "ALL";
+
+      formSelect.innerHTML = '';
+      filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
+
+      systemData.expenseCategories.forEach(cat => {
+        const opt1 = document.createElement('option');
+        opt1.value = cat;
+        opt1.textContent = cat;
+        formSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = cat;
+        opt2.textContent = cat;
+        filterSelect.appendChild(opt2);
+      });
+      filterSelect.value = curFilter;
+    }
+
+    function promptAddExpenseCategory() {
+      const name = prompt("Nayi Category ka naam daalein:");
+      if (!name || !name.trim()) return;
+      const clean = name.trim();
+      if (!systemData.expenseCategories.includes(clean)) {
+        systemData.expenseCategories.push(clean);
+        saveLocal();
+        renderExpenseCategoryDropdowns();
+        document.getElementById('repCategory').value = clean;
+      }
+    }
+
+    function renderWorkerDropdowns() {
+      const filterSelect = document.getElementById('workerGroupFilter');
+      const formSelect = document.getElementById('labGroup');
+      const current = filterSelect.value || "ALL";
+
+      filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
+      formSelect.innerHTML = '';
+
+      systemData.workers.forEach(w => {
+        const opt1 = document.createElement('option');
+        opt1.value = w;
+        opt1.textContent = w;
+        filterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = w;
+        opt2.textContent = w;
+        formSelect.appendChild(opt2);
+      });
+      filterSelect.value = current;
+    }
+
+    function renderPartyDropdowns() {
+      const filterSelect = document.getElementById('partyFilterSelect');
+      const formSelect = document.getElementById('samPartySelect');
+      const current = filterSelect.value || "ALL";
+
+      filterSelect.innerHTML = '<option value="ALL">All Parties Combined</option>';
+      formSelect.innerHTML = '';
+
+      systemData.parties.forEach(p => {
+        const opt1 = document.createElement('option');
+        opt1.value = p;
+        opt1.textContent = p;
+        filterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = p;
+        opt2.textContent = p;
+        formSelect.appendChild(opt2);
+      });
+      filterSelect.value = current;
+    }
+
+    function openMemberManagerDirect() {
+      renderDirectMemberList();
+      document.getElementById('directMemberManagerModal').classList.remove('hidden');
+    }
+
+    function renderDirectMemberList() {
+      const container = document.getElementById('directMembersListContainer');
+      container.innerHTML = '';
+      systemData.members.forEach((m) => {
+        const row = document.createElement('div');
+        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:10px 12px; border-radius:8px; border:1px solid var(--border);";
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:14px;">${m.name}</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">PIN: <span style="color:var(--accent); font-weight:bold;">${m.pin}</span> (${m.role})</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function promptNewMember() {
+      const name = prompt("Family Member ka naam enter karein:");
+      if (!name || !name.trim()) return;
+      const pin = prompt("Member ke liye 4-Digit Security PIN set karein:");
+      if (!pin || pin.trim().length !== 4 || !/^\d+$/.test(pin)) {
+        alert("PIN sirf 4-digit number hona chahiye!");
+        return;
+      }
+      const newMember = { id: "m_" + Date.now(), name: name.trim(), pin: pin.trim(), role: "Member" };
+      systemData.members.push(newMember);
+      saveLocal();
+      renderMembersManagement();
+      renderDirectMemberList();
+      syncCloud();
+    }
+
+    function editMemberDetails(id) {
+      const m = systemData.members.find(x => x.id === id);
+      if (!m) return;
+      const newName = prompt("Member ka naya naam:", m.name);
+      if (!newName || !newName.trim()) return;
+      const newPin = prompt("Naya 4-Digit PIN:", m.pin);
+      if (!newPin || newPin.trim().length !== 4 || !/^\d+$/.test(newPin)) {
+        alert("PIN sirf 4 digit ka number hona chahiye!");
+        return;
+      }
+      m.name = newName.trim();
+      m.pin = newPin.trim();
+      saveLocal();
+      renderMembersManagement();
+      renderDirectMemberList();
+      updateMemberUI();
+      syncCloud();
+    }
+
+    function removeFamilyMember(id) {
+      if (!confirm("Is member ko delete karna chahte hain?")) return;
+      systemData.members = systemData.members.filter(x => x.id !== id);
+      saveLocal();
+      renderMembersManagement();
+      renderDirectMemberList();
+      syncCloud();
+    }
+
+    function openWorkerManagerModal() {
+      renderWorkerManagerList();
+      document.getElementById('workerManagerModal').classList.remove('hidden');
+    }
+
+    function renderWorkerManagerList() {
+      const container = document.getElementById('workerListContainer');
+      container.innerHTML = '';
+      systemData.workers.forEach((w, index) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <strong style="color:var(--accent); font-size:13px;">${w}</strong>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editWorkerName(${index})">✏️ Edit</button>
+            <button class="small danger" onclick="deleteWorkerName(${index})">🗑️</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddWorker() {
+      const name = prompt("Naye Worker / Contractor ka naam daalein:");
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+      if (systemData.workers.includes(clean)) {
+        alert("Yeh worker pehle se maujood hai!");
+        return;
+      }
+      systemData.workers.push(clean);
+      logAction("Add Worker", `Added Worker: ${clean}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      syncCloud();
+    }
+
+    function editWorkerName(index) {
+      const oldName = systemData.workers[index];
+      const newName = prompt("Worker ka naya naam:", oldName);
+      if (!newName || !newName.trim()) return;
+      const clean = newName.trim().toUpperCase();
+      systemData.workers[index] = clean;
+      
+      Object.keys(systemData.bookData).forEach(bid => {
+        (systemData.bookData[bid].labour || []).forEach(l => {
+          if (l.workerGroup === oldName) l.workerGroup = clean;
+        });
+      });
+      logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
+      syncCloud();
+    }
+
+    function deleteWorkerName(index) {
+      const name = systemData.workers[index];
+      if (systemData.workers.length <= 1) {
+        alert("Kam se kam ek worker hona chahiye!");
+        return;
+      }
+      if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
+      systemData.workers.splice(index, 1);
+      logAction("Delete Worker", `Deleted worker: ${name}`);
+      saveLocal();
+      renderWorkerDropdowns();
+      renderWorkerManagerList();
+      renderLabourLedgerTable();
+      renderLabourAttendanceTable();
+      syncCloud();
+    }
+
+    function openPartyManagerModal() {
+      renderPartyManagerList();
+      document.getElementById('partyManagerModal').classList.remove('hidden');
+    }
+
+    function renderPartyManagerList() {
+      const container = document.getElementById('partyListContainer');
+      container.innerHTML = '';
+      systemData.parties.forEach((p, index) => {
+        const div = document.createElement('div');
+        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
+        div.innerHTML = `
+          <strong style="color:var(--accent); font-size:13px;">${p}</strong>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editPartyName(${index})">✏️ Edit</button>
+            <button class="small danger" onclick="deletePartyName(${index})">🗑️</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function promptAddParty() {
+      const name = prompt("Nayi Party / Vendor ka naam daalein:");
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+      if (systemData.parties.includes(clean)) {
+        alert("Yeh party pehle se maujood hai!");
+        return;
+      }
+      systemData.parties.push(clean);
+      logAction("Add Party", `Added Party: ${clean}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      syncCloud();
+    }
+
+    function editPartyName(index) {
+      const oldName = systemData.parties[index];
+      const newName = prompt("Party ka naya naam:", oldName);
+      if (!newName || !newName.trim()) return;
+      const clean = newName.trim().toUpperCase();
+      systemData.parties[index] = clean;
+      
+      Object.keys(systemData.bookData).forEach(bid => {
+        (systemData.bookData[bid].samaan || []).forEach(s => {
+          if (s.refFrom === oldName) s.refFrom = clean;
+        });
+      });
+      logAction("Edit Party", `Renamed party from ${oldName} to ${clean}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      renderSamaanTable();
+      syncCloud();
+    }
+
+    function deletePartyName(index) {
+      const name = systemData.parties[index];
+      if (systemData.parties.length <= 1) {
+        alert("Kam se kam ek party rehna zaroori hai!");
+        return;
+      }
+      if (!confirm(`Kya aap party "${name}" ko delete karna chahte hain?`)) return;
+      systemData.parties.splice(index, 1);
+      logAction("Delete Party", `Deleted party: ${name}`);
+      saveLocal();
+      renderPartyDropdowns();
+      renderPartyManagerList();
+      renderSamaanTable();
+      syncCloud();
+    }
+
+    function exportTableToCSV(type) {
+      const data = getActiveDataset();
+      const bName = getActiveBookObj().name.replace(/\s+/g, '_');
+      let csvContent = "";
+      let filename = `${bName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+
+      if (type === 'repairing') {
+        csvContent = "Date,Type,Category,Amount,Payment Ref,Reason,Logged By\n";
+        (data.repairing || []).forEach(r => {
+          csvContent += `"${r.date}","${r.type||'EXPENSE'}","${r.category||'General Expense'}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
+        });
+      } else if (type === 'labour_ledger') {
+        csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
+        (data.labour || []).forEach(l => {
+          csvContent += `"${l.date}","${l.workerGroup}","${(l.remarks||'').replace(/"/g, '""')}","${l.totalCharge||0}","${l.hisaabTotal||0}","${l.remarks||''}","${l.paymentStatus}"\n`;
+        });
+      } else if (type === 'labour_attendance') {
+        csvContent = "Date,Worker,Labour Count,Labour Rate,Mistri Count,Mistri Rate,Total Charge,Remarks\n";
+        (data.labour || []).forEach(l => {
+          csvContent += `"${l.date}","${l.workerGroup}","${l.labourCount||0}","${l.labourCharge||0}","${l.mistriCount||0}","${l.mistriCharge||0}","${l.totalCharge||0}","${(l.remarks||'').replace(/"/g, '""')}"\n`;
+        });
+      } else if (type === 'samaan_ledger') {
+        csvContent = "Date,Party (From),Item (Kya Aaya),Bill Amount,Paid Amount,Kisko Diya,Status,Remarks\n";
+        (data.samaan || []).forEach(s => {
+          csvContent += `"${s.date}","${s.refFrom||''}","${(s.samaanIn||'').replace(/"/g, '""')}","${s.amount||0}","${s.paidAmount||0}","${s.refTo||''}","${s.status||''}","${(s.reason||'').replace(/"/g, '""')}"\n`;
+        });
+      }
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function downloadSystemBackupJSON() {
+      const backupPacket = {
+        meta: { app: "Guru Shraddha 2.0 Multi-Book", exportDate: new Date().toISOString(), activeBook: getActiveBookObj().name },
+        payload: systemData
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `GuruShraddha_MultiBook_Backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      logAction("System Backup", "Downloaded full multi-book JSON backup file.");
+      renderLogs();
+    }
+
+    function restoreSystemBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const dataToRestore = parsed.payload || parsed;
+          if (dataToRestore.books && dataToRestore.bookData) {
+            if (confirm("Restore karne se backup ka pura data load ho jayega. Proceed karein?")) {
+              systemData = dataToRestore;
+              saveLocal();
+              renderBookSelectors();
+              renderExpenseCategoryDropdowns();
+              renderWorkerDropdowns();
+              renderPartyDropdowns();
+              renderAllViews();
+              syncCloud();
+              alert("System Backup successfully restored!");
+            }
+          } else {
+            alert("Galat backup format! File me required fields nahi hain.");
+          }
+        } catch(err) {
+          alert("Error parsing JSON backup file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function renderLogs() {
+      const c = document.getElementById('logsContainer');
+      if (!c) return;
+      c.innerHTML = '';
+      systemData.activityLogs.forEach(l => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <strong>${l.action}</strong>
+            <span style="color:var(--text-muted); font-size:10px;">${l.timestamp}</span>
+          </div>
+          <div style="color:#cbd5e1;">${l.details}</div>
+          <div style="font-size:10px; color:var(--accent); margin-top:2px;">Book: ${l.book || 'GURU SHRADDHA 2.0'} | By: ${l.performedBy}</div>
+        `;
+        c.appendChild(item);
+      });
+    }
+
+    function showMemberLoginModal() {
+      const select = document.getElementById('loginMemberSelect');
+      select.innerHTML = '';
+      systemData.members.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.name;
+        select.appendChild(opt);
+      });
+      document.getElementById('loginPinInput').value = '';
+      document.getElementById('memberLoginModal').classList.remove('hidden');
+    }
+
+    function authenticateMember() {
+      const id = document.getElementById('loginMemberSelect').value;
+      const pin = document.getElementById('loginPinInput').value.trim();
+      const m = systemData.members.find(x => x.id === id);
+      if (m && m.pin === pin) {
+        currentMember = m;
+        sessionStorage.setItem('gs_active_member', JSON.stringify(m));
+        updateMemberUI();
+        closeModal('memberLoginModal');
+      } else {
+        alert("Galat PIN! Dubara check karein.");
+      }
+    }
+
+    function autoCheckMemberSession() {
+      const s = sessionStorage.getItem('gs_active_member');
+      if (s) {
+        try { currentMember = JSON.parse(s); } catch(e){}
+      }
+      if (!currentMember && systemData.members.length > 0) {
+        currentMember = systemData.members[0];
+      }
+      updateMemberUI();
+    }
+
+    function updateMemberUI() {
+      const d = document.getElementById('currentMemberDisplay');
+      if (d) d.textContent = currentMember ? currentMember.name : "Select Member";
+    }
+
+    function requireActiveMember() {
+      if (!currentMember) {
+        alert("Kripya pehle apna Member select karke PIN enter karein!");
+        showMemberLoginModal();
+        return false;
+      }
+      return true;
+    }
+
+    function renderMembersManagement() {
+      const container = document.getElementById('membersList');
+      if (!container) return;
+      container.innerHTML = '';
+      systemData.members.forEach((m) => {
+        const row = document.createElement('div');
+        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border); margin-bottom:8px;";
+        row.innerHTML = `
+          <div>
+            <strong>${m.name}</strong> <span class="badge" style="background:#243456; color:var(--accent); margin-left:6px;">PIN: ${m.pin}</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="small secondary" onclick="editMemberDetails('${m.id}')">Edit PIN</button>
+            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">Delete</button>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function updateSyncBadge(text, color) {
+      const el = document.getElementById('syncStatus');
+      if (el) {
+        el.textContent = `Status: ${text}`;
+        el.style.color = color;
+      }
+    }
+
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById('tab-' + tabName);
+      if (target) target.classList.remove('hidden');
+      if (el) el.classList.add('active');
+    }
+
+    function toggleForm(id) {
+      const elem = document.getElementById(id);
+      if (elem) elem.classList.toggle('hidden');
+    }
+
+    function closeModal(id) {
+      const elem = document.getElementById(id);
+      if (elem) elem.classList.add('hidden');
+    }
+
+    // --- APPLICATION STARTUP SEQUENCE (SINGLE RELIABLE CALL) ---
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLocalStorage();
+      renderBookSelectors();
+      renderExpenseCategoryDropdowns();
+      renderWorkerDropdowns();
+      renderPartyDropdowns();
+      renderAllViews();
+      autoCheckMemberSession();
+
+      if (sessionStorage.getItem('gs_master_unlocked') === 'true') {
+        unlockMasterGate(true);
+      }
+
+      if (getPatToken()) {
+        syncCloud();
+      } else {
+        updateSyncBadge("Token Required (Set in Settings)", "var(--warning)");
+      }
+
+      startRealTimePolling();
+    });
+
+    function startRealTimePolling() {
+      if (syncIntervalTimer) clearInterval(syncIntervalTimer);
+      syncIntervalTimer = setInterval(() => {
+        if (getPatToken() && !isSyncing) {
+          syncCloudSilent();
+        }
+      }, 5000);
+    }
+
+    function loadLocalStorage() {
+      const local = localStorage.getItem('gs_encrypted_system_state');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          if (parsed && parsed.books && parsed.bookData) {
+            systemData = parsed;
+          } else {
+            systemData.activeBookId = "book_gs2";
+            systemData.books = [
+              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02" },
+              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02" }
+            ];
+            systemData.bookData = {
+              "book_gs2": initialSeedData,
+              "book_regular": { repairing: [], labour: [], samaan: [] }
+            };
+          }
+
+          if (!systemData.deletedIds) systemData.deletedIds = [];
+
+          // HARD GUARANTEE: If active book has 0 repairing entries, reload seed
+          const curData = getActiveDataset();
+          if (!curData.repairing || curData.repairing.length === 0) {
+            systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
+          }
+
+          if (!systemData.expenseCategories || systemData.expenseCategories.length === 0) {
+            systemData.expenseCategories = [
+              "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
+              "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
+              "Govt & DMC Fees", "Advance Payment", "General Expense",
+              "Rental Income", "Other Income"
+            ];
+          }
+          if (!systemData.workers || systemData.workers.length === 0) {
+            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
+          }
+          if (!systemData.parties || systemData.parties.length === 0) {
+            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"];
+          }
+          saveLocal();
+        } catch(e) {
+          console.error("Local parse error", e);
+          saveLocal();
+        }
+      } else {
+        saveLocal();
+      }
+    }
+
+    function saveLocal() {
+      localStorage.setItem('gs_encrypted_system_state', JSON.stringify(systemData));
     }
   </script>
 </body>
