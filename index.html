@@ -87,7 +87,7 @@
 </head>
 <body>
 
-  <!-- Top Bar -->
+  <!-- Top Bar (Without Restore Button) -->
   <div class="topbar">
     <div class="book-selector-wrap">
       <span>📖</span>
@@ -99,7 +99,6 @@
         <span>👤</span> <span id="currentMemberDisplay">Member</span>
       </div>
       <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage Members">👥</button>
-      <button class="small warning" onclick="restoreExcelDataDirect()" title="Restore Original Excel Data">📥 Data Restore</button>
       <button class="small secondary" id="manualSyncBtn" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
     </div>
   </div>
@@ -637,7 +636,7 @@
     const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
 
-    // 100% COMPLETE EXCEL SEED DATA (All 16 Repairs, 28 Labour Entries, 1 Samaan Entry)
+    // 100% COMPLETE EXCEL SEED DATA (Only in GURU SHRADDHA 2.0)
     const initialSeedData = {
       repairing: [
         {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAtTime":1736553600000},
@@ -645,7 +644,7 @@
         {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200000},
         {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200001},
         {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1737849600000},
-        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":1737849600001},
+        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":173784960001},
         {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1738022400000},
         {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Excel Seed","updatedAtTime":1738886400000},
         {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAtTime":1740009600000},
@@ -692,6 +691,7 @@
       ]
     };
 
+    // SYSTEM STATE: Clean REGULAR BOOK with 0 entries
     let systemData = {
       activeBookId: "book_gs2",
       deletedIds: [],
@@ -701,7 +701,7 @@
       ],
       bookData: {
         "book_gs2": initialSeedData,
-        "book_regular": { repairing: [], labour: [], samaan: [] }
+        "book_regular": { repairing: [], labour: [], samaan: [] } // Completely clean
       },
       expenseCategories: [
         "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
@@ -766,17 +766,6 @@
       renderLabourAttendanceTable();
       renderSamaanTable();
       renderLogs();
-    }
-
-    // Direct manual rescue button to reload seed data into currently active book
-    function restoreExcelDataDirect() {
-      if (confirm("Kya aap Excel ka poora purana data is Book me restore karna chahte hain?")) {
-        systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
-        saveLocal();
-        renderAllViews();
-        alert("Pura Excel Data successfully restore ho gaya!");
-        syncCloud();
-      }
     }
 
     // --- REPAIRING & EXPENSES ---
@@ -2277,10 +2266,14 @@
 
           if (!systemData.deletedIds) systemData.deletedIds = [];
 
-          // HARD GUARANTEE: If active book has 0 repairing entries, reload seed
-          const curData = getActiveDataset();
-          if (!curData.repairing || curData.repairing.length === 0) {
-            systemData.bookData[systemData.activeBookId] = JSON.parse(JSON.stringify(initialSeedData));
+          // Self-heal: ensure GURU SHRADDHA 2.0 always has all records
+          if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
+            systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
+          }
+
+          // Ensure REGULAR BOOK is clean if not initialized
+          if (!systemData.bookData["book_regular"]) {
+            systemData.bookData["book_regular"] = { repairing: [], labour: [], samaan: [] };
           }
 
           if (!systemData.expenseCategories || systemData.expenseCategories.length === 0) {
