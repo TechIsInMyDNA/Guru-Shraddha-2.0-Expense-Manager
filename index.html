@@ -87,7 +87,7 @@
 </head>
 <body>
 
-  <!-- Top Bar (Without Restore Button) -->
+  <!-- Top Bar -->
   <div class="topbar">
     <div class="book-selector-wrap">
       <span>📖</span>
@@ -644,7 +644,7 @@
         {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200000},
         {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200001},
         {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1737849600000},
-        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":173784960001},
+        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":1737849600001},
         {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1738022400000},
         {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Excel Seed","updatedAtTime":1738886400000},
         {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAtTime":1740009600000},
@@ -691,7 +691,6 @@
       ]
     };
 
-    // SYSTEM STATE: Clean REGULAR BOOK with 0 entries
     let systemData = {
       activeBookId: "book_gs2",
       deletedIds: [],
@@ -701,7 +700,7 @@
       ],
       bookData: {
         "book_gs2": initialSeedData,
-        "book_regular": { repairing: [], labour: [], samaan: [] } // Completely clean
+        "book_regular": { repairing: [], labour: [], samaan: [] }
       },
       expenseCategories: [
         "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
@@ -756,7 +755,7 @@
         timestamp: new Date().toLocaleString('en-IN'),
         details: details
       };
-      systemData.activityLogs.unshift(logEntry);
+      systemData.activityLogs.unshift(logEntry); // Naya log sabse upar save hoga
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
@@ -768,7 +767,7 @@
       renderLogs();
     }
 
-    // --- REPAIRING & EXPENSES ---
+    // --- REPAIRING & EXPENSES (NEWEST ON TOP) ---
     function renderRepairingTable() {
       const data = getActiveDataset();
       const catFilter = document.getElementById('expenseCategoryFilter').value;
@@ -778,7 +777,14 @@
       let totalIncome = 0;
       let totalExpense = 0;
 
-      (data.repairing || []).forEach(r => {
+      // Naye records aur dates sabse upar show karne ke liye sort
+      const sortedRecords = [...(data.repairing || [])].sort((a,b) => {
+        const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
+        if (timeDiff !== 0) return timeDiff;
+        return (b.date || '').localeCompare(a.date || '');
+      });
+
+      sortedRecords.forEach(r => {
         const amt = Number(r.amount) || 0;
         const type = r.type || "EXPENSE";
         const cat = r.category || "General Expense";
@@ -903,7 +909,7 @@
         if (idx !== -1) data.repairing[idx] = record;
         logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       } else {
-        data.repairing.unshift(record);
+        data.repairing.unshift(record); // Nayi entry top par unshift hogi
         logAction("Add Entry", `Added ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       }
 
@@ -932,7 +938,7 @@
       syncCloud();
     }
 
-    // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE (NEWEST ON TOP) ---
     function renderLabourLedgerTable() {
       const data = getActiveDataset();
       const filter = document.getElementById('workerGroupFilter').value;
@@ -943,9 +949,14 @@
       let totalPaid = 0;
       let runningBalance = 0;
 
+      // Newest records on top
       const records = (data.labour || [])
         .filter(l => filter === 'ALL' || l.workerGroup === filter)
-        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+        .sort((a,b) => {
+          const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
+          if (timeDiff !== 0) return timeDiff;
+          return (b.date || '').localeCompare(a.date || '');
+        });
 
       records.forEach(l => {
         const earned = Number(l.totalCharge) || 0;
@@ -986,7 +997,12 @@
       const tbody = document.getElementById('labourAttendanceTableBody');
       tbody.innerHTML = '';
       
-      const records = [...(data.labour || [])].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+      const records = [...(data.labour || [])].sort((a,b) => {
+        const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
+        if (timeDiff !== 0) return timeDiff;
+        return (b.date || '').localeCompare(a.date || '');
+      });
+
       records.forEach(l => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1095,7 +1111,7 @@
         if (idx !== -1) data.labour[idx] = record;
         logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       } else {
-        data.labour.unshift(record);
+        data.labour.unshift(record); // Nayi haziri top par unshift hogi
         logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       }
 
@@ -1147,7 +1163,7 @@
       }
     }
 
-    // --- SAMAAN PARTY RUNNING LEDGER ---
+    // --- SAMAAN PARTY RUNNING LEDGER (NEWEST ON TOP) ---
     function renderSamaanTable() {
       const data = getActiveDataset();
       const filterParty = document.getElementById('partyFilterSelect').value;
@@ -1158,9 +1174,14 @@
       let totalPaid = 0;
       let runningBalance = 0;
 
+      // Newest records on top
       const records = (data.samaan || [])
         .filter(s => filterParty === 'ALL' || s.refFrom === filterParty)
-        .sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+        .sort((a,b) => {
+          const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
+          if (timeDiff !== 0) return timeDiff;
+          return (b.date || '').localeCompare(a.date || '');
+        });
 
       records.forEach(s => {
         const val = Number(s.amount) || 0;
@@ -1285,7 +1306,7 @@
         if (idx !== -1) data.samaan[idx] = record;
         logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
       } else {
-        data.samaan.unshift(record);
+        data.samaan.unshift(record); // Naya samaan top par unshift hoga
         logAction("Add Samaan", `Added Samaan: ${record.samaanIn} (${record.refFrom} ₹${val})`);
       }
 
@@ -1603,7 +1624,7 @@
       const newName = prompt("Book ka naya naam:", b.name);
       if (!newName || !newName.trim()) return;
       b.name = newName.trim().toUpperCase();
-      b.updatedAtTime = Date.now(); // LWW timestamp for instant sync!
+      b.updatedAtTime = Date.now();
       logAction("Rename Book", `Renamed Book to ${b.name}`);
       saveLocal();
       renderBookSelectors();
