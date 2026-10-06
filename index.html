@@ -691,6 +691,7 @@
       ]
     };
 
+    // SYSTEM STATE: Clean REGULAR BOOK with 0 entries
     let systemData = {
       activeBookId: "book_gs2",
       deletedIds: [],
@@ -721,7 +722,7 @@
         { id: "m4", name: "Member 4", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
       ],
       activityLogs: [
-        { id: "log_0", action: "System Init", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", details: "Loaded Guru Shraddha system." }
+        { id: "log_0", action: "System Init", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", timestampTime: 1736553600000, details: "Loaded Guru Shraddha system." }
       ]
     };
 
@@ -747,15 +748,17 @@
     }
 
     function logAction(action, details) {
+      const now = Date.now();
       const logEntry = {
-        id: "log_" + Date.now(),
+        id: "log_" + now,
         action: action,
         book: getActiveBookObj().name,
         performedBy: currentMember ? currentMember.name : "Unknown",
         timestamp: new Date().toLocaleString('en-IN'),
+        timestampTime: now, // Numeric timestamp for clean reverse sorting
         details: details
       };
-      systemData.activityLogs.unshift(logEntry); // Naya log sabse upar save hoga
+      systemData.activityLogs.unshift(logEntry); // Array me sabse aage daalega
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
@@ -909,7 +912,7 @@
         if (idx !== -1) data.repairing[idx] = record;
         logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       } else {
-        data.repairing.unshift(record); // Nayi entry top par unshift hogi
+        data.repairing.unshift(record);
         logAction("Add Entry", `Added ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       }
 
@@ -1111,7 +1114,7 @@
         if (idx !== -1) data.labour[idx] = record;
         logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       } else {
-        data.labour.unshift(record); // Nayi haziri top par unshift hogi
+        data.labour.unshift(record);
         logAction("Add Labour", `Added: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       }
 
@@ -1306,7 +1309,7 @@
         if (idx !== -1) data.samaan[idx] = record;
         logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
       } else {
-        data.samaan.unshift(record); // Naya samaan top par unshift hoga
+        data.samaan.unshift(record);
         logAction("Add Samaan", `Added Samaan: ${record.samaanIn} (${record.refFrom} ₹${val})`);
       }
 
@@ -1550,8 +1553,15 @@
       if (cloud.activityLogs) {
         const logMap = new Map();
         cloud.activityLogs.forEach(x => logMap.set(x.id, x));
-        systemData.activityLogs.forEach(x => logMap.set(x.id, x));
-        systemData.activityLogs = Array.from(logMap.values()).slice(0, 200);
+        systemData.activityLogs.forEach(x => {
+          if (!logMap.has(x.id)) {
+            logMap.set(x.id, x);
+          }
+        });
+        // Sabse naye logs upar rakhne ke liye descending sort
+        systemData.activityLogs = Array.from(logMap.values())
+          .sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0))
+          .slice(0, 200);
       }
     }
 
@@ -2121,7 +2131,11 @@
       const c = document.getElementById('logsContainer');
       if (!c) return;
       c.innerHTML = '';
-      systemData.activityLogs.forEach(l => {
+
+      // STRICT NEWEST ON TOP: Numeric timestampTime ke basis par descending sort
+      const sortedLogs = [...(systemData.activityLogs || [])].sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0));
+
+      sortedLogs.forEach(l => {
         const item = document.createElement('div');
         item.className = 'log-item';
         item.innerHTML = `
