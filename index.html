@@ -56,6 +56,13 @@
     button.warning { background: var(--warning); color: #050b14; }
     button.small { padding: 4px 8px; font-size: 10px; border-radius: 6px; }
 
+    .filter-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; background: rgba(12, 18, 34, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
+    .filter-select { padding: 4px 8px; font-size: 11px; width: auto; min-width: 120px; }
+    .date-input-mini { padding: 4px 6px; font-size: 11px; width: auto; max-width: 130px; }
+
+    .calc-pill-btn { background: var(--card); border: 1px solid var(--border); color: var(--accent); font-weight: bold; font-size: 11px; padding: 4px 8px; border-radius: 5px; cursor: pointer; }
+    .calc-pill-btn:hover { background: var(--card-inner); }
+
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
     th { background: #0c1222; padding: 10px; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -130,15 +137,30 @@
 
       <div class="card" id="repCardSection">
         <div class="card-title">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>Book Income & Expenses</span>
-            <select id="expenseCategoryFilter" onchange="renderRepairingTable()" style="padding:4px 8px; font-size:11px; width:auto;">
-              <option value="ALL">All Categories</option>
-            </select>
-          </div>
+          <span>Book Income & Expenses</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('repairing')">📥 Export Excel</button>
             <button class="small" onclick="openNewExpenseForm()">+ New Entry</button>
+          </div>
+        </div>
+
+        <!-- Date & Category Filter Bar -->
+        <div class="filter-bar">
+          <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
+          <select id="expenseCategoryFilter" onchange="renderRepairingTable()" class="filter-select">
+            <option value="ALL">All Categories</option>
+          </select>
+          <select id="expenseDateFilter" onchange="toggleDateFilterRange('expense')" class="filter-select">
+            <option value="ALL">All Time (Sabhi)</option>
+            <option value="7D">Last 7 Days (7 Din)</option>
+            <option value="30D">Last 30 Days (30 Din)</option>
+            <option value="3M">Last 3 Months (3 Mahine)</option>
+            <option value="CUSTOM">Custom Date Range 📅</option>
+          </select>
+          <div id="expenseCustomDateWrap" class="hidden" style="display:inline-flex; align-items:center; gap:4px;">
+            <input type="date" id="expenseStartDate" class="date-input-mini" onchange="renderRepairingTable()">
+            <span style="font-size:11px;">to</span>
+            <input type="date" id="expenseEndDate" class="date-input-mini" onchange="renderRepairingTable()">
           </div>
         </div>
 
@@ -166,8 +188,20 @@
                 <input type="date" id="repDate" required>
               </div>
               <div>
-                <label>Amount (₹)</label>
-                <input type="number" id="repAmount" step="any" placeholder="e.g. 500" required>
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                  <span>Amount (₹) / Calculator 🧮</span>
+                  <span id="repCalcPreview" style="color:var(--accent); font-weight:bold; font-size:11px;"></span>
+                </label>
+                <input type="text" id="repAmount" placeholder="e.g. 500, 1000+250, 1200-10%" required oninput="handleInlineCalcInput(this.value, 'repCalcPreview')">
+                <div style="display:flex; gap:4px; margin-top:5px; flex-wrap:wrap;">
+                  <button type="button" class="calc-pill-btn" onclick="appendCalcChar('+')">+</button>
+                  <button type="button" class="calc-pill-btn" onclick="appendCalcChar('-')">-</button>
+                  <button type="button" class="calc-pill-btn" onclick="appendCalcChar('*')">×</button>
+                  <button type="button" class="calc-pill-btn" onclick="appendCalcChar('/')">÷</button>
+                  <button type="button" class="calc-pill-btn" onclick="appendCalcChar('%')">%</button>
+                  <button type="button" class="calc-pill-btn" style="color:var(--success); border-color:var(--success);" onclick="solveInlineCalc('repAmount', 'repCalcPreview')">= Solve</button>
+                  <button type="button" class="calc-pill-btn" style="color:var(--danger);" onclick="clearInlineCalc('repAmount', 'repCalcPreview')">C</button>
+                </div>
               </div>
             </div>
             <div class="grid-2">
@@ -292,16 +326,31 @@
 
       <div id="labourLedgerView" class="card">
         <div class="card-title">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>Worker Running Ledger</span>
-            <select id="workerGroupFilter" onchange="renderLabourLedgerTable()" style="padding:4px 8px; font-size:11px; width:auto;">
-              <option value="ALL">All Workers Combined</option>
-            </select>
-          </div>
+          <span>Worker Running Ledger</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="exportTableToCSV('labour_ledger')">📥 Export Excel</button>
             <button class="small secondary" onclick="openWorkerManagerModal()">👷 Manage Workers</button>
             <button class="small" onclick="openLabourForm(false)">+ Mark Haziri</button>
+          </div>
+        </div>
+
+        <!-- Labour Date & Worker Filter Bar -->
+        <div class="filter-bar">
+          <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
+          <select id="workerGroupFilter" onchange="renderLabourLedgerTable()" class="filter-select">
+            <option value="ALL">All Workers Combined</option>
+          </select>
+          <select id="labourDateFilter" onchange="toggleDateFilterRange('labour')" class="filter-select">
+            <option value="ALL">All Time (Sabhi)</option>
+            <option value="7D">Last 7 Days (7 Din)</option>
+            <option value="30D">Last 30 Days (30 Din)</option>
+            <option value="3M">Last 3 Months (3 Mahine)</option>
+            <option value="CUSTOM">Custom Date Range 📅</option>
+          </select>
+          <div id="labourCustomDateWrap" class="hidden" style="display:inline-flex; align-items:center; gap:4px;">
+            <input type="date" id="labourStartDate" class="date-input-mini" onchange="renderLabourLedgerTable(); renderLabourAttendanceTable();">
+            <span style="font-size:11px;">to</span>
+            <input type="date" id="labourEndDate" class="date-input-mini" onchange="renderLabourLedgerTable(); renderLabourAttendanceTable();">
           </div>
         </div>
 
@@ -370,16 +419,31 @@
 
       <div class="card" id="samCardSection">
         <div class="card-title">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>Samaan Party Running Ledger</span>
-            <select id="partyFilterSelect" onchange="renderSamaanTable()" style="padding:4px 8px; font-size:11px; width:auto;">
-              <option value="ALL">All Parties Combined</option>
-            </select>
-          </div>
+          <span>Samaan Party Running Ledger</span>
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="openPartyManagerModal()">🏢 Manage Parties</button>
             <button class="small secondary" onclick="exportTableToCSV('samaan_ledger')">📥 Export Excel</button>
             <button class="small" onclick="openNewSamaanForm()">+ New Samaan Entry</button>
+          </div>
+        </div>
+
+        <!-- Samaan Date & Party Filter Bar -->
+        <div class="filter-bar">
+          <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
+          <select id="partyFilterSelect" onchange="renderSamaanTable()" class="filter-select">
+            <option value="ALL">All Parties Combined</option>
+          </select>
+          <select id="samaanDateFilter" onchange="toggleDateFilterRange('samaan')" class="filter-select">
+            <option value="ALL">All Time (Sabhi)</option>
+            <option value="7D">Last 7 Days (7 Din)</option>
+            <option value="30D">Last 30 Days (30 Din)</option>
+            <option value="3M">Last 3 Months (3 Mahine)</option>
+            <option value="CUSTOM">Custom Date Range 📅</option>
+          </select>
+          <div id="samaanCustomDateWrap" class="hidden" style="display:inline-flex; align-items:center; gap:4px;">
+            <input type="date" id="samaanStartDate" class="date-input-mini" onchange="renderSamaanTable()">
+            <span style="font-size:11px;">to</span>
+            <input type="date" id="samaanEndDate" class="date-input-mini" onchange="renderSamaanTable()">
           </div>
         </div>
 
@@ -468,7 +532,28 @@
     <!-- TAB 4: AUDIT TRAIL LOGS -->
     <div id="tab-logs" class="tab-content hidden">
       <div class="card">
-        <div class="card-title">Live Audit Trail (Who did what)</div>
+        <div class="card-title">
+          <span>Live Audit Trail (Who did what)</span>
+          <span style="font-size:11px; color:var(--text-muted);">Real-Time Log Stream</span>
+        </div>
+
+        <!-- Logs Date Filter Bar -->
+        <div class="filter-bar">
+          <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Date Filter:</span>
+          <select id="logsDateFilter" onchange="toggleDateFilterRange('logs')" class="filter-select">
+            <option value="ALL">All Logs (Sabhi)</option>
+            <option value="7D">Last 7 Days (7 Din)</option>
+            <option value="30D">Last 30 Days (30 Din)</option>
+            <option value="3M">Last 3 Months (3 Mahine)</option>
+            <option value="CUSTOM">Custom Date Range 📅</option>
+          </select>
+          <div id="logsCustomDateWrap" class="hidden" style="display:inline-flex; align-items:center; gap:4px;">
+            <input type="date" id="logsStartDate" class="date-input-mini" onchange="renderLogs()">
+            <span style="font-size:11px;">to</span>
+            <input type="date" id="logsEndDate" class="date-input-mini" onchange="renderLogs()">
+          </div>
+        </div>
+
         <div id="logsContainer" style="max-height: 420px; overflow-y: auto;"></div>
       </div>
     </div>
@@ -644,7 +729,7 @@
         {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200000},
         {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200001},
         {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1737849600000},
-        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":1737849600001},
+        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":173784960001},
         {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1738022400000},
         {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Excel Seed","updatedAtTime":1738886400000},
         {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAtTime":1740009600000},
@@ -755,10 +840,10 @@
         book: getActiveBookObj().name,
         performedBy: currentMember ? currentMember.name : "Unknown",
         timestamp: new Date().toLocaleString('en-IN'),
-        timestampTime: now, // Numeric timestamp for clean reverse sorting
+        timestampTime: now,
         details: details
       };
-      systemData.activityLogs.unshift(logEntry); // Array me sabse aage daalega
+      systemData.activityLogs.unshift(logEntry);
       if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
     }
 
@@ -770,17 +855,147 @@
       renderLogs();
     }
 
-    // --- REPAIRING & EXPENSES (NEWEST ON TOP) ---
+    // --- INLINE MATH CALCULATOR EVALUATOR ---
+    function evaluateMathExpression(str) {
+      if (!str || !str.trim()) return null;
+      let clean = str.trim();
+      
+      // Percentage addition/subtraction: e.g. 1000 + 18% -> 1000 + (1000 * 0.18)
+      clean = clean.replace(/(\d+(\.\d+)?)\s*([+\-])\s*(\d+(\.\d+)?)\s*%/g, function(match, base, d1, op, pct) {
+        return `${base} ${op} (${base} * ${pct} / 100)`;
+      });
+      // Standalone percentage: e.g. 500 * 5% -> 500 * (5 / 100)
+      clean = clean.replace(/(\d+(\.\d+)?)\s*%/g, '($1/100)');
+      
+      // Safety check: allow only digits, dots, and basic operators
+      if (!/^[\d\.\s+\-*\/()]+$/.test(clean)) {
+        return null;
+      }
+      try {
+        const result = Function(`'use strict'; return (${clean})`)();
+        if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+          return Math.round(result * 100) / 100;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function handleInlineCalcInput(val, previewId) {
+      const p = document.getElementById(previewId);
+      if (!p) return;
+      if (/[+\-*\/%]/.test(val)) {
+        const solved = evaluateMathExpression(val);
+        if (solved !== null) {
+          p.textContent = `= ₹${solved}`;
+        } else {
+          p.textContent = '';
+        }
+      } else {
+        p.textContent = '';
+      }
+    }
+
+    function appendCalcChar(char) {
+      const input = document.getElementById('repAmount');
+      if (!input) return;
+      input.value += char;
+      input.focus();
+      handleInlineCalcInput(input.value, 'repCalcPreview');
+    }
+
+    function solveInlineCalc(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const solved = evaluateMathExpression(input.value);
+      if (solved !== null) {
+        input.value = solved;
+        const p = document.getElementById(previewId);
+        if (p) p.textContent = '✓ Solved';
+      }
+    }
+
+    function clearInlineCalc(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      if (input) input.value = '';
+      const p = document.getElementById(previewId);
+      if (p) p.textContent = '';
+    }
+
+    // --- DATE FILTER HELPER (LAST 7D, 30D, 3M, CUSTOM) ---
+    function toggleDateFilterRange(tab) {
+      const select = document.getElementById(`${tab}DateFilter`);
+      const wrap = document.getElementById(`${tab}CustomDateWrap`);
+      if (select && wrap) {
+        if (select.value === 'CUSTOM') {
+          wrap.classList.remove('hidden');
+        } else {
+          wrap.classList.add('hidden');
+        }
+      }
+      if (tab === 'expense') renderRepairingTable();
+      if (tab === 'labour') { renderLabourLedgerTable(); renderLabourAttendanceTable(); }
+      if (tab === 'samaan') renderSamaanTable();
+      if (tab === 'logs') renderLogs();
+    }
+
+    function checkDateInRange(itemDateStr, filterType, startInputId, endInputId, isTimestamp = false) {
+      if (filterType === 'ALL') return true;
+      if (!itemDateStr) return false;
+
+      let itemTime = 0;
+      if (isTimestamp) {
+        itemTime = typeof itemDateStr === 'number' ? itemDateStr : new Date(itemDateStr).getTime();
+      } else {
+        // format YYYY-MM-DD
+        const parts = itemDateStr.split('-');
+        if (parts.length === 3) {
+          itemTime = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+        } else {
+          itemTime = new Date(itemDateStr).getTime();
+        }
+      }
+      if (!itemTime || isNaN(itemTime)) return true;
+
+      const now = Date.now();
+      const ONE_DAY = 86400000;
+
+      if (filterType === '7D') {
+        return (now - itemTime) <= (7 * ONE_DAY);
+      }
+      if (filterType === '30D') {
+        return (now - itemTime) <= (30 * ONE_DAY);
+      }
+      if (filterType === '3M') {
+        return (now - itemTime) <= (90 * ONE_DAY);
+      }
+      if (filterType === 'CUSTOM') {
+        const startVal = document.getElementById(startInputId)?.value;
+        const endVal = document.getElementById(endInputId)?.value;
+        if (startVal) {
+          const sTime = new Date(startVal).setHours(0, 0, 0, 0);
+          if (itemTime < sTime) return false;
+        }
+        if (endVal) {
+          const eTime = new Date(endVal).setHours(23, 59, 59, 999);
+          if (itemTime > eTime) return false;
+        }
+        return true;
+      }
+      return true;
+    }
+
+    // --- REPAIRING & EXPENSES (WITH CALCULATOR & DATE FILTER) ---
     function renderRepairingTable() {
       const data = getActiveDataset();
-      const catFilter = document.getElementById('expenseCategoryFilter').value;
+      const catFilter = document.getElementById('expenseCategoryFilter')?.value || 'ALL';
+      const dateFilter = document.getElementById('expenseDateFilter')?.value || 'ALL';
       const tbody = document.getElementById('repairingTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
       let totalIncome = 0;
       let totalExpense = 0;
 
-      // Naye records aur dates sabse upar show karne ke liye sort
       const sortedRecords = [...(data.repairing || [])].sort((a,b) => {
         const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
         if (timeDiff !== 0) return timeDiff;
@@ -788,11 +1003,14 @@
       });
 
       sortedRecords.forEach(r => {
-        const amt = Number(r.amount) || 0;
-        const type = r.type || "EXPENSE";
-        const cat = r.category || "General Expense";
+        const matchesCategory = (catFilter === 'ALL' || r.category === catFilter);
+        const matchesDate = checkDateInRange(r.date, dateFilter, 'expenseStartDate', 'expenseEndDate');
 
-        if (catFilter === 'ALL' || cat === catFilter) {
+        if (matchesCategory && matchesDate) {
+          const amt = Number(r.amount) || 0;
+          const type = r.type || "EXPENSE";
+          const cat = r.category || "General Expense";
+
           if (type === "INCOME") {
             totalIncome += amt;
           } else {
@@ -839,6 +1057,7 @@
       document.getElementById('repSubmitBtn').textContent = "Save Entry";
       document.getElementById('repDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('repAmount').value = '';
+      document.getElementById('repCalcPreview').textContent = '';
       document.getElementById('repRef').value = '';
       document.getElementById('repReason').value = '';
       const container = document.getElementById('repFormContainer');
@@ -878,6 +1097,7 @@
       document.getElementById('repCategory').value = catVal;
       document.getElementById('repDate').value = r.date || '';
       document.getElementById('repAmount').value = r.amount || '';
+      document.getElementById('repCalcPreview').textContent = '';
       document.getElementById('repRef').value = r.ref || 'CASH';
       document.getElementById('repReason').value = r.reason || '';
 
@@ -893,7 +1113,15 @@
       const editId = document.getElementById('repEditId').value;
       const type = document.getElementById('repType').value;
       const cat = document.getElementById('repCategory').value;
-      const amt = parseFloat(document.getElementById('repAmount').value);
+      
+      const rawAmtVal = document.getElementById('repAmount').value;
+      const solvedAmt = evaluateMathExpression(rawAmtVal);
+      const amt = solvedAmt !== null ? solvedAmt : parseFloat(rawAmtVal);
+
+      if (isNaN(amt) || amt <= 0) {
+        alert("Kripya valid positive Amount enter karein!");
+        return;
+      }
 
       const record = {
         id: editId || 'rep_' + Date.now(),
@@ -941,20 +1169,21 @@
       syncCloud();
     }
 
-    // --- LABOUR RUNNING LEDGER & ATTENDANCE (NEWEST ON TOP) ---
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE (WITH DATE FILTER) ---
     function renderLabourLedgerTable() {
       const data = getActiveDataset();
-      const filter = document.getElementById('workerGroupFilter').value;
+      const filter = document.getElementById('workerGroupFilter')?.value || 'ALL';
+      const dateFilter = document.getElementById('labourDateFilter')?.value || 'ALL';
       const tbody = document.getElementById('labourLedgerTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
       let totalEarned = 0;
       let totalPaid = 0;
       let runningBalance = 0;
 
-      // Newest records on top
       const records = (data.labour || [])
-        .filter(l => filter === 'ALL' || l.workerGroup === filter)
+        .filter(l => (filter === 'ALL' || l.workerGroup === filter) && checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate'))
         .sort((a,b) => {
           const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
           if (timeDiff !== 0) return timeDiff;
@@ -997,14 +1226,18 @@
 
     function renderLabourAttendanceTable() {
       const data = getActiveDataset();
+      const dateFilter = document.getElementById('labourDateFilter')?.value || 'ALL';
       const tbody = document.getElementById('labourAttendanceTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
-      const records = [...(data.labour || [])].sort((a,b) => {
-        const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
-        if (timeDiff !== 0) return timeDiff;
-        return (b.date || '').localeCompare(a.date || '');
-      });
+      const records = [...(data.labour || [])]
+        .filter(l => checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate'))
+        .sort((a,b) => {
+          const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
+          if (timeDiff !== 0) return timeDiff;
+          return (b.date || '').localeCompare(a.date || '');
+        });
 
       records.forEach(l => {
         const tr = document.createElement('tr');
@@ -1166,20 +1399,21 @@
       }
     }
 
-    // --- SAMAAN PARTY RUNNING LEDGER (NEWEST ON TOP) ---
+    // --- SAMAAN PARTY RUNNING LEDGER (WITH DATE FILTER) ---
     function renderSamaanTable() {
       const data = getActiveDataset();
-      const filterParty = document.getElementById('partyFilterSelect').value;
+      const filterParty = document.getElementById('partyFilterSelect')?.value || 'ALL';
+      const dateFilter = document.getElementById('samaanDateFilter')?.value || 'ALL';
       const tbody = document.getElementById('samaanTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
       let totalValue = 0;
       let totalPaid = 0;
       let runningBalance = 0;
 
-      // Newest records on top
       const records = (data.samaan || [])
-        .filter(s => filterParty === 'ALL' || s.refFrom === filterParty)
+        .filter(s => (filterParty === 'ALL' || s.refFrom === filterParty) && checkDateInRange(s.date, dateFilter, 'samaanStartDate', 'samaanEndDate'))
         .sort((a,b) => {
           const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
           if (timeDiff !== 0) return timeDiff;
@@ -1741,23 +1975,26 @@
     function renderExpenseCategoryDropdowns() {
       const formSelect = document.getElementById('repCategory');
       const filterSelect = document.getElementById('expenseCategoryFilter');
-      const curFilter = filterSelect.value || "ALL";
+      const curFilter = filterSelect?.value || "ALL";
 
-      formSelect.innerHTML = '';
-      filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
+      if (formSelect) formSelect.innerHTML = '';
+      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
 
       systemData.expenseCategories.forEach(cat => {
-        const opt1 = document.createElement('option');
-        opt1.value = cat;
-        opt1.textContent = cat;
-        formSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = cat;
-        opt2.textContent = cat;
-        filterSelect.appendChild(opt2);
+        if (formSelect) {
+          const opt1 = document.createElement('option');
+          opt1.value = cat;
+          opt1.textContent = cat;
+          formSelect.appendChild(opt1);
+        }
+        if (filterSelect) {
+          const opt2 = document.createElement('option');
+          opt2.value = cat;
+          opt2.textContent = cat;
+          filterSelect.appendChild(opt2);
+        }
       });
-      filterSelect.value = curFilter;
+      if (filterSelect) filterSelect.value = curFilter;
     }
 
     function promptAddExpenseCategory() {
@@ -1768,52 +2005,59 @@
         systemData.expenseCategories.push(clean);
         saveLocal();
         renderExpenseCategoryDropdowns();
-        document.getElementById('repCategory').value = clean;
+        const repCat = document.getElementById('repCategory');
+        if (repCat) repCat.value = clean;
       }
     }
 
     function renderWorkerDropdowns() {
       const filterSelect = document.getElementById('workerGroupFilter');
       const formSelect = document.getElementById('labGroup');
-      const current = filterSelect.value || "ALL";
+      const current = filterSelect?.value || "ALL";
 
-      filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
-      formSelect.innerHTML = '';
+      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
+      if (formSelect) formSelect.innerHTML = '';
 
       systemData.workers.forEach(w => {
-        const opt1 = document.createElement('option');
-        opt1.value = w;
-        opt1.textContent = w;
-        filterSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = w;
-        opt2.textContent = w;
-        formSelect.appendChild(opt2);
+        if (formSelect) {
+          const opt1 = document.createElement('option');
+          opt1.value = w;
+          opt1.textContent = w;
+          formSelect.appendChild(opt1);
+        }
+        if (filterSelect) {
+          const opt2 = document.createElement('option');
+          opt2.value = w;
+          opt2.textContent = w;
+          filterSelect.appendChild(opt2);
+        }
       });
-      filterSelect.value = current;
+      if (filterSelect) filterSelect.value = current;
     }
 
     function renderPartyDropdowns() {
       const filterSelect = document.getElementById('partyFilterSelect');
       const formSelect = document.getElementById('samPartySelect');
-      const current = filterSelect.value || "ALL";
+      const current = filterSelect?.value || "ALL";
 
-      filterSelect.innerHTML = '<option value="ALL">All Parties Combined</option>';
-      formSelect.innerHTML = '';
+      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Parties Combined</option>';
+      if (formSelect) formSelect.innerHTML = '';
 
       systemData.parties.forEach(p => {
-        const opt1 = document.createElement('option');
-        opt1.value = p;
-        opt1.textContent = p;
-        filterSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = p;
-        opt2.textContent = p;
-        formSelect.appendChild(opt2);
+        if (formSelect) {
+          const opt1 = document.createElement('option');
+          opt1.value = p;
+          opt1.textContent = p;
+          formSelect.appendChild(opt1);
+        }
+        if (filterSelect) {
+          const opt2 = document.createElement('option');
+          opt2.value = p;
+          opt2.textContent = p;
+          filterSelect.appendChild(opt2);
+        }
       });
-      filterSelect.value = current;
+      if (filterSelect) filterSelect.value = current;
     }
 
     function openMemberManagerDirect() {
@@ -1823,6 +2067,7 @@
 
     function renderDirectMemberList() {
       const container = document.getElementById('directMembersListContainer');
+      if (!container) return;
       container.innerHTML = '';
       systemData.members.forEach((m) => {
         const row = document.createElement('div');
@@ -1893,6 +2138,7 @@
 
     function renderWorkerManagerList() {
       const container = document.getElementById('workerListContainer');
+      if (!container) return;
       container.innerHTML = '';
       systemData.workers.forEach((w, index) => {
         const div = document.createElement('div');
@@ -1972,6 +2218,7 @@
 
     function renderPartyManagerList() {
       const container = document.getElementById('partyListContainer');
+      if (!container) return;
       container.innerHTML = '';
       systemData.parties.forEach((p, index) => {
         const div = document.createElement('div');
@@ -2127,13 +2374,17 @@
       event.target.value = '';
     }
 
+    // --- AUDIT TRAIL LOGS (WITH DATE FILTER & REVERSE SORT) ---
     function renderLogs() {
       const c = document.getElementById('logsContainer');
       if (!c) return;
       c.innerHTML = '';
 
-      // STRICT NEWEST ON TOP: Numeric timestampTime ke basis par descending sort
-      const sortedLogs = [...(systemData.activityLogs || [])].sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0));
+      const dateFilter = document.getElementById('logsDateFilter')?.value || 'ALL';
+
+      const sortedLogs = [...(systemData.activityLogs || [])]
+        .filter(l => checkDateInRange(l.timestampTime || l.timestamp, dateFilter, 'logsStartDate', 'logsEndDate', true))
+        .sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0));
 
       sortedLogs.forEach(l => {
         const item = document.createElement('div');
@@ -2152,6 +2403,7 @@
 
     function showMemberLoginModal() {
       const select = document.getElementById('loginMemberSelect');
+      if (!select) return;
       select.innerHTML = '';
       systemData.members.forEach(m => {
         const opt = document.createElement('option');
