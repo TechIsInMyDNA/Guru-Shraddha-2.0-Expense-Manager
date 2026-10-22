@@ -103,7 +103,7 @@
     </div>
     <div style="display:flex; align-items:center; gap:5px;">
       <div id="activeMemberPill" class="user-pill" onclick="showMemberLoginModal()">
-        <span>👤</span> <span id="currentMemberDisplay">Member</span>
+        <span>👤</span> <span id="currentMemberDisplay">Select Member</span>
       </div>
       <button class="small secondary" onclick="openMemberManagerDirect()" title="Manage Members">👥</button>
       <button class="small secondary" id="manualSyncBtn" onclick="syncCloud()"><span id="syncIcon">🔄</span></button>
@@ -776,7 +776,7 @@
       ]
     };
 
-    // SYSTEM STATE: Clean REGULAR BOOK with 0 entries
+    // SYSTEM STATE
     let systemData = {
       activeBookId: "book_gs2",
       deletedIds: [],
@@ -801,10 +801,10 @@
         "SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"
       ],
       members: [
-        { id: "m1", name: "Family Head", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
-        { id: "m2", name: "Member 2", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-        { id: "m3", name: "Member 3", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-        { id: "m4", name: "Member 4", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
+        { id: "m_shubham", name: "Agrawal Shubham", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
+        { id: "m_sister", name: "Sister", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+        { id: "m_father", name: "Papa", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+        { id: "m_mother", name: "Mummy", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
       ],
       activityLogs: [
         { id: "log_0", action: "System Init", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", timestampTime: 1736553600000, details: "Loaded Guru Shraddha system." }
@@ -860,14 +860,11 @@
       if (!str || !str.trim()) return null;
       let clean = str.trim();
       
-      // Percentage addition/subtraction: e.g. 1000 + 18% -> 1000 + (1000 * 0.18)
       clean = clean.replace(/(\d+(\.\d+)?)\s*([+\-])\s*(\d+(\.\d+)?)\s*%/g, function(match, base, d1, op, pct) {
         return `${base} ${op} (${base} * ${pct} / 100)`;
       });
-      // Standalone percentage: e.g. 500 * 5% -> 500 * (5 / 100)
       clean = clean.replace(/(\d+(\.\d+)?)\s*%/g, '($1/100)');
       
-      // Safety check: allow only digits, dots, and basic operators
       if (!/^[\d\.\s+\-*\/()]+$/.test(clean)) {
         return null;
       }
@@ -921,7 +918,7 @@
       if (p) p.textContent = '';
     }
 
-    // --- DATE FILTER HELPER (LAST 7D, 30D, 3M, CUSTOM) ---
+    // --- DATE FILTER HELPER ---
     function toggleDateFilterRange(tab) {
       const select = document.getElementById(`${tab}DateFilter`);
       const wrap = document.getElementById(`${tab}CustomDateWrap`);
@@ -946,7 +943,6 @@
       if (isTimestamp) {
         itemTime = typeof itemDateStr === 'number' ? itemDateStr : new Date(itemDateStr).getTime();
       } else {
-        // format YYYY-MM-DD
         const parts = itemDateStr.split('-');
         if (parts.length === 3) {
           itemTime = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
@@ -959,15 +955,9 @@
       const now = Date.now();
       const ONE_DAY = 86400000;
 
-      if (filterType === '7D') {
-        return (now - itemTime) <= (7 * ONE_DAY);
-      }
-      if (filterType === '30D') {
-        return (now - itemTime) <= (30 * ONE_DAY);
-      }
-      if (filterType === '3M') {
-        return (now - itemTime) <= (90 * ONE_DAY);
-      }
+      if (filterType === '7D') return (now - itemTime) <= (7 * ONE_DAY);
+      if (filterType === '30D') return (now - itemTime) <= (30 * ONE_DAY);
+      if (filterType === '3M') return (now - itemTime) <= (90 * ONE_DAY);
       if (filterType === 'CUSTOM') {
         const startVal = document.getElementById(startInputId)?.value;
         const endVal = document.getElementById(endInputId)?.value;
@@ -984,7 +974,7 @@
       return true;
     }
 
-    // --- REPAIRING & EXPENSES (WITH CALCULATOR & DATE FILTER) ---
+    // --- REPAIRING & EXPENSES ---
     function renderRepairingTable() {
       const data = getActiveDataset();
       const catFilter = document.getElementById('expenseCategoryFilter')?.value || 'ALL';
@@ -1169,7 +1159,7 @@
       syncCloud();
     }
 
-    // --- LABOUR RUNNING LEDGER & ATTENDANCE (WITH DATE FILTER) ---
+    // --- LABOUR RUNNING LEDGER & ATTENDANCE ---
     function renderLabourLedgerTable() {
       const data = getActiveDataset();
       const filter = document.getElementById('workerGroupFilter')?.value || 'ALL';
@@ -1399,7 +1389,7 @@
       }
     }
 
-    // --- SAMAAN PARTY RUNNING LEDGER (WITH DATE FILTER) ---
+    // --- SAMAAN PARTY RUNNING LEDGER ---
     function renderSamaanTable() {
       const data = getActiveDataset();
       const filterParty = document.getElementById('partyFilterSelect')?.value || 'ALL';
@@ -1792,7 +1782,6 @@
             logMap.set(x.id, x);
           }
         });
-        // Sabse naye logs upar rakhne ke liye descending sort
         systemData.activityLogs = Array.from(logMap.values())
           .sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0))
           .slice(0, 200);
@@ -2118,7 +2107,13 @@
       saveLocal();
       renderMembersManagement();
       renderDirectMemberList();
-      updateMemberUI();
+      
+      // Agar current logged in member ka naam badla hai toh update karein
+      if (currentMember && currentMember.id === m.id) {
+        currentMember = m;
+        localStorage.setItem('gs_device_active_member', JSON.stringify(m));
+        updateMemberUI();
+      }
       syncCloud();
     }
 
@@ -2374,7 +2369,7 @@
       event.target.value = '';
     }
 
-    // --- AUDIT TRAIL LOGS (WITH DATE FILTER & REVERSE SORT) ---
+    // --- AUDIT TRAIL LOGS ---
     function renderLogs() {
       const c = document.getElementById('logsContainer');
       if (!c) return;
@@ -2409,6 +2404,7 @@
         const opt = document.createElement('option');
         opt.value = m.id;
         opt.textContent = m.name;
+        if (currentMember && currentMember.id === m.id) opt.selected = true;
         select.appendChild(opt);
       });
       document.getElementById('loginPinInput').value = '';
@@ -2421,7 +2417,8 @@
       const m = systemData.members.find(x => x.id === id);
       if (m && m.pin === pin) {
         currentMember = m;
-        sessionStorage.setItem('gs_active_member', JSON.stringify(m));
+        // PERMANENT DEVICE MEMORY (Har device ka login alag se yaad rahega)
+        localStorage.setItem('gs_device_active_member', JSON.stringify(m));
         updateMemberUI();
         closeModal('memberLoginModal');
       } else {
@@ -2429,13 +2426,25 @@
       }
     }
 
+    // Har device ka last used member automatically restore karein
     function autoCheckMemberSession() {
-      const s = sessionStorage.getItem('gs_active_member');
-      if (s) {
-        try { currentMember = JSON.parse(s); } catch(e){}
+      const saved = localStorage.getItem('gs_device_active_member');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const found = systemData.members.find(x => x.id === parsed.id);
+          if (found) {
+            currentMember = found;
+          } else {
+            currentMember = parsed;
+          }
+        } catch(e) {}
       }
+      
+      // Agar first time open kiya hai aur koi member set nahi hai, toh Agrawal Shubham default rahega
       if (!currentMember && systemData.members.length > 0) {
         currentMember = systemData.members[0];
+        localStorage.setItem('gs_device_active_member', JSON.stringify(currentMember));
       }
       updateMemberUI();
     }
@@ -2500,7 +2509,7 @@
       if (elem) elem.classList.add('hidden');
     }
 
-    // --- APPLICATION STARTUP SEQUENCE (SINGLE RELIABLE CALL) ---
+    // --- APPLICATION STARTUP SEQUENCE ---
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorage();
       renderBookSelectors();
@@ -2553,14 +2562,21 @@
 
           if (!systemData.deletedIds) systemData.deletedIds = [];
 
-          // Self-heal: ensure GURU SHRADDHA 2.0 always has all records
           if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
             systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
           }
 
-          // Ensure REGULAR BOOK is clean if not initialized
           if (!systemData.bookData["book_regular"]) {
             systemData.bookData["book_regular"] = { repairing: [], labour: [], samaan: [] };
+          }
+
+          if (!systemData.members || systemData.members.length === 0) {
+            systemData.members = [
+              { id: "m_shubham", name: "Agrawal Shubham", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
+              { id: "m_sister", name: "Sister", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+              { id: "m_father", name: "Papa", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
+              { id: "m_mother", name: "Mummy", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
+            ];
           }
 
           if (!systemData.expenseCategories || systemData.expenseCategories.length === 0) {
