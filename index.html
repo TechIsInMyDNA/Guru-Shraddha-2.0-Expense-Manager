@@ -871,7 +871,7 @@
       renderLogs();
     }
 
-    // --- CATEGORY MANAGER MODAL (BLOCKS DELETE IF ENTRIES EXIST) ---
+    // --- CATEGORY MANAGER MODAL (BLOCKS DELETE IF ENTRIES EXIST + TOMBSTONE ON DELETE) ---
     function openCategoryManagerModal() {
       renderCategoryManagerList();
       document.getElementById('categoryManagerModal').classList.remove('hidden');
@@ -915,6 +915,11 @@
       
       systemData.expenseCategories[index] = clean;
 
+      // Clean from deletedIds if present
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "cat_" + clean);
+      }
+
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].repairing || []).forEach(r => {
           if (r.category === oldName) {
@@ -943,6 +948,10 @@
       }
       const catName = systemData.expenseCategories[index];
       if (!confirm(`Kya aap category "${catName}" ko delete karna chahte hain?`)) return;
+
+      // Add to tombstone so sync won't restore it!
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      systemData.deletedIds.push("cat_" + catName);
 
       systemData.expenseCategories.splice(index, 1);
       logAction("Delete Category", `Deleted empty category: ${catName}`);
@@ -1785,7 +1794,7 @@
       } catch (e) {}
     }
 
-    // --- LAST-WRITE-WINS MERGE FUNCTION ---
+    // --- LAST-WRITE-WINS MERGE FUNCTION (WITH DELETED TOMBSTONES) ---
     function mergeState(cloud) {
       if (!cloud) return;
 
@@ -1856,9 +1865,23 @@
         });
       }
 
-      if (cloud.expenseCategories) systemData.expenseCategories = Array.from(new Set([...systemData.expenseCategories, ...cloud.expenseCategories]));
-      if (cloud.workers) systemData.workers = Array.from(new Set([...systemData.workers, ...cloud.workers]));
-      if (cloud.parties) systemData.parties = Array.from(new Set([...systemData.parties, ...cloud.parties]));
+      // CATEGORIES WITH TOMBSTONE FILTERING
+      if (cloud.expenseCategories) {
+        const combined = Array.from(new Set([...systemData.expenseCategories, ...cloud.expenseCategories]));
+        systemData.expenseCategories = combined.filter(c => !deletedSet.has("cat_" + c));
+      }
+
+      // WORKERS WITH TOMBSTONE FILTERING
+      if (cloud.workers) {
+        const combinedW = Array.from(new Set([...systemData.workers, ...cloud.workers]));
+        systemData.workers = combinedW.filter(w => !deletedSet.has("worker_" + w));
+      }
+
+      // PARTIES WITH TOMBSTONE FILTERING
+      if (cloud.parties) {
+        const combinedP = Array.from(new Set([...systemData.parties, ...cloud.parties]));
+        systemData.parties = combinedP.filter(p => !deletedSet.has("party_" + p));
+      }
 
       if (cloud.members) {
         const memberMap = new Map();
@@ -2058,7 +2081,7 @@
       return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
-    // --- UI UTILS & HELPERS ---
+    // --- UI UTILS & DROPDOWNS ---
     function renderExpenseCategoryDropdowns() {
       const formSelect = document.getElementById('repCategory');
       const filterSelect = document.getElementById('expenseCategoryFilter');
@@ -2088,12 +2111,19 @@
       const name = prompt("Nayi Category ka naam daalein:");
       if (!name || !name.trim()) return;
       const clean = name.trim();
+      
+      // Remove from tombstone if re-adding
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "cat_" + clean);
+      }
+
       if (!systemData.expenseCategories.includes(clean)) {
         systemData.expenseCategories.push(clean);
         saveLocal();
         renderExpenseCategoryDropdowns();
         const repCat = document.getElementById('repCategory');
         if (repCat) repCat.value = clean;
+        syncCloud();
       }
     }
 
@@ -2250,6 +2280,11 @@
       const name = prompt("Naye Worker / Contractor ka naam daalein:");
       if (!name || !name.trim()) return;
       const clean = name.trim().toUpperCase();
+      
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + clean);
+      }
+
       if (systemData.workers.includes(clean)) {
         alert("Yeh worker pehle se maujood hai!");
         return;
@@ -2269,6 +2304,10 @@
       const clean = newName.trim().toUpperCase();
       systemData.workers[index] = clean;
       
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + clean);
+      }
+
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].labour || []).forEach(l => {
           if (l.workerGroup === oldName) {
@@ -2293,6 +2332,10 @@
         return;
       }
       if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
+      
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      systemData.deletedIds.push("worker_" + name);
+
       systemData.workers.splice(index, 1);
       logAction("Delete Worker", `Deleted worker: ${name}`);
       saveLocal();
@@ -2330,6 +2373,11 @@
       const name = prompt("Nayi Party / Vendor ka naam daalein:");
       if (!name || !name.trim()) return;
       const clean = name.trim().toUpperCase();
+
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
+      }
+
       if (systemData.parties.includes(clean)) {
         alert("Yeh party pehle se maujood hai!");
         return;
@@ -2349,6 +2397,10 @@
       const clean = newName.trim().toUpperCase();
       systemData.parties[index] = clean;
       
+      if (systemData.deletedIds) {
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
+      }
+
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].samaan || []).forEach(s => {
           if (s.refFrom === oldName) {
@@ -2372,6 +2424,10 @@
         return;
       }
       if (!confirm(`Kya aap party "${name}" ko delete karna chahte hain?`)) return;
+      
+      if (!systemData.deletedIds) systemData.deletedIds = [];
+      systemData.deletedIds.push("party_" + name);
+
       systemData.parties.splice(index, 1);
       logAction("Delete Party", `Deleted party: ${name}`);
       saveLocal();
