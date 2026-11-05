@@ -1335,33 +1335,95 @@
       activeBookId: "book_gs2",
       deletedIds: [],
       books: [
-        { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: 1736553600000 },
-        { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02", updatedAtTime: 1736553600000 }
+        {
+          id: "book_gs2",
+          name: "GURU SHRADDHA 2.0",
+          createdAt: "2026-10-02",
+          updatedAtTime: 1736553600000
+        },
+        {
+          id: "book_regular",
+          name: "REGULAR BOOK",
+          createdAt: "2026-10-02",
+          updatedAtTime: 1736553600000
+        }
       ],
       bookData: {
         "book_gs2": initialSeedData,
-        "book_regular": { repairing: [], labour: [], samaan: [] }
+        "book_regular": {
+          repairing: [],
+          labour: [],
+          samaan: []
+        }
       },
       expenseCategories: [
-        "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
-        "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
-        "Govt & DMC Fees", "Advance Payment", "General Expense",
-        "Rental Income", "Other Income"
+        "Hardware & Plywood",
+        "Electric & Motor",
+        "Plumbing & Pipes",
+        "Tiles & Masonry",
+        "Vehicle & Repair",
+        "Food & Tiffin",
+        "Govt & DMC Fees",
+        "Advance Payment",
+        "General Expense",
+        "Rental Income",
+        "Other Income"
       ],
       workers: [
-        "DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"
+        "DESHKAR BHIYA",
+        "TEJU BHIYA",
+        "MANGLA BAI REZA SERVICES",
+        "NANDU BHIYA",
+        "DESHKARGS BHIYA"
       ],
       parties: [
-        "SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"
+        "SR TRADERS",
+        "HARIOM PIPES",
+        "MANOJ PLYWOOD",
+        "SHREE ANAND ELEC",
+        "HEMANT UNCLE SS PLYWOOD",
+        "RAMANI MOTORS",
+        "BAGDE"
       ],
       members: [
-        { id: "m_shubham", name: "Agrawal Shubham", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
-        { id: "m_sister", name: "Sister", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-        { id: "m_father", name: "Papa", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-        { id: "m_mother", name: "Mummy", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
+        {
+          id: "m_shubham",
+          name: "Agrawal Shubham",
+          pin: "1234",
+          role: "Head",
+          updatedAtTime: 1736553600000
+        },
+        {
+          id: "m_sister",
+          name: "Sister",
+          pin: "1234",
+          role: "Member",
+          updatedAtTime: 1736553600000
+        },
+        {
+          id: "m_father",
+          name: "Papa",
+          pin: "1234",
+          role: "Member",
+          updatedAtTime: 1736553600000
+        },
+        {
+          id: "m_mother",
+          name: "Mummy",
+          pin: "1234",
+          role: "Member",
+          updatedAtTime: 1736553600000
+        }
       ],
       activityLogs: [
-        { id: "log_0", action: "System Init", performedBy: "System", timestamp: "02/10/2026, 05:30 PM", timestampTime: 1736553600000, details: "Loaded Guru Shraddha system." }
+        {
+          id: "log_0",
+          action: "System Init",
+          performedBy: "System",
+          timestamp: "02/10/2026, 05:30 PM",
+          timestampTime: 1736553600000,
+          details: "Loaded Guru Shraddha system."
+        }
       ]
     };
 
@@ -1374,14 +1436,25 @@
     function getActiveDataset() {
       const bid = systemData.activeBookId || "book_gs2";
       if (!systemData.bookData[bid]) {
-        systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
+        systemData.bookData[bid] = {
+          repairing: [],
+          labour: [],
+          samaan: []
+        };
       }
       return systemData.bookData[bid];
     }
 
     function getActiveBookObj() {
       if (!systemData.books || systemData.books.length === 0) {
-        systemData.books = [{ id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: Date.now() }];
+        systemData.books = [
+          {
+            id: "book_gs2",
+            name: "GURU SHRADDHA 2.0",
+            createdAt: "2026-10-02",
+            updatedAtTime: Date.now()
+          }
+        ];
       }
       return systemData.books.find(b => b.id === systemData.activeBookId) || systemData.books[0];
     }
@@ -1398,7 +1471,9 @@
         details: details
       };
       systemData.activityLogs.unshift(logEntry);
-      if (systemData.activityLogs.length > 200) systemData.activityLogs.pop();
+      if (systemData.activityLogs.length > 200) {
+        systemData.activityLogs.pop();
+      }
     }
 
     function renderAllViews() {
@@ -1486,7 +1561,9 @@
       const catName = systemData.expenseCategories[index];
       if (!confirm(`Kya aap category "${catName}" ko delete karna chahte hain?`)) return;
 
-      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds) {
+        systemData.deletedIds = [];
+      }
       systemData.deletedIds.push("cat_" + catName);
 
       systemData.expenseCategories.splice(index, 1);
@@ -1549,15 +1626,21 @@
       if (solved !== null) {
         input.value = solved;
         const p = document.getElementById(previewId);
-        if (p) p.textContent = '✓ Solved';
+        if (p) {
+          p.textContent = '✓ Solved';
+        }
       }
     }
 
     function clearInlineCalc(inputId, previewId) {
       const input = document.getElementById(inputId);
-      if (input) input.value = '';
+      if (input) {
+        input.value = '';
+      }
       const p = document.getElementById(previewId);
-      if (p) p.textContent = '';
+      if (p) {
+        p.textContent = '';
+      }
     }
 
     // --- DATE FILTER HELPER ---
@@ -1572,7 +1655,10 @@
         }
       }
       if (tab === 'expense') renderRepairingTable();
-      if (tab === 'labour') { renderLabourLedgerTable(); renderLabourAttendanceTable(); }
+      if (tab === 'labour') {
+        renderLabourLedgerTable();
+        renderLabourAttendanceTable();
+      }
       if (tab === 'samaan') renderSamaanTable();
       if (tab === 'logs') renderLogs();
     }
@@ -1597,9 +1683,15 @@
       const now = Date.now();
       const ONE_DAY = 86400000;
 
-      if (filterType === '7D') return (now - itemTime) <= (7 * ONE_DAY);
-      if (filterType === '30D') return (now - itemTime) <= (30 * ONE_DAY);
-      if (filterType === '3M') return (now - itemTime) <= (90 * ONE_DAY);
+      if (filterType === '7D') {
+        return (now - itemTime) <= (7 * ONE_DAY);
+      }
+      if (filterType === '30D') {
+        return (now - itemTime) <= (30 * ONE_DAY);
+      }
+      if (filterType === '3M') {
+        return (now - itemTime) <= (90 * ONE_DAY);
+      }
       if (filterType === 'CUSTOM') {
         const startVal = document.getElementById(startInputId)?.value;
         const endVal = document.getElementById(endInputId)?.value;
@@ -1714,11 +1806,15 @@
       const catVal = r.category || "General Expense";
       let hasOption = false;
       for (let i = 0; i < catSelect.options.length; i++) {
-        if (catSelect.options[i].value === catVal) { hasOption = true; break; }
+        if (catSelect.options[i].value === catVal) {
+          hasOption = true;
+          break;
+        }
       }
       if (!hasOption) {
         const opt = document.createElement('option');
-        opt.value = catVal; opt.textContent = catVal;
+        opt.value = catVal;
+        opt.textContent = catVal;
         catSelect.appendChild(opt);
       }
 
@@ -1769,7 +1865,9 @@
 
       if (editId) {
         const idx = data.repairing.findIndex(x => x.id === editId);
-        if (idx !== -1) data.repairing[idx] = record;
+        if (idx !== -1) {
+          data.repairing[idx] = record;
+        }
         logAction("Edit Entry", `Edited ${type} [${cat}]: ₹${record.amount} (${record.reason})`);
       } else {
         data.repairing.unshift(record);
@@ -1790,8 +1888,12 @@
       const data = getActiveDataset();
       const item = data.repairing.find(x => x.id === id);
       
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+      if (!systemData.deletedIds) {
+        systemData.deletedIds = [];
+      }
+      if (!systemData.deletedIds.includes(id)) {
+        systemData.deletedIds.push(id);
+      }
 
       data.repairing = data.repairing.filter(x => x.id !== id);
       logAction("Delete Entry", `Deleted ₹${item ? item.amount : ''} (${item ? item.reason : ''})`);
@@ -1976,7 +2078,9 @@
 
       if (editId) {
         const idx = data.labour.findIndex(x => x.id === editId);
-        if (idx !== -1) data.labour[idx] = record;
+        if (idx !== -1) {
+          data.labour[idx] = record;
+        }
         logAction("Edit Labour", `Updated: ${record.workerGroup} (Earned: ₹${earned}, Paid: ₹${hisaab})`);
       } else {
         data.labour.unshift(record);
@@ -1998,8 +2102,12 @@
       const data = getActiveDataset();
       const item = data.labour.find(x => x.id === id);
 
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+      if (!systemData.deletedIds) {
+        systemData.deletedIds = [];
+      }
+      if (!systemData.deletedIds.includes(id)) {
+        systemData.deletedIds.push(id);
+      }
 
       data.labour = data.labour.filter(x => x.id !== id);
       logAction("Delete Labour", `Deleted entry for ${item ? item.workerGroup : ''}`);
@@ -2061,8 +2169,12 @@
         runningBalance += (val - paid);
 
         let badgeClass = "badge-neutral";
-        if (runningBalance <= 0 || s.status.includes("RETURNED") || s.status.includes("CLEARED")) badgeClass = "badge-paid";
-        if (runningBalance > 0 && s.status.includes("PENDING")) badgeClass = "badge-pending";
+        if (runningBalance <= 0 || s.status.includes("RETURNED") || s.status.includes("CLEARED")) {
+          badgeClass = "badge-paid";
+        }
+        if (runningBalance > 0 && s.status.includes("PENDING")) {
+          badgeClass = "badge-pending";
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -2121,11 +2233,15 @@
       const partyVal = s.refFrom || '';
       let hasParty = false;
       for (let i = 0; i < partySelect.options.length; i++) {
-        if (partySelect.options[i].value === partyVal) { hasParty = true; break; }
+        if (partySelect.options[i].value === partyVal) {
+          hasParty = true;
+          break;
+        }
       }
       if (!hasParty && partyVal) {
         const opt = document.createElement('option');
-        opt.value = partyVal; opt.textContent = partyVal;
+        opt.value = partyVal;
+        opt.textContent = partyVal;
         partySelect.appendChild(opt);
       }
 
@@ -2172,7 +2288,9 @@
 
       if (editId) {
         const idx = data.samaan.findIndex(x => x.id === editId);
-        if (idx !== -1) data.samaan[idx] = record;
+        if (idx !== -1) {
+          data.samaan[idx] = record;
+        }
         logAction("Edit Samaan", `Updated Samaan: ${record.samaanIn} (${record.refFrom})`);
       } else {
         data.samaan.unshift(record);
@@ -2193,8 +2311,12 @@
       const data = getActiveDataset();
       const item = data.samaan.find(x => x.id === id);
 
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      if (!systemData.deletedIds.includes(id)) systemData.deletedIds.push(id);
+      if (!systemData.deletedIds) {
+        systemData.deletedIds = [];
+      }
+      if (!systemData.deletedIds.includes(id)) {
+        systemData.deletedIds.push(id);
+      }
 
       data.samaan = data.samaan.filter(x => x.id !== id);
       logAction("Delete Samaan", `Deleted: ${item ? item.samaanIn : ''}`);
@@ -2208,27 +2330,43 @@
     async function ensureDataBranch(token) {
       const branchUrl = `https://api.github.com/repos/${GITHUB_REPO}/branches/${GITHUB_DATA_BRANCH}`;
       const checkRes = await fetch(branchUrl, {
-        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
       });
       if (checkRes.status === 200) return true;
 
       const repoRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
-        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
       });
       if (!repoRes.ok) return false;
       const repoInfo = await repoRes.json();
       const defaultBranch = repoInfo.default_branch || 'main';
 
       const refRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/git/refs/heads/${defaultBranch}`, {
-        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
       });
       if (!refRes.ok) return false;
       const refData = await refRes.json();
 
       const createRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/git/refs`, {
         method: 'POST',
-        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ref: `refs/heads/${GITHUB_DATA_BRANCH}`, sha: refData.object.sha })
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ref: `refs/heads/${GITHUB_DATA_BRANCH}`,
+          sha: refData.object.sha
+        })
       });
       return createRes.ok;
     }
@@ -2292,7 +2430,7 @@
           body: JSON.stringify({
             message: `Guru Shraddha live sync by ${currentMember ? currentMember.name : 'System'} [${new Date().toLocaleString('en-IN')}]`,
             content: encodedContent,
-            branch: GITHUB_DATA_BRANCH, // COMMITS DIRECTLY TO DATA BRANCH
+            branch: GITHUB_DATA_BRANCH,
             ...(fileSha && { sha: fileSha })
           })
         });
@@ -2376,7 +2514,11 @@
       // LWW FOR BOOKS
       if (cloud.books && Array.isArray(cloud.books)) {
         const bookMap = new Map();
-        cloud.books.forEach(b => { if (!deletedSet.has(b.id)) bookMap.set(b.id, b); });
+        cloud.books.forEach(b => {
+          if (!deletedSet.has(b.id)) {
+            bookMap.set(b.id, b);
+          }
+        });
         systemData.books.forEach(b => {
           if (!deletedSet.has(b.id)) {
             const existing = bookMap.get(b.id);
@@ -2390,13 +2532,23 @@
 
       if (cloud.bookData) {
         Object.keys(cloud.bookData).forEach(bid => {
-          if (!systemData.bookData[bid]) systemData.bookData[bid] = { repairing: [], labour: [], samaan: [] };
+          if (!systemData.bookData[bid]) {
+            systemData.bookData[bid] = {
+              repairing: [],
+              labour: [],
+              samaan: []
+            };
+          }
           const cData = cloud.bookData[bid];
           const lData = systemData.bookData[bid];
 
           // LWW MERGE FOR REPAIRING
           const repMap = new Map();
-          (cData.repairing || []).forEach(x => { if (!deletedSet.has(x.id)) repMap.set(x.id, x); });
+          (cData.repairing || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              repMap.set(x.id, x);
+            }
+          });
           (lData.repairing || []).forEach(x => {
             if (!deletedSet.has(x.id)) {
               const existing = repMap.get(x.id);
@@ -2409,7 +2561,11 @@
 
           // LWW MERGE FOR LABOUR
           const labMap = new Map();
-          (cData.labour || []).forEach(x => { if (!deletedSet.has(x.id)) labMap.set(x.id, x); });
+          (cData.labour || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              labMap.set(x.id, x);
+            }
+          });
           (lData.labour || []).forEach(x => {
             if (!deletedSet.has(x.id)) {
               const existing = labMap.get(x.id);
@@ -2422,7 +2578,11 @@
 
           // LWW MERGE FOR SAMAAN
           const samMap = new Map();
-          (cData.samaan || []).forEach(x => { if (!deletedSet.has(x.id)) samMap.set(x.id, x); });
+          (cData.samaan || []).forEach(x => {
+            if (!deletedSet.has(x.id)) {
+              samMap.set(x.id, x);
+            }
+          });
           (lData.samaan || []).forEach(x => {
             if (!deletedSet.has(x.id)) {
               const existing = samMap.get(x.id);
@@ -2487,7 +2647,9 @@
         const opt = document.createElement('option');
         opt.value = b.id;
         opt.textContent = b.name;
-        if (b.id === systemData.activeBookId) opt.selected = true;
+        if (b.id === systemData.activeBookId) {
+          opt.selected = true;
+        }
         select.appendChild(opt);
       });
       document.getElementById('activeBookDisplay').textContent = "Book: " + getActiveBookObj().name;
@@ -2531,8 +2693,17 @@
       if (!name || !name.trim()) return;
       const cleanName = name.trim().toUpperCase();
       const newId = "book_" + Date.now();
-      systemData.books.push({ id: newId, name: cleanName, createdAt: new Date().toISOString().split('T')[0], updatedAtTime: Date.now() });
-      systemData.bookData[newId] = { repairing: [], labour: [], samaan: [] };
+      systemData.books.push({
+        id: newId,
+        name: cleanName,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAtTime: Date.now()
+      });
+      systemData.bookData[newId] = {
+        repairing: [],
+        labour: [],
+        samaan: []
+      };
       systemData.activeBookId = newId;
       logAction("Create Book", `Created new Book: ${cleanName}`);
       saveLocal();
@@ -2564,7 +2735,9 @@
       const b = systemData.books.find(x => x.id === id);
       if (!confirm(`Kya aap Book "${b.name}" aur iska poora hisaab-kitaab delete karna chahte hain?`)) return;
       
-      if (!systemData.deletedIds) systemData.deletedIds = [];
+      if (!systemData.deletedIds) {
+        systemData.deletedIds = [];
+      }
       systemData.deletedIds.push(id);
 
       systemData.books = systemData.books.filter(x => x.id !== id);
@@ -2616,9 +2789,17 @@
       const enc = new TextEncoder();
       const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
       return crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: 100000,
+          hash: "SHA-256"
+        },
         keyMaterial,
-        { name: "AES-GCM", length: 256 },
+        {
+          name: "AES-GCM",
+          length: 256
+        },
         false,
         ["encrypt", "decrypt"]
       );
@@ -2630,7 +2811,14 @@
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const key = await deriveCryptoKey(passphrase, salt);
       const plaintext = enc.encode(JSON.stringify(dataObj));
-      const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, plaintext);
+      const encrypted = await crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv: iv
+        },
+        key,
+        plaintext
+      );
       return {
         cipher: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
         iv: btoa(String.fromCharCode(...iv)),
@@ -2647,7 +2835,14 @@
       const iv = Uint8Array.from(atob(packet.iv), c => c.charCodeAt(0));
       const cipher = Uint8Array.from(atob(packet.cipher), c => c.charCodeAt(0));
       const key = await deriveCryptoKey(passphrase, salt);
-      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, cipher);
+      const decrypted = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: iv
+        },
+        key,
+        cipher
+      );
       return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
@@ -2663,18 +2858,26 @@
       document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       const target = document.getElementById('tab-' + tabName);
-      if (target) target.classList.remove('hidden');
-      if (el) el.classList.add('active');
+      if (target) {
+        target.classList.remove('hidden');
+      }
+      if (el) {
+        el.classList.add('active');
+      }
     }
 
     function toggleForm(id) {
       const elem = document.getElementById(id);
-      if (elem) elem.classList.toggle('hidden');
+      if (elem) {
+        elem.classList.toggle('hidden');
+      }
     }
 
     function closeModal(id) {
       const elem = document.getElementById(id);
-      if (elem) elem.classList.add('hidden');
+      if (elem) {
+        elem.classList.add('hidden');
+      }
     }
 
     // --- APPLICATION STARTUP SEQUENCE ---
@@ -2701,7 +2904,9 @@
     });
 
     function startRealTimePolling() {
-      if (syncIntervalTimer) clearInterval(syncIntervalTimer);
+      if (syncIntervalTimer) {
+        clearInterval(syncIntervalTimer);
+      }
       syncIntervalTimer = setInterval(() => {
         if (getPatToken() && !isSyncing) {
           syncCloudSilent();
@@ -2719,47 +2924,112 @@
           } else {
             systemData.activeBookId = "book_gs2";
             systemData.books = [
-              { id: "book_gs2", name: "GURU SHRADDHA 2.0", createdAt: "2026-10-02", updatedAtTime: Date.now() },
-              { id: "book_regular", name: "REGULAR BOOK", createdAt: "2026-10-02", updatedAtTime: Date.now() }
+              {
+                id: "book_gs2",
+                name: "GURU SHRADDHA 2.0",
+                createdAt: "2026-10-02",
+                updatedAtTime: Date.now()
+              },
+              {
+                id: "book_regular",
+                name: "REGULAR BOOK",
+                createdAt: "2026-10-02",
+                updatedAtTime: Date.now()
+              }
             ];
             systemData.bookData = {
               "book_gs2": initialSeedData,
-              "book_regular": { repairing: [], labour: [], samaan: [] }
+              "book_regular": {
+                repairing: [],
+                labour: [],
+                samaan: []
+              }
             };
           }
 
-          if (!systemData.deletedIds) systemData.deletedIds = [];
+          if (!systemData.deletedIds) {
+            systemData.deletedIds = [];
+          }
 
           if (!systemData.bookData["book_gs2"] || !systemData.bookData["book_gs2"].repairing || systemData.bookData["book_gs2"].repairing.length === 0) {
             systemData.bookData["book_gs2"] = JSON.parse(JSON.stringify(initialSeedData));
           }
 
           if (!systemData.bookData["book_regular"]) {
-            systemData.bookData["book_regular"] = { repairing: [], labour: [], samaan: [] };
+            systemData.bookData["book_regular"] = {
+              repairing: [],
+              labour: [],
+              samaan: []
+            };
           }
 
           if (!systemData.members || systemData.members.length === 0) {
             systemData.members = [
-              { id: "m_shubham", name: "Agrawal Shubham", pin: "1234", role: "Head", updatedAtTime: 1736553600000 },
-              { id: "m_sister", name: "Sister", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-              { id: "m_father", name: "Papa", pin: "1234", role: "Member", updatedAtTime: 1736553600000 },
-              { id: "m_mother", name: "Mummy", pin: "1234", role: "Member", updatedAtTime: 1736553600000 }
+              {
+                id: "m_shubham",
+                name: "Agrawal Shubham",
+                pin: "1234",
+                role: "Head",
+                updatedAtTime: 1736553600000
+              },
+              {
+                id: "m_sister",
+                name: "Sister",
+                pin: "1234",
+                role: "Member",
+                updatedAtTime: 1736553600000
+              },
+              {
+                id: "m_father",
+                name: "Papa",
+                pin: "1234",
+                role: "Member",
+                updatedAtTime: 1736553600000
+              },
+              {
+                id: "m_mother",
+                name: "Mummy",
+                pin: "1234",
+                role: "Member",
+                updatedAtTime: 1736553600000
+              }
             ];
           }
 
           if (!systemData.expenseCategories || systemData.expenseCategories.length === 0) {
             systemData.expenseCategories = [
-              "Hardware & Plywood", "Electric & Motor", "Plumbing & Pipes",
-              "Tiles & Masonry", "Vehicle & Repair", "Food & Tiffin",
-              "Govt & DMC Fees", "Advance Payment", "General Expense",
-              "Rental Income", "Other Income"
+              "Hardware & Plywood",
+              "Electric & Motor",
+              "Plumbing & Pipes",
+              "Tiles & Masonry",
+              "Vehicle & Repair",
+              "Food & Tiffin",
+              "Govt & DMC Fees",
+              "Advance Payment",
+              "General Expense",
+              "Rental Income",
+              "Other Income"
             ];
           }
           if (!systemData.workers || systemData.workers.length === 0) {
-            systemData.workers = ["DESHKAR BHIYA", "TEJU BHIYA", "MANGLA BAI REZA SERVICES", "NANDU BHIYA", "DESHKARGS BHIYA"];
+            systemData.workers = [
+              "DESHKAR BHIYA",
+              "TEJU BHIYA",
+              "MANGLA BAI REZA SERVICES",
+              "NANDU BHIYA",
+              "DESHKARGS BHIYA"
+            ];
           }
           if (!systemData.parties || systemData.parties.length === 0) {
-            systemData.parties = ["SR TRADERS", "HARIOM PIPES", "MANOJ PLYWOOD", "SHREE ANAND ELEC", "HEMANT UNCLE SS PLYWOOD", "RAMANI MOTORS", "BAGDE"];
+            systemData.parties = [
+              "SR TRADERS",
+              "HARIOM PIPES",
+              "MANOJ PLYWOOD",
+              "SHREE ANAND ELEC",
+              "HEMANT UNCLE SS PLYWOOD",
+              "RAMANI MOTORS",
+              "BAGDE"
+            ];
           }
           saveLocal();
         } catch(e) {
