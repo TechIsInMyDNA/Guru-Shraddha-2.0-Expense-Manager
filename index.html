@@ -424,7 +424,7 @@
           <div style="display:flex; gap:6px;">
             <button class="small secondary" onclick="openPartyManagerModal()">🏢 Manage Parties</button>
             <button class="small secondary" onclick="exportTableToCSV('samaan_ledger')">📥 Export Excel</button>
-            <button class="small" onclick="openNewSamaanForm()">+ New Samaan Entry</button>
+            <button class="small" onclick="openNewSamaanForm()">+ New Entry / Samaan</button>
           </div>
         </div>
 
@@ -450,7 +450,7 @@
 
         <div id="samFormContainer" class="hidden" style="background:var(--card-inner); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--accent);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <strong id="samFormHeaderTitle" style="color:var(--accent); font-size:13px;">Naya Samaan Entry</strong>
+            <strong id="samFormHeaderTitle" style="color:var(--accent); font-size:13px;">Naya Entry / Samaan</strong>
             <button type="button" class="small secondary" onclick="closeSamaanForm()">✕ Close</button>
           </div>
           <form onsubmit="saveSamaanRecord(event)">
@@ -596,8 +596,8 @@
             <input type="text" id="cfgRepo" value="TechIsInMyDNA/Guru-Shraddha-2.0-Expense-Manager" disabled style="background:#1a233a; color:var(--accent); font-weight:bold;">
           </div>
           <div class="grid-1">
-            <label>Target File:</label>
-            <input type="text" value="data.json (AES-256-GCM Encrypted)" disabled style="background:#1a233a;">
+            <label>Target File & Branch:</label>
+            <input type="text" value="data.json (Branch: data | Encrypted)" disabled style="background:#1a233a; color:var(--success); font-weight:bold;">
           </div>
           <div class="grid-1">
             <label>GitHub Personal Access Token (PAT):</label>
@@ -736,59 +736,597 @@
     const GITHUB_REPO_NAME = "Guru-Shraddha-2.0-Expense-Manager";
     const GITHUB_REPO = `${GITHUB_OWNER}/${GITHUB_REPO_NAME}`;
     const GITHUB_FILE = "data.json";
+    const GITHUB_DATA_BRANCH = "data"; // TARGET BRANCH FOR REAL-TIME DATA TO PREVENT AUTO-DEPLOYMENT
 
     // 100% COMPLETE EXCEL SEED DATA (Only in GURU SHRADDHA 2.0)
     const initialSeedData = {
       repairing: [
-        {"id":"rep_3","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-11","amount":500,"ref":"CASH","reason":"BOPCHE BHIYA PARDHE HOLDER DANDHE FIX","updatedBy":"Excel Seed","updatedAtTime":1736553600000},
-        {"id":"rep_4","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-13","amount":1100,"ref":"CASH","reason":"MANOJ PLYWOOD PARDA HISAAB TTL 1104","updatedBy":"Excel Seed","updatedAtTime":1736726400000},
-        {"id":"rep_5","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-25","amount":100,"ref":"CASH","reason":"RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200000},
-        {"id":"rep_6","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-01-25","amount":150,"ref":"CASH","reason":"RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE","updatedBy":"Excel Seed","updatedAtTime":1737763200001},
-        {"id":"rep_7","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":500,"ref":"CASH","reason":"BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1737849600000},
-        {"id":"rep_8","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-01-26","amount":1250,"ref":"CASH","reason":"NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH","updatedBy":"Excel Seed","updatedAtTime":173784960001},
-        {"id":"rep_9","type":"EXPENSE","category":"General Expense","date":"2025-01-28","amount":500,"ref":"CASH","reason":"TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR","updatedBy":"Excel Seed","updatedAtTime":1738022400000},
-        {"id":"rep_10","type":"EXPENSE","category":"Hardware & Plywood","date":"2025-02-07","amount":260,"ref":"IN HISAAB","reason":"CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD","updatedBy":"Excel Seed","updatedAtTime":1738886400000},
-        {"id":"rep_11","type":"EXPENSE","category":"Advance Payment","date":"2025-02-20","amount":50000,"ref":"PYTM/HDFC/505130169368","reason":"ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAtTime":1740009600000},
-        {"id":"rep_12","type":"EXPENSE","category":"Advance Payment","date":"2025-02-21","amount":62080,"ref":"IMPS/HDFC/IMPS505213377099","reason":"FINAL PAYMENT FOR URJAA TO RAMANI MOTORS","updatedBy":"Excel Seed","updatedAtTime":1740096000000},
-        {"id":"rep_13","type":"EXPENSE","category":"Govt & DMC Fees","date":"2025-03-06","amount":3000,"ref":"CASH ","reason":"DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025","updatedBy":"Excel Seed","updatedAtTime":1741219200000},
-        {"id":"rep_14","type":"EXPENSE","category":"Electric & Motor","date":"2025-05-23","amount":9245,"ref":"PYTM/AU/614427102284","reason":"LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC 30+30+10+20 VIA SHREE ANAND ELEC","updatedBy":"Excel Seed","updatedAtTime":1747958400000},
-        {"id":"rep_15","type":"EXPENSE","category":"Plumbing & Pipes","date":"2025-05-23","amount":1570,"ref":"CASH+ONLINE","reason":"NANDU KAAM ALL DETAILS IN LABARCH ATTENDANCE","updatedBy":"Excel Seed","updatedAtTime":1747958400001},
-        {"id":"rep_16","type":"EXPENSE","category":"Tiles & Masonry","date":"2025-05-25","amount":400,"ref":"CASH","reason":"DESHKAR REF ATTENDANCE 25/05/2025","updatedBy":"Excel Seed","updatedAtTime":1748131200000},
-        {"id":"rep_17","type":"EXPENSE","category":"Food & Tiffin","date":"2025-06-04","amount":3480,"ref":"CASH","reason":"FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP","updatedBy":"Excel Seed","updatedAtTime":1748995200000},
-        {"id":"rep_18","type":"EXPENSE","category":"Vehicle & Repair","date":"2025-06-28","amount":1300,"ref":"CASH","reason":"SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806","updatedBy":"Excel Seed","updatedAtTime":1751068800000}
+        {
+          "id": "rep_3",
+          "type": "EXPENSE",
+          "category": "Hardware & Plywood",
+          "date": "2025-01-11",
+          "amount": 500,
+          "ref": "CASH",
+          "reason": "BOPCHE BHIYA PARDHE HOLDER DANDHE FIX",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1736553600000
+        },
+        {
+          "id": "rep_4",
+          "type": "EXPENSE",
+          "category": "Hardware & Plywood",
+          "date": "2025-01-13",
+          "amount": 1100,
+          "ref": "CASH",
+          "reason": "MANOJ PLYWOOD PARDA HISAAB TTL 1104",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1736726400000
+        },
+        {
+          "id": "rep_5",
+          "type": "EXPENSE",
+          "category": "Plumbing & Pipes",
+          "date": "2025-01-25",
+          "amount": 100,
+          "ref": "CASH",
+          "reason": "RICKSHAW WALA TANKI TO HOME HARIOM PIPES SINTEX KI @ BAGDE",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1737763200000
+        },
+        {
+          "id": "rep_6",
+          "type": "EXPENSE",
+          "category": "Hardware & Plywood",
+          "date": "2025-01-25",
+          "amount": 150,
+          "ref": "CASH",
+          "reason": "RICKSHAW WALA PLY HOME TO SHOP PALANG KI @ BAGDE",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1737763200001
+        },
+        {
+          "id": "rep_7",
+          "type": "EXPENSE",
+          "category": "Plumbing & Pipes",
+          "date": "2025-01-26",
+          "amount": 500,
+          "ref": "CASH",
+          "reason": "BOHNI NANDU FOR TANKI FIT AND CHILLAR CHILLAR",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1737849600000
+        },
+        {
+          "id": "rep_8",
+          "type": "EXPENSE",
+          "category": "Plumbing & Pipes",
+          "date": "2025-01-26",
+          "amount": 1250,
+          "ref": "CASH",
+          "reason": "NANDU ALL HISAAB CLEAR TANKI FIT + FLUSH KE NICHE KA 600+100+300 KUCH KUCH",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 173784960001
+        },
+        {
+          "id": "rep_9",
+          "type": "EXPENSE",
+          "category": "General Expense",
+          "date": "2025-01-28",
+          "amount": 500,
+          "ref": "CASH",
+          "reason": "TO CHOTU MUNNA GUPCHUP FOR REGULATOR CHANGE + CHILLAR CHILLAR",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1738022400000
+        },
+        {
+          "id": "rep_10",
+          "type": "EXPENSE",
+          "category": "Hardware & Plywood",
+          "date": "2025-02-07",
+          "amount": 260,
+          "ref": "IN HISAAB",
+          "reason": "CURTAIN RING BROWN 1 PKT FROM HEMANT UNCLE SS PLYWOOD",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1738886400000
+        },
+        {
+          "id": "rep_11",
+          "type": "EXPENSE",
+          "category": "Advance Payment",
+          "date": "2025-02-20",
+          "amount": 50000,
+          "ref": "PYTM/HDFC/505130169368",
+          "reason": "ADVANCE PAYMENT FOR URJAA TO RAMANI MOTORS",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1740009600000
+        },
+        {
+          "id": "rep_12",
+          "type": "EXPENSE",
+          "category": "Advance Payment",
+          "date": "2025-02-21",
+          "amount": 62080,
+          "ref": "IMPS/HDFC/IMPS505213377099",
+          "reason": "FINAL PAYMENT FOR URJAA TO RAMANI MOTORS",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1740096000000
+        },
+        {
+          "id": "rep_13",
+          "type": "EXPENSE",
+          "category": "Govt & DMC Fees",
+          "date": "2025-03-06",
+          "amount": 3000,
+          "ref": "CASH ",
+          "reason": "DMC ANNUAL RENEWAL FROM 14/02/2024 TO 13/02/2025",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1741219200000
+        },
+        {
+          "id": "rep_14",
+          "type": "EXPENSE",
+          "category": "Electric & Motor",
+          "date": "2025-05-23",
+          "amount": 9245,
+          "ref": "PYTM/AU/614427102284",
+          "reason": "LAXMI LADA 0.75HP PUMP8400+RASSA130FT650+COPPERWIRE3FT105+TAPE JALI TAFLONTAPE ETC ETC 30+30+10+20 VIA SHREE ANAND ELEC",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1747958400000
+        },
+        {
+          "id": "rep_15",
+          "type": "EXPENSE",
+          "category": "Plumbing & Pipes",
+          "date": "2025-05-23",
+          "amount": 1570,
+          "ref": "CASH+ONLINE",
+          "reason": "NANDU KAAM ALL DETAILS IN LABARCH ATTENDANCE",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1747958400001
+        },
+        {
+          "id": "rep_16",
+          "type": "EXPENSE",
+          "category": "Tiles & Masonry",
+          "date": "2025-05-25",
+          "amount": 400,
+          "ref": "CASH",
+          "reason": "DESHKAR REF ATTENDANCE 25/05/2025",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1748131200000
+        },
+        {
+          "id": "rep_17",
+          "type": "EXPENSE",
+          "category": "Food & Tiffin",
+          "date": "2025-06-04",
+          "amount": 3480,
+          "ref": "CASH",
+          "reason": "FOR 58 TIFFIN FROM 16 MAY TO 3 JUNE BEECH ME 1JUNE/2JUNE GAP",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1748995200000
+        },
+        {
+          "id": "rep_18",
+          "type": "EXPENSE",
+          "category": "Vehicle & Repair",
+          "date": "2025-06-28",
+          "amount": 1300,
+          "ref": "CASH",
+          "reason": "SUKTAM MISTRI FOR BOTH GAADI REPAIR WHITE ON 2706 AND BLACK ON 2806",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1751068800000
+        }
       ],
       samaan: [
-        {"id":"sam_3","date":"2025-01-25","refFrom":"SR TRADERS","samaanIn":"SINTEX 500 LTR TANKI 5YR WARRANTY","amount":4200,"paidAmount":4200,"refTo":"BAGDE","status":"RECEIVED / IN USE","reason":"OLD TANKI DAMAGE","remarks":"BAL","updatedBy":"Excel Seed","updatedAtTime":1737763200000}
+        {
+          "id": "sam_3",
+          "date": "2025-01-25",
+          "refFrom": "SR TRADERS",
+          "samaanIn": "SINTEX 500 LTR TANKI 5YR WARRANTY",
+          "amount": 4200,
+          "paidAmount": 4200,
+          "refTo": "BAGDE",
+          "status": "RECEIVED / IN USE",
+          "reason": "OLD TANKI DAMAGE",
+          "remarks": "BAL",
+          "updatedBy": "Excel Seed",
+          "updatedAtTime": 1737763200000
+        }
       ],
       labour: [
-        {"id":"lab_DESHKAR_BHIYA_3","workerGroup":"DESHKAR BHIYA","date":"2025-01-09","labourCount":1.0,"labourCharge":400.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":400.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"SAMAAN ALTI PALTI","updatedAtTime":1736380800000},
-        {"id":"lab_DESHKAR_BHIYA_4","workerGroup":"DESHKAR BHIYA","date":"2025-01-10","labourCount":2.0,"labourCharge":800.0,"mistriCount":1.0,"mistriCharge":500.0,"totalCharge":1300.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedAtTime":1736467200000},
-        {"id":"lab_DESHKAR_BHIYA_5","workerGroup":"DESHKAR BHIYA","date":"2025-01-11","labourCount":2.0,"labourCharge":800.0,"mistriCount":1.0,"mistriCharge":500.0,"totalCharge":1300.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"TILES LAGAE","updatedAtTime":1736553600000},
-        {"id":"lab_DESHKAR_BHIYA_6","workerGroup":"DESHKAR BHIYA","date":"2025-01-12","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":400.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"PAINTING SINGLE HATH DISTEMPER","updatedAtTime":1736640000000},
-        {"id":"lab_DESHKAR_BHIYA_7","workerGroup":"DESHKAR BHIYA","date":"2025-01-13","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":0.0,"paymentStatus":"PAID","remarks":"NO WORK","updatedAtTime":1736726400000},
-        {"id":"lab_DESHKAR_BHIYA_8","workerGroup":"DESHKAR BHIYA","date":"2025-01-14","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"PAINTING+CHILLAR WORKS+SAMAAN ALTI PALTI - HISAAB DONE TILL TODAY","updatedAtTime":1736812800000},
-        {"id":"lab_DESHKAR_BHIYA_9","workerGroup":"DESHKAR BHIYA","date":"","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":4200.0,"paymentStatus":"PAID","remarks":"HISAAB CLEAR (4200)","updatedAtTime":1736812800001},
-        {"id":"lab_DESHKAR_BHIYA_10","workerGroup":"DESHKAR BHIYA","date":"2025-01-15","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"2ND HISAAB CHALU YAHA SE","updatedAtTime":1736899200000},
-        {"id":"lab_DESHKAR_BHIYA_11","workerGroup":"DESHKAR BHIYA","date":"2025-01-16","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"","updatedAtTime":1736985600000},
-        {"id":"lab_DESHKAR_BHIYA_12","workerGroup":"DESHKAR BHIYA","date":"2025-01-17","labourCount":2.0,"labourCharge":1200.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":1200.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE ","updatedAtTime":1737072000000},
-        {"id":"lab_DESHKAR_BHIYA_13","workerGroup":"DESHKAR BHIYA","date":"2025-01-18","labourCount":2.0,"labourCharge":1200.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":1200.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE ","updatedAtTime":1737158400000},
-        {"id":"lab_DESHKAR_BHIYA_14","workerGroup":"DESHKAR BHIYA","date":"2025-01-19","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"DIWAAL FODE C1-G1KE BEECH KA CHENI HATHODA+CHILLAR CHILLAR - SONU+MORESHWAR","updatedAtTime":1737244800000},
-        {"id":"lab_DESHKAR_BHIYA_15","workerGroup":"DESHKAR BHIYA","date":"2025-01-20","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"DIWAAL FODD RHE HAI C1-C2 BAROBAR + CHILLAR CHILLAR - SONU+MORESHWAR","updatedAtTime":1737331200000},
-        {"id":"lab_DESHKAR_BHIYA_16","workerGroup":"DESHKAR BHIYA","date":"2025-01-21","labourCount":2.0,"labourCharge":800.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":800.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"DIWAAL FINISHING+1 ANIL MISTRI AAYA THA BUT THEN CANCEL - SONU+MORESHWAR","updatedAtTime":1737417600000},
-        {"id":"lab_DESHKAR_BHIYA_17","workerGroup":"DESHKAR BHIYA","date":"2025-01-22","labourCount":1.0,"labourCharge":400.0,"mistriCount":1.0,"mistriCharge":550.0,"totalCharge":1450.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"PALASTR C1G1 AND C1C2 - SONU+ANIL MISTRI","updatedAtTime":1737504000000},
-        {"id":"lab_DESHKAR_BHIYA_18","workerGroup":"DESHKAR BHIYA","date":"","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":7850.0,"paymentStatus":"PAID","remarks":"HISAAB DONE TILL TODAY (7850)","updatedAtTime":1737504000001},
-        {"id":"lab_DESHKAR_BHIYA_20","workerGroup":"DESHKAR BHIYA","date":"2025-01-23","labourCount":1.0,"labourCharge":400.0,"mistriCount":1.0,"mistriCharge":550.0,"totalCharge":950.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"3RD HISAAB CHALU YAHA SE - SONU+ANIL","updatedAtTime":1737590400000},
-        {"id":"lab_DESHKAR_BHIYA_21","workerGroup":"DESHKAR BHIYA","date":"","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":950.0,"paymentStatus":"PAID","remarks":"HISAAB DONE TILL TODAY (950)","updatedAtTime":1737590400001},
-        {"id":"lab_TEJU_BHIYA_3","workerGroup":"TEJU BHIYA","date":"2025-01-17","labourCount":0.0,"labourCharge":0.0,"mistriCount":2.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":0.0,"paymentStatus":"PAID","remarks":"RACK KHOLE DONO TINO - NARENDRA/DEEPAK","updatedAtTime":1737072000001},
-        {"id":"lab_TEJU_BHIYA_4","workerGroup":"TEJU BHIYA","date":"2025-02-23","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":800.0,"paymentStatus":"PAID","remarks":"HISAAB CLEAR (800)","updatedAtTime":1740268800000},
-        {"id":"lab_MANGLA_BAI_REZA_SERVICES_3","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-27","labourCount":2.0,"labourCharge":250.0,"mistriCount":0.0,"mistriCharge":500.0,"totalCharge":0.0,"hisaabTotal":0.0,"paymentStatus":"PAID","remarks":"MISC EXPENSES: 10","updatedAtTime":1737936000000},
-        {"id":"lab_MANGLA_BAI_REZA_SERVICES_4","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":2.0,"labourCharge":250.0,"mistriCount":0.0,"mistriCharge":500.0,"totalCharge":0.0,"hisaabTotal":0.0,"paymentStatus":"PAID","remarks":"MISC EXPENSES: 20","updatedAtTime":1738022400001},
-        {"id":"lab_MANGLA_BAI_REZA_SERVICES_5","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-28","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":0.0,"hisaabTotal":1000.0,"paymentStatus":"PAID","remarks":"PAID CASH 1000 (MISC TTL PAID 30)","updatedAtTime":1738022400002},
-        {"id":"lab_MANGLA_BAI_REZA_SERVICES_6","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-30","labourCount":2.0,"labourCharge":250.0,"mistriCount":0.0,"mistriCharge":500.0,"totalCharge":0.0,"hisaabTotal":0.0,"paymentStatus":"PAID","remarks":"MISC EXPENSES: 25","updatedAtTime":1738195200000},
-        {"id":"lab_MANGLA_BAI_REZA_SERVICES_7","workerGroup":"MANGLA BAI REZA SERVICES","date":"2025-01-31","labourCount":2.0,"labourCharge":250.0,"mistriCount":0.0,"mistriCharge":500.0,"totalCharge":0.0,"hisaabTotal":1100.0,"paymentStatus":"PAID","remarks":"PAID 1100 (100 EXTRA) - MISC TTL PAID: 45","updatedAtTime":1738281600000},
-        {"id":"lab_NANDU_BHIYA_3","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":1.0,"labourCharge":750.0,"mistriCount":1.0,"mistriCharge":750.0,"totalCharge":1500.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"NANDU+BAREWAR","updatedAtTime":1747958400002},
-        {"id":"lab_NANDU_BHIYA_4","workerGroup":"NANDU BHIYA","date":"2025-05-23","labourCount":0.0,"labourCharge":0.0,"mistriCount":0.0,"mistriCharge":0.0,"totalCharge":70.0,"hisaabTotal":1570.0,"paymentStatus":"PAID","remarks":"EK CAPACITOR 70 (PAY KRNE ME 1470 AAYE HAI 700 CASH+770 ONLINE)","updatedAtTime":1747958400003},
-        {"id":"lab_DESHKARGS_BHIYA_3","workerGroup":"DESHKARGS BHIYA","date":"2025-05-25","labourCount":1.0,"labourCharge":0.0,"mistriCount":1.0,"mistriCharge":0.0,"totalCharge":400.0,"hisaabTotal":0.0,"paymentStatus":"PENDING","remarks":"GHAR KA MOTOR KA THODA FODI REPAIR","updatedAtTime":1748131200001}
+        {
+          "id": "lab_DESHKAR_BHIYA_3",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-09",
+          "labourCount": 1.0,
+          "labourCharge": 400.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 400.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "SAMAAN ALTI PALTI",
+          "updatedAtTime": 1736380800000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_4",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-10",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 1300.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "TILES LAGAE",
+          "updatedAtTime": 1736467200000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_5",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-11",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 1300.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "TILES LAGAE",
+          "updatedAtTime": 1736553600000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_6",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-12",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 400.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "PAINTING SINGLE HATH DISTEMPER",
+          "updatedAtTime": 1736640000000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_7",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-13",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PAID",
+          "remarks": "NO WORK",
+          "updatedAtTime": 1736726400000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_8",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-14",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "PAINTING+CHILLAR WORKS+SAMAAN ALTI PALTI - HISAAB DONE TILL TODAY",
+          "updatedAtTime": 1736812800000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_9",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 4200.0,
+          "paymentStatus": "PAID",
+          "remarks": "HISAAB CLEAR (4200)",
+          "updatedAtTime": 1736812800001
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_10",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-15",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "2ND HISAAB CHALU YAHA SE",
+          "updatedAtTime": 1736899200000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_11",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-16",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "",
+          "updatedAtTime": 1736985600000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_12",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-17",
+          "labourCount": 2.0,
+          "labourCharge": 1200.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 1200.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "DIWAAL FODE ",
+          "updatedAtTime": 1737072000000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_13",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-18",
+          "labourCount": 2.0,
+          "labourCharge": 1200.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 1200.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "DIWAAL FODE ",
+          "updatedAtTime": 1737158400000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_14",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-19",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "DIWAAL FODE C1-G1KE BEECH KA CHENI HATHODA+CHILLAR CHILLAR - SONU+MORESHWAR",
+          "updatedAtTime": 1737244800000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_15",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-20",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "DIWAAL FODD RHE HAI C1-C2 BAROBAR + CHILLAR CHILLAR - SONU+MORESHWAR",
+          "updatedAtTime": 1737331200000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_16",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-21",
+          "labourCount": 2.0,
+          "labourCharge": 800.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 800.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "DIWAAL FINISHING+1 ANIL MISTRI AAYA THA BUT THEN CANCEL - SONU+MORESHWAR",
+          "updatedAtTime": 1737417600000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_17",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-22",
+          "labourCount": 1.0,
+          "labourCharge": 400.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 550.0,
+          "totalCharge": 1450.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "PALASTR C1G1 AND C1C2 - SONU+ANIL MISTRI",
+          "updatedAtTime": 1737504000000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_18",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 7850.0,
+          "paymentStatus": "PAID",
+          "remarks": "HISAAB DONE TILL TODAY (7850)",
+          "updatedAtTime": 1737504000001
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_20",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "2025-01-23",
+          "labourCount": 1.0,
+          "labourCharge": 400.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 550.0,
+          "totalCharge": 950.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "3RD HISAAB CHALU YAHA SE - SONU+ANIL",
+          "updatedAtTime": 1737590400000
+        },
+        {
+          "id": "lab_DESHKAR_BHIYA_21",
+          "workerGroup": "DESHKAR BHIYA",
+          "date": "",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 950.0,
+          "paymentStatus": "PAID",
+          "remarks": "HISAAB DONE TILL TODAY (950)",
+          "updatedAtTime": 1737590400001
+        },
+        {
+          "id": "lab_TEJU_BHIYA_3",
+          "workerGroup": "TEJU BHIYA",
+          "date": "2025-01-17",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 2.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PAID",
+          "remarks": "RACK KHOLE DONO TINO - NARENDRA/DEEPAK",
+          "updatedAtTime": 1737072000001
+        },
+        {
+          "id": "lab_TEJU_BHIYA_4",
+          "workerGroup": "TEJU BHIYA",
+          "date": "2025-02-23",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 800.0,
+          "paymentStatus": "PAID",
+          "remarks": "HISAAB CLEAR (800)",
+          "updatedAtTime": 1740268800000
+        },
+        {
+          "id": "lab_MANGLA_BAI_REZA_SERVICES_3",
+          "workerGroup": "MANGLA BAI REZA SERVICES",
+          "date": "2025-01-27",
+          "labourCount": 2.0,
+          "labourCharge": 250.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PAID",
+          "remarks": "MISC EXPENSES: 10",
+          "updatedAtTime": 1737936000000
+        },
+        {
+          "id": "lab_MANGLA_BAI_REZA_SERVICES_4",
+          "workerGroup": "MANGLA BAI REZA SERVICES",
+          "date": "2025-01-28",
+          "labourCount": 2.0,
+          "labourCharge": 250.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PAID",
+          "remarks": "MISC EXPENSES: 20",
+          "updatedAtTime": 1738022400001
+        },
+        {
+          "id": "lab_MANGLA_BAI_REZA_SERVICES_5",
+          "workerGroup": "MANGLA BAI REZA SERVICES",
+          "date": "2025-01-28",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 1000.0,
+          "paymentStatus": "PAID",
+          "remarks": "PAID CASH 1000 (MISC TTL PAID 30)",
+          "updatedAtTime": 1738022400002
+        },
+        {
+          "id": "lab_MANGLA_BAI_REZA_SERVICES_6",
+          "workerGroup": "MANGLA BAI REZA SERVICES",
+          "date": "2025-01-30",
+          "labourCount": 2.0,
+          "labourCharge": 250.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PAID",
+          "remarks": "MISC EXPENSES: 25",
+          "updatedAtTime": 1738195200000
+        },
+        {
+          "id": "lab_MANGLA_BAI_REZA_SERVICES_7",
+          "workerGroup": "MANGLA BAI REZA SERVICES",
+          "date": "2025-01-31",
+          "labourCount": 2.0,
+          "labourCharge": 250.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 500.0,
+          "totalCharge": 0.0,
+          "hisaabTotal": 1100.0,
+          "paymentStatus": "PAID",
+          "remarks": "PAID 1100 (100 EXTRA) - MISC TTL PAID: 45",
+          "updatedAtTime": 1738281600000
+        },
+        {
+          "id": "lab_NANDU_BHIYA_3",
+          "workerGroup": "NANDU BHIYA",
+          "date": "2025-05-23",
+          "labourCount": 1.0,
+          "labourCharge": 750.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 750.0,
+          "totalCharge": 1500.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "NANDU+BAREWAR",
+          "updatedAtTime": 1747958400002
+        },
+        {
+          "id": "lab_NANDU_BHIYA_4",
+          "workerGroup": "NANDU BHIYA",
+          "date": "2025-05-23",
+          "labourCount": 0.0,
+          "labourCharge": 0.0,
+          "mistriCount": 0.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 70.0,
+          "hisaabTotal": 1570.0,
+          "paymentStatus": "PAID",
+          "remarks": "EK CAPACITOR 70 (PAY KRNE ME 1470 AAYE HAI 700 CASH+770 ONLINE)",
+          "updatedAtTime": 1747958400003
+        },
+        {
+          "id": "lab_DESHKARGS_BHIYA_3",
+          "workerGroup": "DESHKARGS BHIYA",
+          "date": "2025-05-25",
+          "labourCount": 1.0,
+          "labourCharge": 0.0,
+          "mistriCount": 1.0,
+          "mistriCharge": 0.0,
+          "totalCharge": 400.0,
+          "hisaabTotal": 0.0,
+          "paymentStatus": "PENDING",
+          "remarks": "GHAR KA MOTOR KA THODA FODI REPAIR",
+          "updatedAtTime": 1748131200001
+        }
       ]
     };
 
@@ -915,7 +1453,6 @@
       
       systemData.expenseCategories[index] = clean;
 
-      // Clean from deletedIds if present
       if (systemData.deletedIds) {
         systemData.deletedIds = systemData.deletedIds.filter(id => id !== "cat_" + clean);
       }
@@ -949,7 +1486,6 @@
       const catName = systemData.expenseCategories[index];
       if (!confirm(`Kya aap category "${catName}" ko delete karna chahte hain?`)) return;
 
-      // Add to tombstone so sync won't restore it!
       if (!systemData.deletedIds) systemData.deletedIds = [];
       systemData.deletedIds.push("cat_" + catName);
 
@@ -1554,7 +2090,7 @@
 
     function openNewSamaanForm() {
       document.getElementById('samEditId').value = '';
-      document.getElementById('samFormHeaderTitle').textContent = "Naya Samaan Entry";
+      document.getElementById('samFormHeaderTitle').textContent = "Naya Entry / Samaan";
       document.getElementById('samSubmitBtn').textContent = "Save Samaan Record";
       document.getElementById('samDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('samAmount').value = '';
@@ -1668,7 +2204,36 @@
       syncCloud();
     }
 
-    // --- BULLETPROOF CONFLICT-FREE SYNC (LAST-WRITE-WINS ENGINE) ---
+    // --- HELPER: ENSURE DATA BRANCH EXISTS BEFORE PUSHING ---
+    async function ensureDataBranch(token) {
+      const branchUrl = `https://api.github.com/repos/${GITHUB_REPO}/branches/${GITHUB_DATA_BRANCH}`;
+      const checkRes = await fetch(branchUrl, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (checkRes.status === 200) return true;
+
+      const repoRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!repoRes.ok) return false;
+      const repoInfo = await repoRes.json();
+      const defaultBranch = repoInfo.default_branch || 'main';
+
+      const refRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/git/refs/heads/${defaultBranch}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!refRes.ok) return false;
+      const refData = await refRes.json();
+
+      const createRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/git/refs`, {
+        method: 'POST',
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: `refs/heads/${GITHUB_DATA_BRANCH}`, sha: refData.object.sha })
+      });
+      return createRes.ok;
+    }
+
+    // --- BULLETPROOF CONFLICT-FREE SYNC (LAST-WRITE-WINS ENGINE ON DATA BRANCH) ---
     async function syncCloud(retryCount = 0) {
       const token = getPatToken();
       if (!token) {
@@ -1681,10 +2246,13 @@
 
       updateSyncBadge("Syncing Live...", "var(--accent)");
       document.getElementById('syncIcon').classList.add('sync-pulse');
-      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+
+      await ensureDataBranch(token);
+
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}?ref=${GITHUB_DATA_BRANCH}`;
 
       try {
-        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+        const getRes = await fetch(url + `&_t=${Date.now()}`, {
           cache: 'no-store',
           headers: {
             'Authorization': `token ${token}`,
@@ -1713,7 +2281,8 @@
         const securePacket = await encryptPayload(systemData, MASTER_PASSPHRASE);
         const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(securePacket, null, 2))));
 
-        const putRes = await fetch(url, {
+        const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+        const putRes = await fetch(putUrl, {
           method: 'PUT',
           headers: {
             'Authorization': `token ${token}`,
@@ -1723,6 +2292,7 @@
           body: JSON.stringify({
             message: `Guru Shraddha live sync by ${currentMember ? currentMember.name : 'System'} [${new Date().toLocaleString('en-IN')}]`,
             content: encodedContent,
+            branch: GITHUB_DATA_BRANCH, // COMMITS DIRECTLY TO DATA BRANCH
             ...(fileSha && { sha: fileSha })
           })
         });
@@ -1742,7 +2312,7 @@
           renderWorkerDropdowns();
           renderPartyDropdowns();
           renderAllViews();
-          updateSyncBadge("Live Synced 🟢", "var(--success)");
+          updateSyncBadge("Live Synced (data branch) 🟢", "var(--success)");
           document.getElementById('lastSyncedTime').textContent = "Last: " + new Date().toLocaleTimeString('en-IN');
         } else {
           throw new Error(`Push Error HTTP ${putRes.status}`);
@@ -1759,10 +2329,10 @@
     async function syncCloudSilent() {
       const token = getPatToken();
       if (!token || isSyncing) return;
-      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+      const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}?ref=${GITHUB_DATA_BRANCH}`;
 
       try {
-        const getRes = await fetch(url + `?_t=${Date.now()}`, {
+        const getRes = await fetch(url + `&_t=${Date.now()}`, {
           cache: 'no-store',
           headers: {
             'Authorization': `token ${token}`,
@@ -1785,7 +2355,7 @@
             mergeState(cloudData);
             saveLocal();
             renderAllViews();
-            updateSyncBadge("Live Synced 🟢", "var(--success)");
+            updateSyncBadge("Live Synced (data branch) 🟢", "var(--success)");
             document.getElementById('lastSyncedTime').textContent = "Updated: " + new Date().toLocaleTimeString('en-IN');
           } else {
             fileSha = fileData.sha;
@@ -2079,558 +2649,6 @@
       const key = await deriveCryptoKey(passphrase, salt);
       const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, cipher);
       return JSON.parse(new TextDecoder().decode(decrypted));
-    }
-
-    // --- UI UTILS & DROPDOWNS ---
-    function renderExpenseCategoryDropdowns() {
-      const formSelect = document.getElementById('repCategory');
-      const filterSelect = document.getElementById('expenseCategoryFilter');
-      const curFilter = filterSelect?.value || "ALL";
-
-      if (formSelect) formSelect.innerHTML = '';
-      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
-
-      systemData.expenseCategories.forEach(cat => {
-        if (formSelect) {
-          const opt1 = document.createElement('option');
-          opt1.value = cat;
-          opt1.textContent = cat;
-          formSelect.appendChild(opt1);
-        }
-        if (filterSelect) {
-          const opt2 = document.createElement('option');
-          opt2.value = cat;
-          opt2.textContent = cat;
-          filterSelect.appendChild(opt2);
-        }
-      });
-      if (filterSelect) filterSelect.value = curFilter;
-    }
-
-    function promptAddExpenseCategory() {
-      const name = prompt("Nayi Category ka naam daalein:");
-      if (!name || !name.trim()) return;
-      const clean = name.trim();
-      
-      // Remove from tombstone if re-adding
-      if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "cat_" + clean);
-      }
-
-      if (!systemData.expenseCategories.includes(clean)) {
-        systemData.expenseCategories.push(clean);
-        saveLocal();
-        renderExpenseCategoryDropdowns();
-        const repCat = document.getElementById('repCategory');
-        if (repCat) repCat.value = clean;
-        syncCloud();
-      }
-    }
-
-    function renderWorkerDropdowns() {
-      const filterSelect = document.getElementById('workerGroupFilter');
-      const formSelect = document.getElementById('labGroup');
-      const current = filterSelect?.value || "ALL";
-
-      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Workers Combined</option>';
-      if (formSelect) formSelect.innerHTML = '';
-
-      systemData.workers.forEach(w => {
-        if (formSelect) {
-          const opt1 = document.createElement('option');
-          opt1.value = w;
-          opt1.textContent = w;
-          formSelect.appendChild(opt1);
-        }
-        if (filterSelect) {
-          const opt2 = document.createElement('option');
-          opt2.value = w;
-          opt2.textContent = w;
-          filterSelect.appendChild(opt2);
-        }
-      });
-      if (filterSelect) filterSelect.value = current;
-    }
-
-    function renderPartyDropdowns() {
-      const filterSelect = document.getElementById('partyFilterSelect');
-      const formSelect = document.getElementById('samPartySelect');
-      const current = filterSelect?.value || "ALL";
-
-      if (filterSelect) filterSelect.innerHTML = '<option value="ALL">All Parties Combined</option>';
-      if (formSelect) formSelect.innerHTML = '';
-
-      systemData.parties.forEach(p => {
-        if (formSelect) {
-          const opt1 = document.createElement('option');
-          opt1.value = p;
-          opt1.textContent = p;
-          formSelect.appendChild(opt1);
-        }
-        if (filterSelect) {
-          const opt2 = document.createElement('option');
-          opt2.value = p;
-          opt2.textContent = p;
-          filterSelect.appendChild(opt2);
-        }
-      });
-      if (filterSelect) filterSelect.value = current;
-    }
-
-    function openMemberManagerDirect() {
-      renderDirectMemberList();
-      document.getElementById('directMemberManagerModal').classList.remove('hidden');
-    }
-
-    function renderDirectMemberList() {
-      const container = document.getElementById('directMembersListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      systemData.members.forEach((m) => {
-        const row = document.createElement('div');
-        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:10px 12px; border-radius:8px; border:1px solid var(--border);";
-        row.innerHTML = `
-          <div>
-            <div style="font-weight:700; color:#fff; font-size:14px;">${m.name}</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">PIN: <span style="color:var(--accent); font-weight:bold;">${m.pin}</span> (${m.role})</div>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="editMemberDetails('${m.id}')">✏️ Rename / PIN</button>
-            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">🗑️</button>` : ''}
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function promptNewMember() {
-      const name = prompt("Family Member ka naam enter karein:");
-      if (!name || !name.trim()) return;
-      const pin = prompt("Member ke liye 4-Digit Security PIN set karein:");
-      if (!pin || pin.trim().length !== 4 || !/^\d+$/.test(pin)) {
-        alert("PIN sirf 4-digit number hona chahiye!");
-        return;
-      }
-      const newMember = { id: "m_" + Date.now(), name: name.trim(), pin: pin.trim(), role: "Member", updatedAtTime: Date.now() };
-      systemData.members.push(newMember);
-      saveLocal();
-      renderMembersManagement();
-      renderDirectMemberList();
-      syncCloud();
-    }
-
-    function editMemberDetails(id) {
-      const m = systemData.members.find(x => x.id === id);
-      if (!m) return;
-      const newName = prompt("Member ka naya naam:", m.name);
-      if (!newName || !newName.trim()) return;
-      const newPin = prompt("Naya 4-Digit PIN:", m.pin);
-      if (!newPin || newPin.trim().length !== 4 || !/^\d+$/.test(newPin)) {
-        alert("PIN sirf 4 digit ka number hona chahiye!");
-        return;
-      }
-      m.name = newName.trim();
-      m.pin = newPin.trim();
-      m.updatedAtTime = Date.now();
-      saveLocal();
-      renderMembersManagement();
-      renderDirectMemberList();
-      
-      if (currentMember && currentMember.id === m.id) {
-        currentMember = m;
-        localStorage.setItem('gs_device_active_member', JSON.stringify(m));
-        updateMemberUI();
-      }
-      syncCloud();
-    }
-
-    function removeFamilyMember(id) {
-      if (!confirm("Is member ko delete karna chahte hain?")) return;
-      systemData.members = systemData.members.filter(x => x.id !== id);
-      saveLocal();
-      renderMembersManagement();
-      renderDirectMemberList();
-      syncCloud();
-    }
-
-    function openWorkerManagerModal() {
-      renderWorkerManagerList();
-      document.getElementById('workerManagerModal').classList.remove('hidden');
-    }
-
-    function renderWorkerManagerList() {
-      const container = document.getElementById('workerListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      systemData.workers.forEach((w, index) => {
-        const div = document.createElement('div');
-        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
-        div.innerHTML = `
-          <strong style="color:var(--accent); font-size:13px;">${w}</strong>
-          <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="editWorkerName(${index})">✏️ Edit</button>
-            <button class="small danger" onclick="deleteWorkerName(${index})">🗑️</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function promptAddWorker() {
-      const name = prompt("Naye Worker / Contractor ka naam daalein:");
-      if (!name || !name.trim()) return;
-      const clean = name.trim().toUpperCase();
-      
-      if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + clean);
-      }
-
-      if (systemData.workers.includes(clean)) {
-        alert("Yeh worker pehle se maujood hai!");
-        return;
-      }
-      systemData.workers.push(clean);
-      logAction("Add Worker", `Added Worker: ${clean}`);
-      saveLocal();
-      renderWorkerDropdowns();
-      renderWorkerManagerList();
-      syncCloud();
-    }
-
-    function editWorkerName(index) {
-      const oldName = systemData.workers[index];
-      const newName = prompt("Worker ka naya naam:", oldName);
-      if (!newName || !newName.trim()) return;
-      const clean = newName.trim().toUpperCase();
-      systemData.workers[index] = clean;
-      
-      if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + clean);
-      }
-
-      Object.keys(systemData.bookData).forEach(bid => {
-        (systemData.bookData[bid].labour || []).forEach(l => {
-          if (l.workerGroup === oldName) {
-            l.workerGroup = clean;
-            l.updatedAtTime = Date.now();
-          }
-        });
-      });
-      logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
-      saveLocal();
-      renderWorkerDropdowns();
-      renderWorkerManagerList();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      syncCloud();
-    }
-
-    function deleteWorkerName(index) {
-      const name = systemData.workers[index];
-      if (systemData.workers.length <= 1) {
-        alert("Kam se kam ek worker hona chahiye!");
-        return;
-      }
-      if (!confirm(`Kya aap "${name}" ko delete karna chahte hain?`)) return;
-      
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      systemData.deletedIds.push("worker_" + name);
-
-      systemData.workers.splice(index, 1);
-      logAction("Delete Worker", `Deleted worker: ${name}`);
-      saveLocal();
-      renderWorkerDropdowns();
-      renderWorkerManagerList();
-      renderLabourLedgerTable();
-      renderLabourAttendanceTable();
-      syncCloud();
-    }
-
-    function openPartyManagerModal() {
-      renderPartyManagerList();
-      document.getElementById('partyManagerModal').classList.remove('hidden');
-    }
-
-    function renderPartyManagerList() {
-      const container = document.getElementById('partyListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      systemData.parties.forEach((p, index) => {
-        const div = document.createElement('div');
-        div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border);";
-        div.innerHTML = `
-          <strong style="color:var(--accent); font-size:13px;">${p}</strong>
-          <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="editPartyName(${index})">✏️ Edit</button>
-            <button class="small danger" onclick="deletePartyName(${index})">🗑️</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function promptAddParty() {
-      const name = prompt("Nayi Party / Vendor ka naam daalein:");
-      if (!name || !name.trim()) return;
-      const clean = name.trim().toUpperCase();
-
-      if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
-      }
-
-      if (systemData.parties.includes(clean)) {
-        alert("Yeh party pehle se maujood hai!");
-        return;
-      }
-      systemData.parties.push(clean);
-      logAction("Add Party", `Added Party: ${clean}`);
-      saveLocal();
-      renderPartyDropdowns();
-      renderPartyManagerList();
-      syncCloud();
-    }
-
-    function editPartyName(index) {
-      const oldName = systemData.parties[index];
-      const newName = prompt("Party ka naya naam:", oldName);
-      if (!newName || !newName.trim()) return;
-      const clean = newName.trim().toUpperCase();
-      systemData.parties[index] = clean;
-      
-      if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
-      }
-
-      Object.keys(systemData.bookData).forEach(bid => {
-        (systemData.bookData[bid].samaan || []).forEach(s => {
-          if (s.refFrom === oldName) {
-            s.refFrom = clean;
-            s.updatedAtTime = Date.now();
-          }
-        });
-      });
-      logAction("Edit Party", `Renamed party from ${oldName} to ${clean}`);
-      saveLocal();
-      renderPartyDropdowns();
-      renderPartyManagerList();
-      renderSamaanTable();
-      syncCloud();
-    }
-
-    function deletePartyName(index) {
-      const name = systemData.parties[index];
-      if (systemData.parties.length <= 1) {
-        alert("Kam se kam ek party rehna zaroori hai!");
-        return;
-      }
-      if (!confirm(`Kya aap party "${name}" ko delete karna chahte hain?`)) return;
-      
-      if (!systemData.deletedIds) systemData.deletedIds = [];
-      systemData.deletedIds.push("party_" + name);
-
-      systemData.parties.splice(index, 1);
-      logAction("Delete Party", `Deleted party: ${name}`);
-      saveLocal();
-      renderPartyDropdowns();
-      renderPartyManagerList();
-      renderSamaanTable();
-      syncCloud();
-    }
-
-    function exportTableToCSV(type) {
-      const data = getActiveDataset();
-      const bName = getActiveBookObj().name.replace(/\s+/g, '_');
-      let csvContent = "";
-      let filename = `${bName}_${type}_${new Date().toISOString().split('T')[0]}.csv`;
-
-      if (type === 'repairing') {
-        csvContent = "Date,Type,Category,Amount,Payment Ref,Reason,Logged By\n";
-        (data.repairing || []).forEach(r => {
-          csvContent += `"${r.date}","${r.type||'EXPENSE'}","${r.category||'General Expense'}","${r.amount}","${r.ref}","${(r.reason||'').replace(/"/g, '""')}","${r.updatedBy}"\n`;
-        });
-      } else if (type === 'labour_ledger') {
-        csvContent = "Date,Worker,Work Details,Earned (+),Paid (-),Remarks,Status\n";
-        (data.labour || []).forEach(l => {
-          csvContent += `"${l.date}","${l.workerGroup}","${(l.remarks||'').replace(/"/g, '""')}","${l.totalCharge||0}","${l.hisaabTotal||0}","${l.remarks||''}","${l.paymentStatus}"\n`;
-        });
-      } else if (type === 'labour_attendance') {
-        csvContent = "Date,Worker,Labour Count,Labour Rate,Mistri Count,Mistri Rate,Total Charge,Remarks\n";
-        (data.labour || []).forEach(l => {
-          csvContent += `"${l.date}","${l.workerGroup}","${l.labourCount||0}","${l.labourCharge||0}","${l.mistriCount||0}","${l.mistriCharge||0}","${l.totalCharge||0}","${(l.remarks||'').replace(/"/g, '""')}"\n`;
-        });
-      } else if (type === 'samaan_ledger') {
-        csvContent = "Date,Party (From),Item (Kya Aaya),Bill Amount,Paid Amount,Kisko Diya,Status,Remarks\n";
-        (data.samaan || []).forEach(s => {
-          csvContent += `"${s.date}","${s.refFrom||''}","${(s.samaanIn||'').replace(/"/g, '""')}","${s.amount||0}","${s.paidAmount||0}","${s.refTo||''}","${s.status||''}","${(s.reason||'').replace(/"/g, '""')}"\n`;
-        });
-      }
-
-      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function downloadSystemBackupJSON() {
-      const backupPacket = {
-        meta: { app: "Guru Shraddha 2.0 Multi-Book", exportDate: new Date().toISOString(), activeBook: getActiveBookObj().name },
-        payload: systemData
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPacket, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `GuruShraddha_MultiBook_Backup_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      logAction("System Backup", "Downloaded full multi-book JSON backup file.");
-      renderLogs();
-    }
-
-    function restoreSystemBackupJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          const dataToRestore = parsed.payload || parsed;
-          if (dataToRestore.books && dataToRestore.bookData) {
-            if (confirm("Restore karne se backup ka pura data load ho jayega. Proceed karein?")) {
-              systemData = dataToRestore;
-              saveLocal();
-              renderBookSelectors();
-              renderExpenseCategoryDropdowns();
-              renderWorkerDropdowns();
-              renderPartyDropdowns();
-              renderAllViews();
-              syncCloud();
-              alert("System Backup successfully restored!");
-            }
-          } else {
-            alert("Galat backup format! File me required fields nahi hain.");
-          }
-        } catch(err) {
-          alert("Error parsing JSON backup file: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
-
-    // --- AUDIT TRAIL LOGS ---
-    function renderLogs() {
-      const c = document.getElementById('logsContainer');
-      if (!c) return;
-      c.innerHTML = '';
-
-      const dateFilter = document.getElementById('logsDateFilter')?.value || 'ALL';
-
-      const sortedLogs = [...(systemData.activityLogs || [])]
-        .filter(l => checkDateInRange(l.timestampTime || l.timestamp, dateFilter, 'logsStartDate', 'logsEndDate', true))
-        .sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0));
-
-      sortedLogs.forEach(l => {
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-            <strong>${l.action}</strong>
-            <span style="color:var(--text-muted); font-size:10px;">${l.timestamp}</span>
-          </div>
-          <div style="color:#cbd5e1;">${l.details}</div>
-          <div style="font-size:10px; color:var(--accent); margin-top:2px;">Book: ${l.book || 'GURU SHRADDHA 2.0'} | By: ${l.performedBy}</div>
-        `;
-        c.appendChild(item);
-      });
-    }
-
-    function showMemberLoginModal() {
-      const select = document.getElementById('loginMemberSelect');
-      if (!select) return;
-      select.innerHTML = '';
-      systemData.members.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = m.name;
-        if (currentMember && currentMember.id === m.id) opt.selected = true;
-        select.appendChild(opt);
-      });
-      document.getElementById('loginPinInput').value = '';
-      document.getElementById('memberLoginModal').classList.remove('hidden');
-    }
-
-    function authenticateMember() {
-      const id = document.getElementById('loginMemberSelect').value;
-      const pin = document.getElementById('loginPinInput').value.trim();
-      const m = systemData.members.find(x => x.id === id);
-      if (m && m.pin === pin) {
-        currentMember = m;
-        localStorage.setItem('gs_device_active_member', JSON.stringify(m));
-        updateMemberUI();
-        closeModal('memberLoginModal');
-      } else {
-        alert("Galat PIN! Dubara check karein.");
-      }
-    }
-
-    function autoCheckMemberSession() {
-      const saved = localStorage.getItem('gs_device_active_member');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          const found = systemData.members.find(x => x.id === parsed.id);
-          if (found) {
-            currentMember = found;
-          } else {
-            currentMember = parsed;
-          }
-        } catch(e) {}
-      }
-      
-      if (!currentMember && systemData.members.length > 0) {
-        currentMember = systemData.members[0];
-        localStorage.setItem('gs_device_active_member', JSON.stringify(currentMember));
-      }
-      updateMemberUI();
-    }
-
-    function updateMemberUI() {
-      const d = document.getElementById('currentMemberDisplay');
-      if (d) d.textContent = currentMember ? currentMember.name : "Select Member";
-    }
-
-    function requireActiveMember() {
-      if (!currentMember) {
-        alert("Kripya pehle apna Member select karke PIN enter karein!");
-        showMemberLoginModal();
-        return false;
-      }
-      return true;
-    }
-
-    function renderMembersManagement() {
-      const container = document.getElementById('membersList');
-      if (!container) return;
-      container.innerHTML = '';
-      systemData.members.forEach((m) => {
-        const row = document.createElement('div');
-        row.style = "display:flex; justify-content:space-between; align-items:center; background:var(--card-inner); padding:8px 12px; border-radius:8px; border:1px solid var(--border); margin-bottom:8px;";
-        row.innerHTML = `
-          <div>
-            <strong>${m.name}</strong> <span class="badge" style="background:#243456; color:var(--accent); margin-left:6px;">PIN: ${m.pin}</span>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button class="small secondary" onclick="editMemberDetails('${m.id}')">Edit PIN</button>
-            ${systemData.members.length > 1 ? `<button class="small danger" onclick="removeFamilyMember('${m.id}')">Delete</button>` : ''}
-          </div>
-        `;
-        container.appendChild(row);
-      });
     }
 
     function updateSyncBadge(text, color) {
