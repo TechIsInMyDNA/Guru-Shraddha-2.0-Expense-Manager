@@ -59,6 +59,7 @@
     .filter-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; background: rgba(12, 18, 34, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
     .filter-select { padding: 4px 8px; font-size: 11px; width: auto; min-width: 120px; }
     .date-input-mini { padding: 4px 6px; font-size: 11px; width: auto; max-width: 130px; }
+    .search-input-mini { padding: 5px 10px; font-size: 11px; width: auto; min-width: 160px; flex: 1; max-width: 280px; background: #070b14; border: 1px solid var(--border); border-radius: 6px; }
 
     .calc-pill-btn { background: var(--card); border: 1px solid var(--border); color: var(--accent); font-weight: bold; font-size: 11px; padding: 4px 8px; border-radius: 5px; cursor: pointer; }
     .calc-pill-btn:hover { background: var(--card-inner); }
@@ -145,7 +146,7 @@
           </div>
         </div>
 
-        <!-- Date & Category Filter Bar -->
+        <!-- Date, Category & Partial Search Filter Bar -->
         <div class="filter-bar">
           <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
           <select id="expenseCategoryFilter" onchange="renderRepairingTable()" class="filter-select">
@@ -163,6 +164,7 @@
             <span style="font-size:11px;">to</span>
             <input type="date" id="expenseEndDate" class="date-input-mini" onchange="renderRepairingTable()">
           </div>
+          <input type="text" id="expenseSearchInput" class="search-input-mini" placeholder="🔎 Search reason, ref, amt, user..." oninput="renderRepairingTable()">
         </div>
 
         <div id="repFormContainer" class="hidden" style="background:var(--card-inner); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--accent);">
@@ -335,7 +337,7 @@
           </div>
         </div>
 
-        <!-- Labour Date & Worker Filter Bar -->
+        <!-- Labour Date, Worker & Partial Search Filter Bar -->
         <div class="filter-bar">
           <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
           <select id="workerGroupFilter" onchange="renderLabourLedgerTable()" class="filter-select">
@@ -353,6 +355,7 @@
             <span style="font-size:11px;">to</span>
             <input type="date" id="labourEndDate" class="date-input-mini" onchange="renderLabourLedgerTable(); renderLabourAttendanceTable();">
           </div>
+          <input type="text" id="labourSearchInput" class="search-input-mini" placeholder="🔎 Search worker, remarks, status..." oninput="renderLabourLedgerTable(); renderLabourAttendanceTable();">
         </div>
 
         <div class="table-wrap">
@@ -428,7 +431,7 @@
           </div>
         </div>
 
-        <!-- Samaan Date & Party Filter Bar -->
+        <!-- Samaan Date, Party & Partial Search Filter Bar -->
         <div class="filter-bar">
           <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Filters:</span>
           <select id="partyFilterSelect" onchange="renderSamaanTable()" class="filter-select">
@@ -446,6 +449,7 @@
             <span style="font-size:11px;">to</span>
             <input type="date" id="samaanEndDate" class="date-input-mini" onchange="renderSamaanTable()">
           </div>
+          <input type="text" id="samaanSearchInput" class="search-input-mini" placeholder="🔎 Search item, party, person, remarks..." oninput="renderSamaanTable()">
         </div>
 
         <div id="samFormContainer" class="hidden" style="background:var(--card-inner); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--accent);">
@@ -538,7 +542,7 @@
           <span style="font-size:11px; color:var(--text-muted);">Real-Time Log Stream</span>
         </div>
 
-        <!-- Logs Date Filter Bar -->
+        <!-- Logs Date & Partial Search Filter Bar -->
         <div class="filter-bar">
           <span style="font-size:11px; color:var(--accent); font-weight:bold;">🔍 Date Filter:</span>
           <select id="logsDateFilter" onchange="toggleDateFilterRange('logs')" class="filter-select">
@@ -553,6 +557,7 @@
             <span style="font-size:11px;">to</span>
             <input type="date" id="logsEndDate" class="date-input-mini" onchange="renderLogs()">
           </div>
+          <input type="text" id="logsSearchInput" class="search-input-mini" placeholder="🔎 Search action, member, details..." oninput="renderLogs()">
         </div>
 
         <div id="logsContainer" style="max-height: 420px; overflow-y: auto;"></div>
@@ -1713,6 +1718,7 @@
       const data = getActiveDataset();
       const catFilter = document.getElementById('expenseCategoryFilter')?.value || 'ALL';
       const dateFilter = document.getElementById('expenseDateFilter')?.value || 'ALL';
+      const searchKeyword = (document.getElementById('expenseSearchInput')?.value || '').toLowerCase().trim();
       const tbody = document.getElementById('repairingTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
@@ -1729,8 +1735,14 @@
       sortedRecords.forEach(r => {
         const matchesCategory = (catFilter === 'ALL' || r.category === catFilter);
         const matchesDate = checkDateInRange(r.date, dateFilter, 'expenseStartDate', 'expenseEndDate');
+        
+        let matchesSearch = true;
+        if (searchKeyword) {
+          const searchableText = `${r.reason || ''} ${r.ref || ''} ${r.category || ''} ${r.updatedBy || ''} ${r.amount || ''}`.toLowerCase();
+          matchesSearch = searchableText.includes(searchKeyword);
+        }
 
-        if (matchesCategory && matchesDate) {
+        if (matchesCategory && matchesDate && matchesSearch) {
           const amt = Number(r.amount) || 0;
           const type = r.type || "EXPENSE";
           const cat = r.category || "General Expense";
@@ -1908,6 +1920,7 @@
       const data = getActiveDataset();
       const filter = document.getElementById('workerGroupFilter')?.value || 'ALL';
       const dateFilter = document.getElementById('labourDateFilter')?.value || 'ALL';
+      const searchKeyword = (document.getElementById('labourSearchInput')?.value || '').toLowerCase().trim();
       const tbody = document.getElementById('labourLedgerTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
@@ -1917,7 +1930,16 @@
       let runningBalance = 0;
 
       const records = (data.labour || [])
-        .filter(l => (filter === 'ALL' || l.workerGroup === filter) && checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate'))
+        .filter(l => {
+          const matchesGroup = (filter === 'ALL' || l.workerGroup === filter);
+          const matchesDate = checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate');
+          let matchesSearch = true;
+          if (searchKeyword) {
+            const searchableText = `${l.workerGroup || ''} ${l.remarks || ''} ${l.paymentStatus || ''}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchKeyword);
+          }
+          return matchesGroup && matchesDate && matchesSearch;
+        })
         .sort((a,b) => {
           const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
           if (timeDiff !== 0) return timeDiff;
@@ -1961,12 +1983,21 @@
     function renderLabourAttendanceTable() {
       const data = getActiveDataset();
       const dateFilter = document.getElementById('labourDateFilter')?.value || 'ALL';
+      const searchKeyword = (document.getElementById('labourSearchInput')?.value || '').toLowerCase().trim();
       const tbody = document.getElementById('labourAttendanceTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
       
       const records = [...(data.labour || [])]
-        .filter(l => checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate'))
+        .filter(l => {
+          const matchesDate = checkDateInRange(l.date, dateFilter, 'labourStartDate', 'labourEndDate');
+          let matchesSearch = true;
+          if (searchKeyword) {
+            const searchableText = `${l.workerGroup || ''} ${l.remarks || ''}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchKeyword);
+          }
+          return matchesDate && matchesSearch;
+        })
         .sort((a,b) => {
           const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
           if (timeDiff !== 0) return timeDiff;
@@ -2144,6 +2175,7 @@
       const data = getActiveDataset();
       const filterParty = document.getElementById('partyFilterSelect')?.value || 'ALL';
       const dateFilter = document.getElementById('samaanDateFilter')?.value || 'ALL';
+      const searchKeyword = (document.getElementById('samaanSearchInput')?.value || '').toLowerCase().trim();
       const tbody = document.getElementById('samaanTableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
@@ -2153,7 +2185,16 @@
       let runningBalance = 0;
 
       const records = (data.samaan || [])
-        .filter(s => (filterParty === 'ALL' || s.refFrom === filterParty) && checkDateInRange(s.date, dateFilter, 'samaanStartDate', 'samaanEndDate'))
+        .filter(s => {
+          const matchesParty = (filterParty === 'ALL' || s.refFrom === filterParty);
+          const matchesDate = checkDateInRange(s.date, dateFilter, 'samaanStartDate', 'samaanEndDate');
+          let matchesSearch = true;
+          if (searchKeyword) {
+            const searchableText = `${s.samaanIn || ''} ${s.refFrom || ''} ${s.refTo || ''} ${s.status || ''} ${s.reason || ''} ${s.remarks || ''}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchKeyword);
+          }
+          return matchesParty && matchesDate && matchesSearch;
+        })
         .sort((a,b) => {
           const timeDiff = (b.updatedAtTime || 0) - (a.updatedAtTime || 0);
           if (timeDiff !== 0) return timeDiff;
@@ -3066,22 +3107,22 @@
       const oldName = systemData.workers[index];
       const newName = prompt("Worker ka naya naam:", oldName);
       if (!newName || !newName.trim()) return;
-      const clean = newName.trim().toUpperCase();
-      systemData.workers[index] = clean;
+      const cleanName = newName.trim().toUpperCase();
+      systemData.workers[index] = cleanName;
       
       if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + clean);
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "worker_" + cleanName);
       }
 
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].labour || []).forEach(l => {
           if (l.workerGroup === oldName) {
-            l.workerGroup = clean;
+            l.workerGroup = cleanName;
             l.updatedAtTime = Date.now();
           }
         });
       });
-      logAction("Edit Worker", `Renamed worker from ${oldName} to ${clean}`);
+      logAction("Edit Worker", `Renamed worker from ${oldName} to ${cleanName}`);
       saveLocal();
       renderWorkerDropdowns();
       renderWorkerManagerList();
@@ -3137,18 +3178,18 @@
     function promptAddParty() {
       const name = prompt("Nayi Party / Vendor ka naam daalein:");
       if (!name || !name.trim()) return;
-      const clean = name.trim().toUpperCase();
+      const cleanName = name.trim().toUpperCase();
 
       if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + cleanName);
       }
 
-      if (systemData.parties.includes(clean)) {
+      if (systemData.parties.includes(cleanName)) {
         alert("Yeh party pehle se maujood hai!");
         return;
       }
-      systemData.parties.push(clean);
-      logAction("Add Party", `Added Party: ${clean}`);
+      systemData.parties.push(cleanName);
+      logAction("Add Party", `Added Party: ${cleanName}`);
       saveLocal();
       renderPartyDropdowns();
       renderPartyManagerList();
@@ -3159,22 +3200,22 @@
       const oldName = systemData.parties[index];
       const newName = prompt("Party ka naya naam:", oldName);
       if (!newName || !newName.trim()) return;
-      const clean = newName.trim().toUpperCase();
-      systemData.parties[index] = clean;
+      const cleanName = newName.trim().toUpperCase();
+      systemData.parties[index] = cleanName;
       
       if (systemData.deletedIds) {
-        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + clean);
+        systemData.deletedIds = systemData.deletedIds.filter(id => id !== "party_" + cleanName);
       }
 
       Object.keys(systemData.bookData).forEach(bid => {
         (systemData.bookData[bid].samaan || []).forEach(s => {
           if (s.refFrom === oldName) {
-            s.refFrom = clean;
+            s.refFrom = cleanName;
             s.updatedAtTime = Date.now();
           }
         });
       });
-      logAction("Edit Party", `Renamed party from ${oldName} to ${clean}`);
+      logAction("Edit Party", `Renamed party from ${oldName} to ${cleanName}`);
       saveLocal();
       renderPartyDropdowns();
       renderPartyManagerList();
@@ -3294,9 +3335,18 @@
       c.innerHTML = '';
 
       const dateFilter = document.getElementById('logsDateFilter')?.value || 'ALL';
+      const searchKeyword = (document.getElementById('logsSearchInput')?.value || '').toLowerCase().trim();
 
       const sortedLogs = [...(systemData.activityLogs || [])]
-        .filter(l => checkDateInRange(l.timestampTime || l.timestamp, dateFilter, 'logsStartDate', 'logsEndDate', true))
+        .filter(l => {
+          const matchesDate = checkDateInRange(l.timestampTime || l.timestamp, dateFilter, 'logsStartDate', 'logsEndDate', true);
+          let matchesSearch = true;
+          if (searchKeyword) {
+            const searchableText = `${l.action || ''} ${l.performedBy || ''} ${l.details || ''} ${l.book || ''}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchKeyword);
+          }
+          return matchesDate && matchesSearch;
+        })
         .sort((a,b) => (b.timestampTime || 0) - (a.timestampTime || 0));
 
       sortedLogs.forEach(l => {
